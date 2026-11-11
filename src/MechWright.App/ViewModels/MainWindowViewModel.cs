@@ -428,6 +428,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             RefreshReferences();
             RefreshVanillaCatalog(scan);
             UseNativeFieldCatalog(scan);
+            RefreshBodyPresetOptions();
             if (scan.IsGameInstallation)
             {
                 RecentGamePath.Remember(folder);

@@ -257,6 +257,7 @@ public sealed partial class MainWindowViewModel
             VisualMechDesigner.AddMelee(file.Document, def,
                 SelectedMeleeCard.Preset, (double)VisualMeleeDamage, (double)VisualMeleeCooldown);
             RefreshAll(SelectedDefinition?.Entry.Index);
+            RefreshVisualMelee();
             VisualEditorInfo = "已添加“" + SelectedMeleeCard.Title + "”近战攻击，原生 XML 自动生成。";
             Status = VisualEditorInfo;
         }
@@ -273,6 +274,7 @@ public sealed partial class MainWindowViewModel
             var def = file.Document.Definitions().Single(x => x.Type == "ThingDef" && x.DefName == name);
             NativeListEditor.Remove(file.Document, def, "tools", SelectedInstalledMelee.ItemPath);
             RefreshAll(SelectedDefinition?.Entry.Index);
+            RefreshVisualMelee();
             VisualEditorInfo = "已移除近战攻击，可撤销。";
         }
         catch (Exception e) { VisualEditorInfo = e.Message; ReportError(e); }

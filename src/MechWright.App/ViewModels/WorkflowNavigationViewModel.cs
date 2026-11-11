@@ -79,10 +79,11 @@ public sealed partial class MainWindowViewModel
 
     public void StartDesign(string? mechDefName = null)
     {
-        if (!string.IsNullOrWhiteSpace(mechDefName)) _workflowMechName = mechDefName;
+        _workflowMechName = mechDefName;
         WorkflowStep = 0;
         RefreshWorkflowVisibility();
         SelectStageDocument();
+        RefreshVisualDesigner();
     }
 
     private void RefreshWorkflowVisibility()
