@@ -20,6 +20,7 @@ public static class DefCatalog
         IReadOnlyList<CatalogEntry> Entries,
         IReadOnlyList<PackageScan> Packages,
         VanillaMechanoidLibrary Mechanoids,
+        NativeFieldCatalog NativeFields,
         bool IsGameInstallation,
         IReadOnlyList<string> Warnings);
 
@@ -108,6 +109,10 @@ public static class DefCatalog
         var library = isGameInstallation
             ? VanillaMechanoidLibrary.Build(sources, token)
             : VanillaMechanoidLibrary.Empty;
-        return new CatalogScan(entries, packages, library, isGameInstallation, warnings);
+        var nativeFields = isGameInstallation
+            ? NativeFieldCatalog.Build(sources, token)
+            : NativeFieldCatalog.Empty;
+        return new CatalogScan(entries, packages, library, nativeFields,
+            isGameInstallation, warnings);
     }
 }
