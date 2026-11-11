@@ -100,7 +100,21 @@ jobs:
             exit 0
           }
           if ($LASTEXITCODE -ne 1) { throw 'Failed to compare app changes.' }
+          # Another source change may have arrived while this runner compiled.
+          # Never publish an older executable on top of newer source.
+          git fetch origin main
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to inspect current main.' }
+          $source = git rev-parse HEAD
+          $remote = git rev-parse origin/main
+          if ($source -ne $remote) {
+            Write-Host 'main advanced during this build; a newer queued run will publish the current executable.'
+            exit 0
+          }
           git commit -m 'build: sync compiled MechWright app [skip ci]'
           if ($LASTEXITCODE -ne 0) { throw 'Failed to commit app files.' }
           git push origin HEAD:main
-          if ($LASTEXITCODE -ne 0) { throw 'Failed to push app files to main.' }
+          if ($LASTEXITCODE -ne 0) {
+            git fetch origin main
+            Write-Host 'main moved after verification. A newer run will synchronize app/.'
+            exit 0
+          }
