@@ -22,7 +22,11 @@ public static class DefCatalog
         VanillaMechanoidLibrary Mechanoids,
         NativeFieldCatalog NativeFields,
         bool IsGameInstallation,
-        IReadOnlyList<string> Warnings);
+        IReadOnlyList<string> Warnings)
+    {
+        public NativeListTemplateCatalog ListTemplates { get; init; } =
+            NativeListTemplateCatalog.Empty;
+    }
 
     public static async Task<IReadOnlyList<CatalogEntry>> ScanAsync(
         string selectedFolder, CancellationToken cancellationToken = default) =>
@@ -113,6 +117,10 @@ public static class DefCatalog
             ? NativeFieldCatalog.Build(sources, token)
             : NativeFieldCatalog.Empty;
         return new CatalogScan(entries, packages, library, nativeFields,
-            isGameInstallation, warnings);
+            isGameInstallation, warnings)
+        {
+            ListTemplates = isGameInstallation
+                ? NativeListTemplateCatalog.Build(sources) : NativeListTemplateCatalog.Empty
+        };
     }
 }
