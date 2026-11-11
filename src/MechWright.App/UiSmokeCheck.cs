@@ -54,6 +54,11 @@ internal static class UiSmokeCheck
                 Require(vm.InstalledMelee.Count == 1,
                     "Clicking a melee preset did not create native tool configuration.");
                 vm.WorkflowStep = 3;
+                Require(vm.GestationIngredients.Count >= 1,
+                    "Visual gestation material editor did not initialize.");
+                vm.SaveVisualGestation();
+                Require(project.FindDefinitionFile("RecipeDef","MP_UiSmoke_Gestate")!=null,
+                    "Visual gestation form did not produce a linked RecipeDef.");
                 // Exercise user-facing generic content editor, not XML text entry.
                 vm.OpenContentEditor("机械师与生成");
                 var spawn=vm.ContentFields.First(x=>x.Spec.Path=="maxPerGroup");
