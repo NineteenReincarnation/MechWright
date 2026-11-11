@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="src/MechWright.Core/MechWright.Core.csproj" />
+  <Project Path="src/MechWright.RimWorld/MechWright.RimWorld.csproj" />
+  <Project Path="src/MechWright.Infrastructure/MechWright.Infrastructure.csproj" />
+  <Project Path="src/MechWright.App/MechWright.App.csproj" />
+  <Project Path="tests/MechWright.RimWorld.Tests/MechWright.RimWorld.Tests.csproj" />
+</Solution>

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../MechWright.Core/MechWright.Core.csproj" />
+  </ItemGroup>
+</Project>
