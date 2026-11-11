@@ -70,8 +70,7 @@ public sealed class VanillaMechanoidLibrary
         ("重量等级", "race/mechWeightClass", false),
         ("身体定义", "race/body", false),
         ("主要思维树", "race/thinkTreeMain", false),
-        ("机体类别", "race/intelligence", false),
-        ("身体组成", "race/body", false)
+        ("机体类别", "race/intelligence", false)
     ];
 
     private readonly IReadOnlyList<Profile> _entries;

@@ -6,7 +6,7 @@ namespace MechWright.RimWorld.Tests;
 public sealed class VanillaMechanoidLibraryTests
 {
     [Fact]
-    public void LoadsCoreAndDlcAndLinksMechKindsBodiesWeaponsAndRecipes()
+    public async Task LoadsCoreAndDlcAndLinksMechKindsBodiesWeaponsAndRecipes()
     {
         var root = Path.Combine(Path.GetTempPath(), "MechWrightVanillaTests", Guid.NewGuid().ToString("N"));
         try
@@ -61,7 +61,7 @@ public sealed class VanillaMechanoidLibraryTests
             Assert.Equal("0.4", inherited.Value);
             Assert.Equal("BaseMechanoid", inherited.SourceTemplate);
             Assert.Equal("400", mech.Fields.Single(f => f.XmlPath == "combatPower").Value);
-            Assert.Single(mech.BodyParts);
+            Assert.Equal(2, mech.BodyParts.Count);
             Assert.Single(mech.WeaponCandidates);
             Assert.Single(mech.Recipes);
         }
