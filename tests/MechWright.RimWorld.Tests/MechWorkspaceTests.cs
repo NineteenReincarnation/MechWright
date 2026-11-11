@@ -90,6 +90,22 @@ public class MechWorkspaceTests
     }
 
     [Fact]
+    public void CrossFileIndexRefreshesAfterUndoAndRedo()
+    {
+        var project = Create();
+        var file = project.Files[0];
+        Assert.NotNull(project.FindDefinitionFile("ThingDef", "MP_Manta"));
+        var field = file.Document.Fields(file.Document.Definitions().Single()).Single(x => x.Name == "defName");
+        file.Document.SetField(field, "MP_Manta2");
+        Assert.Null(project.FindDefinitionFile("ThingDef", "MP_Manta"));
+        Assert.NotNull(project.FindDefinitionFile("ThingDef", "MP_Manta2"));
+        Assert.True(file.Document.Undo());
+        Assert.NotNull(project.FindDefinitionFile("ThingDef", "MP_Manta"));
+        Assert.True(file.Document.Redo());
+        Assert.Null(project.FindDefinitionFile("ThingDef", "MP_Manta"));
+    }
+
+    [Fact]
     public void RoundTripDoesNotDropUnknownXml()
     {
         var project = new MechWorkspace("Custom", ".");

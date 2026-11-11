@@ -14,6 +14,10 @@ public sealed class MechWorkspace
     private readonly Dictionary<string, WorkspaceFile> _byPath =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<(string Kind, string Name), List<WorkspaceDefinition>> _index = [];
+    private readonly Dictionary<string, long> _indexedRevisions =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (long Revision, IReadOnlyList<Diagnostic> Issues)> _validationCache =
+        new(StringComparer.OrdinalIgnoreCase);
 
     public string Name { get; }
     public string SourceRoot { get; }
@@ -39,8 +43,7 @@ public sealed class MechWorkspace
             DefDocument.Parse(contents, relativePath)) { IsNew = !fromDisk };
         _files.Add(file);
         _byPath.Add(relativePath, file);
-        Reindex();
-        return file;
+        return file; // Lazy: avoid O(N²) reindexing during large imports.
     }
 
     public WorkspaceFile? FindFile(string relativePath) =>
@@ -66,7 +69,13 @@ public sealed class MechWorkspace
         var result = new List<WorkspaceDiagnostic>();
         foreach (var file in _files)
         {
-            foreach (var issue in file.Document.Validate())
+            if (!_validationCache.TryGetValue(file.RelativePath, out var cached) ||
+                cached.Revision != file.Document.Revision)
+            {
+                cached = (file.Document.Revision, file.Document.Validate().ToList());
+                _validationCache[file.RelativePath] = cached;
+            }
+            foreach (var issue in cached.Issues)
                 result.Add(new WorkspaceDiagnostic(file.RelativePath, issue));
         }
         foreach (var pair in _index.Where(x => x.Value.Count > 1))
@@ -86,9 +95,6 @@ public sealed class MechWorkspace
         if (!_byPath.TryGetValue(file.RelativePath, out var tracked) || tracked != file)
             throw new InvalidOperationException("File does not belong to the selected project.");
         Reindex();
-        var external = (catalog ?? [])
-            .GroupBy(x => (x.Identity.Type, x.Identity.DefName))
-            .ToDictionary(g => g.Key, g => g.First().SourcePackage);
         var own = file.Document.Definitions().Select(x => (x.Type, x.DefName)).ToHashSet();
         var refs = DefinitionReferences.Collect(file.Document, catalog);
         return refs.Select(r =>
@@ -117,7 +123,12 @@ public sealed class MechWorkspace
 
     public void Reindex()
     {
+        if (_indexedRevisions.Count == _files.Count &&
+            _files.All(f => _indexedRevisions.TryGetValue(f.RelativePath, out var revision)
+                && revision == f.Document.Revision))
+            return;
         _index.Clear();
+        _indexedRevisions.Clear();
         foreach (var file in _files)
         {
             foreach (var def in file.Document.Definitions())
@@ -132,6 +143,7 @@ public sealed class MechWorkspace
                 matches.Add(new WorkspaceDefinition(file, def.Type, def.DefName,
                     DefDocument.GetPath(def.Element)));
             }
+            _indexedRevisions[file.RelativePath] = file.Document.Revision;
         }
     }
 

@@ -19,6 +19,7 @@ public sealed class DefDocument
     public bool IsDirty => _undo.Count != 0;
     public bool CanUndo => _undo.Count > 0;
     public bool CanRedo => _redo.Count > 0;
+    public long Revision { get; private set; }
     public const int MaxXmlCharacters = 8_000_000;
     private abstract record Change;
     private sealed record Edit(XElement Element, string Path, string OldValue, string NewValue) : Change;
@@ -152,6 +153,7 @@ public sealed class DefDocument
         field.Element.Value = value;
         _undo.Push(new Edit(field.Element, GetPath(field.Element), before, value));
         _redo.Clear();
+        Revision++;
     }
 
     public bool Undo()
@@ -171,6 +173,7 @@ public sealed class DefDocument
                 break;
         }
         _redo.Push(change);
+        Revision++;
         return true;
     }
 
@@ -193,6 +196,7 @@ public sealed class DefDocument
                 break;
         }
         _undo.Push(change);
+        Revision++;
         return true;
     }
 
@@ -212,15 +216,18 @@ public sealed class DefDocument
         if (XNode.DeepEquals(before, Xml)) return;
         _undo.Push(new ReplaceDocument(before, Xml));
         _redo.Clear();
+        Revision++;
     }
 
     /// <summary>Replace the whole XML tree as one undoable edit, preserving raw and unknown fields.</summary>
     public void ReplaceSource(string source)
     {
+        if (string.Equals(source, Export(), StringComparison.Ordinal)) return;
         var newDocument = Parse(source, SourceName).Xml; // validates XML and rejects DTD first
         _undo.Push(new ReplaceDocument(Xml, newDocument));
         Xml = newDocument;
         _redo.Clear();
+        Revision++;
     }
 
     public void MarkSaved()
@@ -287,6 +294,7 @@ public sealed class DefDocument
         Xml.Root.Add(e);
         _undo.Push(new Insert(e, position));
         _redo.Clear();
+        Revision++;
         return Definitions().Last();
     }
 
