@@ -29,40 +29,7 @@ public sealed class MechanoidWizardViewModel : INotifyPropertyChanged
     public string BandwidthCost { get; set; } = "2";
     public IReadOnlyList<string> WeightClasses { get; } =
         ["Light", "Medium", "Heavy", "UltraHeavy"];
-    public IReadOnlyList<VisualChassisRow> WizardPresetCards { get; } =
-        VisualMechDesigner.Chassis.Select(x => new VisualChassisRow(x)).ToArray();
-    private VisualChassisRow? _selectedWizardPreset;
-    public VisualChassisRow? SelectedWizardPreset
-    {
-        get => _selectedWizardPreset;
-        set
-        {
-            if (ReferenceEquals(_selectedWizardPreset, value)) return;
-            _selectedWizardPreset = value;
-            Changed();
-            if (value == null) return;
-            var p = value.Preset;
-            WeightClass = p.WeightClass;
-            CP = p.CombatPower.ToString(CultureInfo.InvariantCulture);
-            BodySize = p.BodySize.ToString(CultureInfo.InvariantCulture);
-            HealthScale = p.HealthScale.ToString(CultureInfo.InvariantCulture);
-            MoveSpeed = p.MoveSpeed.ToString(CultureInfo.InvariantCulture);
-            Mass = p.Mass.ToString(CultureInfo.InvariantCulture);
-            SharpArmor = p.SharpArmor.ToString(CultureInfo.InvariantCulture);
-            BluntArmor = p.BluntArmor.ToString(CultureInfo.InvariantCulture);
-            HeatArmor = p.HeatArmor.ToString(CultureInfo.InvariantCulture);
-            BandwidthCost = p.BandwidthCost.ToString(CultureInfo.InvariantCulture);
-            foreach (var name in new[] { nameof(WeightClass), nameof(CP),
-                nameof(BodySize), nameof(HealthScale), nameof(MoveSpeed),
-                nameof(Mass), nameof(SharpArmor), nameof(BluntArmor),
-                nameof(HeatArmor), nameof(BandwidthCost) }) Changed(name);
-        }
-    }
-    public MechanoidWizardViewModel() =>
-        SelectedWizardPreset = WizardPresetCards.FirstOrDefault(x => x.Preset.Key == "general");
-
-
-    private string _preview = "选一个机体预设，调整参数后点“预览设计”查看配置摘要。";
+    private string _preview = "从上到下填写参数，点击“查看当前填写的数据”进行确认。";
     private string _error = "";
     public string Preview
     {

@@ -3,90 +3,116 @@
         xmlns:vm="using:MechWright.App.ViewModels"
         x:Class="MechWright.App.MechanoidWizardWindow"
         x:DataType="vm:MechanoidWizardViewModel"
-        Title="MECHWRIGHT · 新机械体装配向导"
-        Width="960" Height="820" MinWidth="760" MinHeight="620"
+        Title="MechWright · 新建机械体"
+        Width="775" Height="785" MinWidth="660" MinHeight="550"
         WindowStartupLocation="CenterOwner"
         Background="#0B1014" Foreground="#E6ECEB">
-  <Grid RowDefinitions="Auto,*,150,Auto" Margin="19" RowSpacing="13">
-    <StackPanel Grid.Row="0" Spacing="5">
-      <TextBlock Text="设计第一台机械体" FontSize="23"
-                 FontWeight="Bold" Foreground="#8DBCB4"/>
-      <TextBlock Text="先选一个定位，再修改数值。完成后进入图形化工作台继续设计身体、武器和贴图。"
-                 FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap"/>
-      <ListBox ItemsSource="{Binding WizardPresetCards}"
-               SelectedItem="{Binding SelectedWizardPreset,Mode=TwoWay}" Height="110">
-        <ListBox.ItemsPanel>
-          <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" ItemWidth="214" ItemHeight="102"/></ItemsPanelTemplate>
-        </ListBox.ItemsPanel>
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:VisualChassisRow">
-            <Border Classes="preset-card" Margin="4" Padding="10">
-              <StackPanel Spacing="4">
-                <StackPanel Orientation="Horizontal" Spacing="9">
-                  <TextBlock Text="{Binding Icon}" FontSize="24" Foreground="#A5D4CC"/>
-                  <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
-                             VerticalAlignment="Center"/>
-                </StackPanel>
-                <TextBlock Text="{Binding Score}" Foreground="#85B9B1" FontSize="10"/>
-                <TextBlock Text="{Binding Detail}" Foreground="#9CACB3" FontSize="10" TextWrapping="Wrap"/>
-              </StackPanel>
-            </Border>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+  <Grid RowDefinitions="Auto,*,Auto" Margin="19" RowSpacing="14">
+    <StackPanel Grid.Row="0" Spacing="6">
+      <TextBlock Text="新建机械体" FontSize="24" FontWeight="SemiBold"/>
+      <TextBlock Text="从第一项到最后一项依次填写。没有预设限制，所有数据均由你决定。"
+                 Foreground="#A5BBBB" FontSize="12" TextWrapping="Wrap"/>
+      <TextBlock Text="创建后还可以继续增减身体部件、武器、组件和其他原生配置。"
+                 Foreground="#819FA3" FontSize="11" TextWrapping="Wrap"/>
     </StackPanel>
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
-        <StackPanel Grid.Column="0" Spacing="9">
-          <TextBlock Text="名称与定位" Foreground="#8DBCB4" FontSize="12"/>
-          <TextBlock Text="机械体标识（自动生成）" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding DefName}" IsReadOnly="True" FontFamily="Consolas"/>
-          <TextBlock Text="机械体名称" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding Label,Mode=TwoWay}"/>
-          <TextBlock Text="机体重量类别" FontSize="11" Foreground="#A3B1B4"/>
-          <ComboBox ItemsSource="{Binding WeightClasses}"
-                    SelectedItem="{Binding WeightClass,Mode=TwoWay}"/>
-          <TextBlock Text="战斗强度（CP）" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding CP,Mode=TwoWay}"/>
-          <TextBlock Text="身体大小" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding BodySize,Mode=TwoWay}"/>
-          <TextBlock Text="身体耐久倍率" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding HealthScale,Mode=TwoWay}"/>
-        </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="9">
-          <TextBlock Text="性能与防护" Foreground="#8DBCB4" FontSize="12"/>
-          <TextBlock Text="移动速度（格/秒）" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding MoveSpeed,Mode=TwoWay}"/>
-          <TextBlock Text="机体质量（kg）" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding Mass,Mode=TwoWay}"/>
-          <TextBlock Text="锐器护甲" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding SharpArmor,Mode=TwoWay}"/>
-          <TextBlock Text="钝器护甲" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding BluntArmor,Mode=TwoWay}"/>
-          <TextBlock Text="热能护甲" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding HeatArmor,Mode=TwoWay}"/>
-          <TextBlock Text="机械控制带宽" FontSize="11" Foreground="#A3B1B4"/>
-          <TextBox Text="{Binding BandwidthCost,Mode=TwoWay}"/>
-        </StackPanel>
-      </Grid>
+      <StackPanel Spacing="10">
+        <Border Background="#17262C" CornerRadius="7" Padding="12">
+          <TextBlock Text="01 · 身份与基础属性" FontSize="15"
+                     FontWeight="SemiBold" Foreground="#B2D9CB"/>
+        </Border>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="机械体名称" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding Label,Mode=TwoWay}"
+                        Watermark="请输入机械体的显示名称" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="机体标识" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding DefName,Mode=TwoWay}"
+                        Watermark="例如 MP_NewMechanoid" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="重量等级" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <ComboBox Grid.Column="1" ItemsSource="{Binding WeightClasses}"
+                          SelectedItem="{Binding WeightClass,Mode=TwoWay}" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="战斗点数（CP）" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding CP,Mode=TwoWay}"
+                        Watermark="0 及以上" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="身体大小" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding BodySize,Mode=TwoWay}"
+                        Watermark="例如 1.6" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="生命倍率" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding HealthScale,Mode=TwoWay}"
+                        Watermark="例如 1.35" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="移动速度（格/秒）" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding MoveSpeed,Mode=TwoWay}"
+                        Watermark="例如 3.9" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="机体质量（kg）" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding Mass,Mode=TwoWay}"
+                        Watermark="例如 120" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="锐器护甲" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding SharpArmor,Mode=TwoWay}"
+                        Watermark="例如 0.55" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="钝器护甲" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding BluntArmor,Mode=TwoWay}"
+                        Watermark="例如 0.35" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="热能护甲" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding HeatArmor,Mode=TwoWay}"
+                        Watermark="例如 2.0" MinHeight="38"/>
+            </Grid>
+            <Grid ColumnDefinitions="220,*" ColumnSpacing="16" MinHeight="43">
+              <TextBlock Grid.Column="0" Text="机械控制带宽" FontSize="13"
+                         Foreground="#D2DDDA" VerticalAlignment="Center"/>
+              <TextBox Grid.Column="1" Text="{Binding BandwidthCost,Mode=TwoWay}"
+                        Watermark="非负整数" MinHeight="38"/>
+            </Grid>
+        <Border Background="#132B2C" CornerRadius="8" Padding="14"
+                Margin="0,12,0,0">
+          <StackPanel Spacing="10">
+            <TextBlock Text="创建前确认" FontSize="15" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding Preview}" FontSize="12" Foreground="#C6DFD8"
+                       TextWrapping="Wrap"/>
+            <Button Content="查看当前填写的数据" Click="Preview_Click"
+                    HorizontalAlignment="Left"/>
+          </StackPanel>
+        </Border>
+      </StackPanel>
     </ScrollViewer>
-    <Border Grid.Row="2" Background="#111A20" BorderBrush="#33454C"
-            BorderThickness="1" CornerRadius="6" Padding="10">
-      <Grid RowDefinitions="Auto,*" RowSpacing="8">
-        <TextBlock Grid.Row="0" Text="设计摘要 / 创建前确认"
-                   FontSize="12" FontWeight="Bold" Foreground="#8DBCB4"/>
-        <TextBlock Grid.Row="1" Text="{Binding Preview}" TextWrapping="Wrap"
-                   FontSize="12" Foreground="#C8DEDA" VerticalAlignment="Center"/>
-      </Grid>
-    </Border>
-    <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
       <TextBlock Grid.Column="0" Text="{Binding Error}" Foreground="#D87C76"
                  TextWrapping="Wrap" VerticalAlignment="Center"/>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
-        <Button Content="预览设计" Click="Preview_Click"/>
         <Button Content="取消" Click="Cancel_Click"/>
-        <Button Content="创建机械体并进入设计" Click="Confirm_Click" Background="#31575A"/>
+        <Button Content="创建并继续配置" Click="Confirm_Click"
+                Classes="primary" Background="#31575A"/>
       </StackPanel>
     </Grid>
   </Grid>
