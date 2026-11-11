@@ -161,6 +161,65 @@ public static class VisualContentEditor
         return (file.Document,def);
     }
 
+    public sealed record ModuleParameter(string Path,string Label,string Value,string Kind)
+    {
+        public string Display => Label + "  ·  " + Value;
+    }
+
+    public static IReadOnlyList<ModuleParameter> Parameters(string xmlFragment)
+    {
+        var root = XElement.Parse(xmlFragment);
+        if (root.Name != "li") throw new ArgumentException("原生列表项格式无效。");
+        var result = new List<ModuleParameter>();
+        foreach (var leaf in root.Descendants())
+        {
+            if (leaf.HasElements || leaf.Value.Length > 2048 ||
+                leaf.Nodes().Any(x => x is not XText and not XCData)) continue;
+            var lineage = leaf.AncestorsAndSelf().Reverse().Skip(1).ToArray();
+            // A repeated sibling cannot be addressed unambiguously through
+            // a simple field editor. Keep it available in advanced mode.
+            if (lineage.Any(x => x.Parent?.Elements(x.Name).Count() != 1)) continue;
+            var path = string.Join('/',lineage.Select(x => x.Name.LocalName));
+            var rule = StandardFieldRules.Describe(leaf.Name.LocalName);
+            var kind = rule?.Kind ??
+                (bool.TryParse(leaf.Value,out _) ? "Boolean" :
+                double.TryParse(leaf.Value,NumberStyles.Float,CultureInfo.InvariantCulture,out _)
+                    ? "Number" : "Text");
+            result.Add(new ModuleParameter(path,rule?.Description ??
+                FriendlyLabel(leaf.Name.LocalName),leaf.Value,kind));
+            if (result.Count == 80) break;
+        }
+        return result;
+    }
+
+    public static void UpdateModuleParameter(DefDocument document,DefEntry def,
+        string container,string itemPath,string parameterPath,string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 2048)
+            throw new ArgumentException("请输入有效参数值。");
+        var item=NativeListEditor.Items(document,def,container)
+            .FirstOrDefault(x => x.XmlPath == itemPath) ??
+            throw new InvalidOperationException("请先选择已添加的项目。");
+        var parameter=Parameters(item.Source).FirstOrDefault(x => x.Path == parameterPath)
+            ?? throw new InvalidOperationException("此参数存在复杂列表结构，不能直接编辑。");
+        var message=StandardFieldRules.Validate(parameterPath.Split('/')[^1],value);
+        if (message != null)throw new ArgumentException(message);
+        if (parameter.Kind == "Number" &&
+            (!double.TryParse(value,NumberStyles.Float,CultureInfo.InvariantCulture,out var number) ||
+                !double.IsFinite(number)))
+            throw new ArgumentException("请输入有效数字。");
+        if (parameter.Kind == "Boolean" && !bool.TryParse(value,out _))
+            throw new ArgumentException("请选择是或否。");
+        var root=XElement.Parse(item.Source);
+        XElement cursor=root;
+        foreach(var step in parameterPath.Split('/'))
+            cursor=cursor.Element(step) ??
+                throw new InvalidOperationException("原始参数已经发生变化。");
+        cursor.Value=value.Trim();
+        NativeListEditor.Replace(document,def,container,itemPath,
+            root.ToString(SaveOptions.DisableFormatting));
+    }
+
     public static void Validate(Option field,string value)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length > 4096)
