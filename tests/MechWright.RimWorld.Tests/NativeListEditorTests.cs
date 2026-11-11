@@ -38,7 +38,8 @@ public sealed class NativeListEditorTests
         Assert.Equal(3, NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").Count);
         Assert.True(doc.Undo());
         Assert.Equal(4, NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").Count);
-        for (var i = 0; i < 4; i++) Assert.True(doc.Undo());
+        // Reordering two byte-identical siblings is a semantic no-op; no undo record.
+        for (var i = 0; i < 3; i++) Assert.True(doc.Undo());
         Assert.Equal(Source, doc.Export());
     }
 
