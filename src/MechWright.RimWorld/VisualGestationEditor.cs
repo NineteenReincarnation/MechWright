@@ -52,6 +52,24 @@ public static class VisualGestationEditor
             ?.Element.Attribute("ParentName")?.Value;
     }
 
+    public static Configuration? Read(MechWorkspace project,string mech)
+    {
+        var file=project.FindDefinitionFile("RecipeDef",RecipeDefName(mech));
+        var def=file?.Document.Definitions()
+            .FirstOrDefault(x=>x.Type=="RecipeDef" && x.DefName==RecipeDefName(mech));
+        if(def==null)return null;
+        var node=def.Element;
+        int.TryParse(node.Element("gestationCycles")?.Value,out var cycles);
+        var items=node.Element("ingredients")?.Elements("li")
+            .Select(x=>new Ingredient(
+                x.Element("filter")?.Element("thingDefs")?.Elements("li")
+                    .FirstOrDefault()?.Value ?? "",
+                int.TryParse(x.Element("count")?.Value,out var number)?number:0))
+            .Where(x=>x.DefName.Length>0 && x.Amount>0).ToArray() ?? [];
+        return new Configuration(node.Attribute("ParentName")?.Value ??
+            "MediumMechanoidRecipe",cycles,node.Element("researchPrerequisite")?.Value,items);
+    }
+
     public static bool Exists(MechWorkspace project,string mech)=>
         project.FindDefinitionFile("RecipeDef",RecipeDefName(mech))!=null;
 
@@ -66,6 +84,9 @@ public static class VisualGestationEditor
             !configuration.ParentName.Contains("MechanoidRecipe",StringComparison.Ordinal))
             throw new ArgumentException("请选择有效的机械体和游戏原生培育模板。");
         if(configuration.Cycles is <1 or >10000)throw new ArgumentException("培育周期为 1–10000。");
+        if (!Exists(project,mech) &&
+            project.FindDefinitionFile("ThingDef",mech)==null)
+            throw new InvalidOperationException("请先创建当前机械体，再配置其培育配方。");
         if(configuration.Ingredients.Count is <1 or >32)
             throw new ArgumentException("请添加 1–32 种培育材料。");
         var ingredients=configuration.Ingredients.ToArray();
@@ -110,6 +131,10 @@ public static class VisualGestationEditor
 
         var doc=file.Document;
         var def=doc.Definitions().Single(x=>x.Type=="RecipeDef" && x.DefName==name);
+        var output=def.Element.Element("products");
+        if(output!=null && (output.Elements().Count()!=1 ||
+            output.Elements().Single().Name.LocalName!=mech))
+            throw new InvalidOperationException("自定义产物不能由通用表单覆盖。");
         // An imported custom recipe may contain additional logic or ingredient
         // filters. Refuse a destructive rewrite of these unknown structures.
         var present=def.Element.Element("ingredients");
@@ -129,10 +154,7 @@ public static class VisualGestationEditor
             else present.ReplaceWith(ingredientXml);
             var products=def.Element.Element("products");
             if(products==null)def.Element.Add(new XElement("products",new XElement(mech,1)));
-            else if(products.Elements().Count()==1 &&
-                    products.Elements().Single().Name.LocalName==mech)
-                products.Elements().Single().Value="1";
-            else throw new InvalidOperationException("自定义产物不能由通用表单覆盖。");
+            else products.Elements().Single().Value="1";
         });
     }
 }
