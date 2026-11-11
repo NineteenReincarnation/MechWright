@@ -252,8 +252,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public void Saved(string path, string exported)
     {
-        var chosen = SelectedDefinition?.Entry.DefName;
-        LoadFile(exported, path, chosen);
+        if (_document == null) return;
+        var index = SelectedDefinition?.Entry.Index;
+        var fieldPath = SelectedField?.Field.Path;
+        _document.MarkSaved();
+        SourceName = path;
+        RefreshAll(index, fieldPath);
         Status = $"已导出 · {path}";
     }
 

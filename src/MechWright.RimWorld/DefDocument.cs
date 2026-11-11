@@ -10,17 +10,18 @@ namespace MechWright.RimWorld;
 /// <summary>One original XML file and a single editable document tree. Unknown nodes, attributes and comments remain in the tree.</summary>
 public sealed class DefDocument
 {
-    private readonly Stack<Edit> _undo = new();
-    private readonly Stack<Edit> _redo = new();
-    private readonly string _original;
-    private bool _structuralEdit;
+    private readonly Stack<Change> _undo = new();
+    private readonly Stack<Change> _redo = new();
+    private string _original;
     public XDocument Xml { get; }
     public string SourceName { get; }
-    public bool IsDirty => _undo.Count != 0 || _structuralEdit;
+    public bool IsDirty => _undo.Count != 0;
     public bool CanUndo => _undo.Count > 0;
     public bool CanRedo => _redo.Count > 0;
     public const int MaxXmlCharacters = 8_000_000;
-    private sealed record Edit(XElement Element, string OldValue, string NewValue);
+    private abstract record Change;
+    private sealed record Edit(XElement Element, string OldValue, string NewValue) : Change;
+    private sealed record Insert(XElement Element) : Change;
 
     private DefDocument(XDocument xml, string raw, string sourceName)
     {
@@ -119,7 +120,15 @@ public sealed class DefDocument
     {
         if (_undo.Count == 0) return false;
         var change = _undo.Pop();
-        change.Element.Value = change.OldValue;
+        switch (change)
+        {
+            case Edit field:
+                field.Element.Value = field.OldValue;
+                break;
+            case Insert addition:
+                addition.Element.Remove();
+                break;
+        }
         _redo.Push(change);
         return true;
     }
@@ -128,9 +137,24 @@ public sealed class DefDocument
     {
         if (_redo.Count == 0) return false;
         var change = _redo.Pop();
-        change.Element.Value = change.NewValue;
+        switch (change)
+        {
+            case Edit field:
+                field.Element.Value = field.NewValue;
+                break;
+            case Insert addition:
+                Xml.Root!.Add(addition.Element);
+                break;
+        }
         _undo.Push(change);
         return true;
+    }
+
+    public void MarkSaved()
+    {
+        _original = Export();
+        _undo.Clear();
+        _redo.Clear();
     }
 
     public string Export()
@@ -187,7 +211,7 @@ public sealed class DefDocument
             e.Add(new XElement("corePart", new XElement("def", "MechanicalThorax"),
                 new XElement("height", "Middle"), new XElement("depth", "Outside")));
         Xml.Root.Add(e);
-        _structuralEdit = true;
+        _undo.Push(new Insert(e));
         _redo.Clear();
         return Definitions().Last();
     }

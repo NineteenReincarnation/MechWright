@@ -83,6 +83,33 @@ public sealed class DefDocumentTests
     }
 
     [Fact]
+    public void InsertingDefinition_SupportsUndoAndRedo()
+    {
+        var document = DefDocument.CreateEmpty();
+        document.AddDefinition("ThingDef", "MP_Test");
+        Assert.True(document.CanUndo);
+        Assert.True(document.Undo());
+        Assert.Empty(document.Definitions());
+        Assert.False(document.IsDirty);
+        Assert.True(document.Redo());
+        Assert.Single(document.Definitions());
+        Assert.True(document.IsDirty);
+    }
+
+    [Fact]
+    public void SuccessfulSave_ResetsDirtyStateWithoutReparsing()
+    {
+        var document = DefDocument.Parse(Input);
+        var field = document.Fields(document.Definitions().Single()).Single(x => x.Name == "MoveSpeed");
+        document.SetField(field, "3.9");
+        var saved = document.Export();
+        document.MarkSaved();
+        Assert.False(document.IsDirty);
+        Assert.Equal(saved, document.Export());
+        Assert.False(document.CanUndo);
+    }
+
+    [Fact]
     public void NewDefinition_UsesConfiguredPrefixAndAddsRealXml()
     {
         var doc = DefDocument.CreateEmpty();
