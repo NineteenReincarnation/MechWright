@@ -200,7 +200,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="8">
                       <Button Content="应用明确覆写" Click="ApplyMechProperty_Click"/>
                       <Button Content="恢复继承 / 未定义" Click="ResetMechProperty_Click"/>
-                    </WrapPanel>
+                    </StackPanel>
                   </StackPanel>
                 </Border>
               </Grid>
