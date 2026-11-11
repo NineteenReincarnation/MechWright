@@ -416,10 +416,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         Status = "正在索引本地 RimWorld / Mod 定义 · 可在其他窗口继续操作";
         try
         {
-            _catalog = await DefCatalog.ScanAsync(folder);
+            var scan = await DefCatalog.ScanFullAsync(folder);
+            _catalog = scan.Entries;
             FilterCatalog();
             RefreshReferences();
-            Status = $"本地定义索引完成 · {_catalog.Count} 项 · 只读";
+            RefreshVanillaCatalog(scan);
+            Status = $"本地定义索引完成 · {_catalog.Count} 项 · 原版机械体 {_vanillaMechs.Count} 台 · 只读";
         }
         catch (Exception ex) { ReportError(ex); }
         finally { IsBusy = false; }
