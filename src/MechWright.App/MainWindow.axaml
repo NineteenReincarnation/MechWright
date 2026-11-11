@@ -272,6 +272,36 @@
                                        FontSize="10" Foreground="#8DBCB4" TextWrapping="Wrap"/>
                           </Grid>
                         </TabItem>
+                        <TabItem Header="设计对照">
+                          <Grid Margin="7" RowDefinitions="Auto,Auto,*" RowSpacing="8">
+                            <Button Grid.Row="0" Content="与当前编辑的 ThingDef 对照"
+                                    Click="CompareVanilla_Click" Background="#31535B"
+                                    HorizontalAlignment="Stretch"/>
+                            <TextBlock Grid.Row="1" Text="{Binding VanillaComparisonStatus}"
+                                       FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                              <ItemsControl ItemsSource="{Binding VanillaComparisons}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaComparisonRow">
+                                    <Border BorderBrush="#34454D" BorderThickness="0,0,0,1" Padding="5,9">
+                                      <Grid ColumnDefinitions="90,*,*,55" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11"
+                                                   Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding VanillaValue}" FontSize="11"
+                                                   FontFamily="Consolas" TextWrapping="Wrap"
+                                                   ToolTip.Tip="{Binding Provenance}"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding UserValue}" FontSize="11"
+                                                   FontFamily="Consolas" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding Delta}" FontSize="11"
+                                                   FontFamily="Consolas" Foreground="#8DBCB4"/>
+                                      </Grid>
+                                    </Border>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </ScrollViewer>
+                          </Grid>
+                        </TabItem>
                         <TabItem Header="源码 / 限制">
                           <Grid RowDefinitions="Auto,Auto,*" Margin="7" RowSpacing="7">
                             <TextBlock Grid.Row="0" Text="{Binding VanillaParentTemplate}"

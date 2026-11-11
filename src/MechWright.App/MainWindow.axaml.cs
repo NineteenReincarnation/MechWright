@@ -336,6 +336,7 @@ public sealed partial class MainWindow : Window
     private void ApplyBody_Click(object? sender, RoutedEventArgs e) => _vm.ApplyBodyPart();
     private void JumpReference_Click(object? sender, RoutedEventArgs e) => _vm.JumpToReference();
     private void ApplyMechProperty_Click(object? sender, RoutedEventArgs e) => _vm.ApplyMechProperty();
+    private void CompareVanilla_Click(object? sender, RoutedEventArgs e) => _vm.CompareVanillaWithCurrent();
     private void ApplyXmlAttribute_Click(object? sender, RoutedEventArgs e) => _vm.ApplyXmlAttribute();
     private void RemoveXmlAttribute_Click(object? sender, RoutedEventArgs e) => _vm.RemoveXmlAttribute();
     private void AddXmlAttribute_Click(object? sender, RoutedEventArgs e) => _vm.AddXmlAttribute();

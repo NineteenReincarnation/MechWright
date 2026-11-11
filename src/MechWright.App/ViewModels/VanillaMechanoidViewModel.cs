@@ -158,6 +158,7 @@ public sealed partial class MainWindowViewModel
             Notify();
             Notify(nameof(VanillaTitle));
             Notify(nameof(VanillaGrade));
+            InvalidateVanillaComparison();
             RefreshVanillaDetails();
         }
     }

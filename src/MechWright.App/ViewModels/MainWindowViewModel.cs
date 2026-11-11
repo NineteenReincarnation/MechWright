@@ -97,6 +97,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             _selectedDefinition = value;
             Notify();
             Notify(nameof(SelectedDefName));
+            InvalidateVanillaComparison();
             RefreshFields();
         }
     }
