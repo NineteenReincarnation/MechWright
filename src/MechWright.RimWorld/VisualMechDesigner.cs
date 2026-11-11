@@ -124,6 +124,10 @@ public static class VisualMechDesigner
             tool.ToString(SaveOptions.DisableFormatting));
     }
 
+    public static void ApplyBodyTemplate(DefDocument document,
+        DefEntry destination, DefEntry sourceBodyDef) =>
+        ApplyBodyTemplate(document, destination, sourceBodyDef.Element);
+
     public static void ApplyBodyTemplate(DefDocument document, DefEntry destination,
         XElement sourceBodyDef)
     {

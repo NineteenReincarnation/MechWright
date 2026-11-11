@@ -125,7 +125,7 @@ public sealed partial class MainWindowViewModel
                 return _workflowMechName;
             return _workspace.Files.SelectMany(f => f.Document.Definitions())
                 .FirstOrDefault(x => x.Type == "ThingDef" &&
-                    x.Element.Element("race") != null)?.DefName;
+                    x.DefName.StartsWith("MP_", StringComparison.Ordinal))?.DefName;
         }
     }
 
@@ -317,7 +317,7 @@ public sealed partial class MainWindowViewModel
                 x.DefName == SelectedBodyTemplate.BodyDef);
             if (source == null) throw new InvalidOperationException("原版 BodyDef 不在源 XML 文件中。");
             VisualMechDesigner.ApplyBodyTemplate(file.Document,
-                file.Document.Definitions().Single(x => x.Type == "BodyDef"), source.Element);
+                file.Document.Definitions().Single(x => x.Type == "BodyDef"), source);
             if (WorkflowStep == 1) SelectStageDocument();
             RefreshAll(SelectedDefinition?.Entry.Index);
             VisualEditorInfo = "已按“" + SelectedBodyTemplate.Label +
