@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using MechWright.Core;
 
 namespace MechWright.RimWorld;
@@ -20,8 +21,8 @@ public sealed class DefDocument
     public bool CanRedo => _redo.Count > 0;
     public const int MaxXmlCharacters = 8_000_000;
     private abstract record Change;
-    private sealed record Edit(XElement Element, string OldValue, string NewValue) : Change;
-    private sealed record Insert(XElement Element) : Change;
+    private sealed record Edit(XElement Element, string Path, string OldValue, string NewValue) : Change;
+    private sealed record Insert(XElement Element, int ElementIndex) : Change;
     private sealed record ReplaceDocument(XDocument Before, XDocument After) : Change;
 
     private DefDocument(XDocument xml, string raw, string sourceName)
@@ -113,7 +114,7 @@ public sealed class DefDocument
         var before = field.Element.Value;
         if (before == value) return;
         field.Element.Value = value;
-        _undo.Push(new Edit(field.Element, before, value));
+        _undo.Push(new Edit(field.Element, GetPath(field.Element), before, value));
         _redo.Clear();
     }
 
@@ -124,10 +125,10 @@ public sealed class DefDocument
         switch (change)
         {
             case Edit field:
-                field.Element.Value = field.OldValue;
+                Resolve(field).Value = field.OldValue;
                 break;
             case Insert addition:
-                addition.Element.Remove();
+                Xml.Root!.Elements().ElementAt(addition.ElementIndex).Remove();
                 break;
             case ReplaceDocument replacement:
                 Xml = replacement.Before;
@@ -144,10 +145,12 @@ public sealed class DefDocument
         switch (change)
         {
             case Edit field:
-                field.Element.Value = field.NewValue;
+                Resolve(field).Value = field.NewValue;
                 break;
             case Insert addition:
-                Xml.Root!.Add(addition.Element);
+                var sibling = Xml.Root!.Elements().ElementAtOrDefault(addition.ElementIndex);
+                if (sibling == null) Xml.Root.Add(new XElement(addition.Element));
+                else sibling.AddBeforeSelf(new XElement(addition.Element));
                 break;
             case ReplaceDocument replacement:
                 Xml = replacement.After;
@@ -155,6 +158,24 @@ public sealed class DefDocument
         }
         _undo.Push(change);
         return true;
+    }
+
+    private XElement Resolve(Edit field) =>
+        field.Element.Document == Xml ? field.Element
+          : Xml.XPathSelectElement(field.Path)
+              ?? throw new InvalidOperationException("An undo target no longer exists at its original XML path.");
+
+    /// <summary>Applies an XML structural change as one reversible transaction.
+    /// A failed transformation restores the original document without changing history.</summary>
+    public void Transform(Action<XDocument> change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        var before = new XDocument(Xml);
+        try { change(Xml); }
+        catch { Xml = before; throw; }
+        if (XNode.DeepEquals(before, Xml)) return;
+        _undo.Push(new ReplaceDocument(before, Xml));
+        _redo.Clear();
     }
 
     /// <summary>Replace the whole XML tree as one undoable edit, preserving raw and unknown fields.</summary>
@@ -226,8 +247,9 @@ public sealed class DefDocument
         if (type == "BodyDef")
             e.Add(new XElement("corePart", new XElement("def", "MechanicalThorax"),
                 new XElement("height", "Middle"), new XElement("depth", "Outside")));
+        var position = Xml.Root.Elements().Count();
         Xml.Root.Add(e);
-        _undo.Push(new Insert(e));
+        _undo.Push(new Insert(e, position));
         _redo.Clear();
         return Definitions().Last();
     }

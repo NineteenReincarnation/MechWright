@@ -119,6 +119,47 @@ public sealed class DefDocumentTests
     }
 
     [Fact]
+    public void EditedFieldUndoSurvivesFullXmlTransform()
+    {
+        var doc = DefDocument.Parse(Input);
+        var field = doc.Fields(doc.Definitions().Single()).Single(x => x.Name == "MoveSpeed");
+        doc.SetField(field, "3.9");
+        doc.Transform(xml => xml.Root!.Add(new System.Xml.Linq.XComment("added after field edit")));
+        Assert.True(doc.Undo()); // undo structure
+        Assert.True(doc.Undo()); // undo earlier leaf on a cloned tree
+        Assert.Equal(Input, doc.Export());
+        Assert.True(doc.Redo());
+        Assert.True(doc.Redo());
+        Assert.Contains("<MoveSpeed>3.9</MoveSpeed>", doc.Export());
+    }
+
+    [Fact]
+    public void InsertedDefinitionUndoSurvivesFullXmlTransform()
+    {
+        var doc = DefDocument.CreateEmpty();
+        doc.AddDefinition("ThingDef", "MP_A");
+        doc.Transform(xml => xml.Root!.Add(new System.Xml.Linq.XComment("body-editor step")));
+        Assert.True(doc.Undo());
+        Assert.True(doc.Undo());
+        Assert.Empty(doc.Definitions());
+        Assert.True(doc.Redo());
+        Assert.Single(doc.Definitions());
+    }
+
+    [Fact]
+    public void FailedTransformDoesNotModifyDocumentOrHistory()
+    {
+        var doc = DefDocument.Parse(Input);
+        Assert.Throws<InvalidOperationException>(() => doc.Transform(xml =>
+        {
+            xml.Root!.Remove();
+            throw new InvalidOperationException("abort");
+        }));
+        Assert.Equal(Input, doc.Export());
+        Assert.False(doc.IsDirty);
+    }
+
+    [Fact]
     public void SuccessfulSave_ResetsDirtyStateWithoutReparsing()
     {
         var document = DefDocument.Parse(Input);
