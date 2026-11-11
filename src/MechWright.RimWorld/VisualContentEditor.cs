@@ -116,7 +116,8 @@ public static class VisualContentEditor
                     .Reverse().Select(x=>x.Name.LocalName)
                     .Append(leaf.Name.LocalName).ToArray();
                 if(steps.Length is <1 or >5 || steps.Contains("li",StringComparer.Ordinal)
-                   || steps[0]=="defName" || steps[^1]=="defName")continue;
+                   || steps[0]=="defName" || steps[^1]=="defName"
+                   || (steps.Length==2 && steps[0]=="race" && steps[1]=="body"))continue;
                 var path=string.Join('/',steps);
                 var known=StandardFieldRules.Describe(steps[^1]);
                 var kind=known?.Kind ?? (bool.TryParse(leaf.Value,out _)

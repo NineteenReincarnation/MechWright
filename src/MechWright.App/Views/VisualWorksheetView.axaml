@@ -54,7 +54,7 @@
                     <NumericUpDown IsVisible="{Binding IsNumber}"
                                    Value="{Binding Number,Mode=TwoWay}"
                                    Minimum="-999999999" Maximum="999999999"
-                                   FormatString="N2" Increment="1"/>
+                                   FormatString="0.########" Increment="1"/>
                     <CheckBox IsVisible="{Binding IsBoolean}" Content="启用"
                               IsChecked="{Binding Boolean,Mode=TwoWay}"
                               VerticalAlignment="Center"/>

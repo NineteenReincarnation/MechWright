@@ -59,7 +59,7 @@
                         </StackPanel>
                         <Grid Grid.Column="1" MinHeight="36" VerticalAlignment="Center">
                           <NumericUpDown IsVisible="{Binding IsNumber}" Minimum="-999999999"
-                                         Maximum="999999999" Increment="1" FormatString="N2"
+                                         Maximum="999999999" Increment="1" FormatString="0.########"
                                          Value="{Binding Number,Mode=TwoWay}"/>
                           <TextBox IsVisible="{Binding IsText}" Text="{Binding Text,Mode=TwoWay}"/>
                           <CheckBox IsVisible="{Binding IsBoolean}" Content="启用"

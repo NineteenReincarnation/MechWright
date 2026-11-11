@@ -45,13 +45,18 @@ public sealed partial class MainWindowViewModel
             Notify(nameof(WorksheetCount));
             return;
         }
-        var available = _contentOptions.ToDictionary(x => (x.DefType,x.Path));
-        foreach (var field in VisualContentEditor.Common)
-            available[(field.DefType,field.Path)] = field;
-
-        // Preserve arbitrary user-added scalar fields, including ones not in Core/DLC.
-        foreach(var field in VisualContentEditor.ExistingOptions(_workspace,name))
-            available.TryAdd((field.DefType,field.Path),field);
+        // Worksheet deliberately includes only standard fields and explicitly
+        // present extras. Do not iterate thousands of scanned Core/DLC options
+        // each time a user changes one number.
+        var available=VisualContentEditor.Common
+            .ToDictionary(x=>(x.DefType,x.Path));
+        var catalogByPath=_contentOptions.ToDictionary(x=>(x.DefType,x.Path));
+        foreach(var present in VisualContentEditor.ExistingOptions(_workspace,name))
+        {
+            if (catalogByPath.TryGetValue((present.DefType,present.Path),out var observed))
+                available.TryAdd((present.DefType,present.Path),observed);
+            else available.TryAdd((present.DefType,present.Path),present);
+        }
         var order=new[]
         {
             "身份与描述","基础性能","机械师与生成","武器与战斗",
