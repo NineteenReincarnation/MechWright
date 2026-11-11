@@ -130,6 +130,9 @@
       <TabItem Header="自建多项结构">
         <views:VisualModuleBuilderView/>
       </TabItem>
+      <TabItem Header="新建其他定义">
+        <views:VisualDefinitionBuilderView/>
+      </TabItem>
       <TabItem Header="可选 · 引用原版配置">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10" Margin="11">
           <TextBlock Grid.Row="0" Text="仅作为参考：可以复制本机原版的组件或攻击项，再自由修改内部字段。"

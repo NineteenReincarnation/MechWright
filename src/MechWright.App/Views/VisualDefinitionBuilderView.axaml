@@ -1,0 +1,141 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualDefinitionBuilderView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="15" Margin="13,12,21,24">
+      <StackPanel Spacing="5">
+        <TextBlock Text="从空白创建新的游戏定义" FontSize="19" FontWeight="SemiBold"/>
+        <TextBlock Text="不限于一种机械体：身体部件、组、武器、弹丸、能力、伤害、配方等，都可以从空白开始构建。"
+                   Foreground="#9FB9BA" FontSize="12" TextWrapping="Wrap"/>
+      </StackPanel>
+      <Border Classes="feature-card" Padding="14">
+        <StackPanel Spacing="11">
+          <TextBlock Text="一、定义身份" FontSize="15" FontWeight="SemiBold"
+                     Foreground="#B3D8CC"/>
+          <Grid ColumnDefinitions="190,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                ColumnSpacing="13" RowSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="定义类别"
+                       FontSize="12" VerticalAlignment="Center"/>
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      ItemsSource="{Binding FreeformDefTypes}"
+                      SelectedItem="{Binding SelectedFreeformDefType,Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:FreeformDefinitionEditor.DefType">
+                  <TextBlock Text="{Binding Label}"/>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="类别标识（可自定义）"
+                       FontSize="12" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Text="{Binding FreeformDefType,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="新定义 DefName"
+                       FontSize="12" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Text="{Binding FreeformNewDefName,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="显示名称"
+                       FontSize="12" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Text="{Binding FreeformNewDefLabel,Mode=TwoWay}"/>
+          </Grid>
+          <Button Content="＋ 创建空白定义" Classes="primary" Click="CreateDefinition_Click"
+                  HorizontalAlignment="Left"/>
+        </StackPanel>
+      </Border>
+      <Border Classes="feature-card" Padding="14">
+        <StackPanel Spacing="11">
+          <TextBlock Text="二、选择已有定义继续编辑" FontSize="15"
+                     FontWeight="SemiBold" Foreground="#B3D8CC"/>
+          <ListBox ItemsSource="{Binding FreeformDefinitions}"
+                   SelectedItem="{Binding SelectedFreeformDefinition,Mode=TwoWay}"
+                   MinHeight="72" MaxHeight="205">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FreeformDefinitionRow">
+                <Border Background="#192D32" CornerRadius="6" Padding="10" Margin="3,2">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding Display}" FontSize="12" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding DefName}" FontSize="10" Foreground="#91B7B2"/>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </StackPanel>
+      </Border>
+      <Border Classes="feature-card" Padding="14">
+        <StackPanel Spacing="11">
+          <TextBlock Text="三、内部数据 · 自上而下逐项填写" FontSize="15"
+                     FontWeight="SemiBold" Foreground="#B3D8CC"/>
+          <TextBlock Text="点选某个字段或分组，继续在它下面添加一项；可以重复创建子组和列表项。"
+                     Foreground="#99B3B6" FontSize="11" TextWrapping="Wrap"/>
+          <ListBox ItemsSource="{Binding FreeformDefinitionNodes}"
+                   SelectedItem="{Binding SelectedFreeformDefinitionNode,Mode=TwoWay}"
+                   MinHeight="75" MaxHeight="280">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FreeformDefinitionNodeRow">
+                <Border Background="#17272D" Padding="10" Margin="3,2"
+                        BorderBrush="#30484E" BorderThickness="0,0,0,1">
+                  <TextBlock Text="{Binding Display}" FontFamily="Consolas"
+                             FontSize="12" TextWrapping="Wrap"/>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Border Background="#172B30" CornerRadius="7" Padding="12">
+            <StackPanel Spacing="10">
+              <TextBlock Text="添加字段或分组" FontSize="13" FontWeight="SemiBold"/>
+              <Grid ColumnDefinitions="185,*,Auto" ColumnSpacing="10">
+                <StackPanel Grid.Column="0" Spacing="5">
+                  <TextBlock Text="字段名称" FontSize="11" Foreground="#A8BDBA"/>
+                  <TextBox Text="{Binding NewDefinitionFieldName,Mode=TwoWay}"
+                           Watermark="例如：projectile"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="5">
+                  <TextBlock Text="字段值（可留空）" FontSize="11" Foreground="#A8BDBA"/>
+                  <TextBox Text="{Binding NewDefinitionFieldValue,Mode=TwoWay}"
+                           Watermark="填写内容"/>
+                </StackPanel>
+                <Button Grid.Column="2" Classes="primary" Content="添加字段"
+                        Click="AddField_Click" IsEnabled="{Binding HasFreeformDefinition}"
+                        VerticalAlignment="Bottom"/>
+              </Grid>
+              <CheckBox Content="这是一个分组／容器（之后继续添加子字段）"
+                        IsChecked="{Binding NewDefinitionFieldIsGroup,Mode=TwoWay}"/>
+            </StackPanel>
+          </Border>
+          <Border Background="#15252B" CornerRadius="7" Padding="12">
+            <StackPanel Spacing="9">
+              <TextBlock Text="修改选中字段" FontSize="13" FontWeight="SemiBold"/>
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="9">
+                <TextBox Grid.Column="0" Text="{Binding DefinitionNodeValue,Mode=TwoWay}"
+                         Watermark="修改字段值"/>
+                <Button Grid.Column="1" Content="保存值" Click="SaveNode_Click"
+                        IsEnabled="{Binding HasFreeformDefinitionNode}"/>
+                <Button Grid.Column="2" Content="删除字段" Click="RemoveNode_Click"
+                        IsEnabled="{Binding CanRemoveFreeformDefinitionNode}"/>
+              </Grid>
+              <TextBlock Text="添加节点属性（如 Class、ParentName、MayRequire）"
+                         Foreground="#B2C7C4" FontSize="11"/>
+              <Grid ColumnDefinitions="170,*,Auto" ColumnSpacing="9">
+                <TextBox Grid.Column="0" Text="{Binding DefinitionAttributeName,Mode=TwoWay}"
+                         Watermark="属性名称"/>
+                <TextBox Grid.Column="1" Text="{Binding DefinitionAttributeValue,Mode=TwoWay}"
+                         Watermark="属性值"/>
+                <Button Grid.Column="2" Content="保存属性" Click="SaveAttribute_Click"
+                        IsEnabled="{Binding HasFreeformDefinitionNode}"/>
+              </Grid>
+            </StackPanel>
+          </Border>
+          <TextBlock Text="创建的字段只保证 XML 格式正确。实际 Def 字段、C# 类和 DLC 依赖是否有效，仍需按游戏原生规则检查。"
+                     Foreground="#D8B987" FontSize="11" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+      <Border Background="#15302E" CornerRadius="7" Padding="13">
+        <TextBlock Text="{Binding DefinitionBuilderStatus}" Foreground="#B5DACE"
+                   TextWrapping="Wrap" FontSize="11"/>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
