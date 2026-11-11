@@ -17,6 +17,10 @@ public sealed partial class VisualBodyView : UserControl
     {
         if (DataContext is MainWindowViewModel vm) vm.AddVisualBodyPart();
     }
+    private void AddCustomBodyPart_Click(object? sender,RoutedEventArgs e)
+    {
+        if(DataContext is MainWindowViewModel vm)vm.AddBodyPart();
+    }
     private void ApplyCoverage_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm) vm.ApplyVisualPartCoverage();

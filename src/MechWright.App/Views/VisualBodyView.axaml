@@ -3,121 +3,139 @@
              xmlns:vm="using:MechWright.App.ViewModels"
              x:Class="MechWright.App.Views.VisualBodyView"
              x:DataType="vm:MainWindowViewModel">
-  <Grid ColumnDefinitions="330,*" ColumnSpacing="16" Margin="13">
-    <Border Grid.Column="0" Classes="feature-card" Padding="16">
-      <StackPanel Spacing="13">
-        <StackPanel Spacing="6">
-          <TextBlock Text="身体结构预设" FontSize="18" FontWeight="SemiBold"/>
-          <TextBlock Text="以原版机体的身体部件为基础。选择后可以再修改、添加或删除部件。"
-                     Foreground="#A3B6B9" FontSize="12" TextWrapping="Wrap"/>
-        </StackPanel>
-        <Border Background="#233941" CornerRadius="10" Height="140">
-          <Viewbox Width="156" Height="130" HorizontalAlignment="Center">
-            <Canvas Width="150" Height="115">
-              <Path Data="M75 8L115 33L132 75L103 99L47 99L18 75L35 33Z"
-                    Fill="#748B91" Stroke="#1D2D35" StrokeThickness="4"/>
-              <Path Data="M75 18L101 43L99 76L75 91L51 76L49 43Z"
-                    Fill="#A8BCBF" Stroke="#38545C" StrokeThickness="2"/>
-              <Ellipse Canvas.Left="62" Canvas.Top="38" Width="26" Height="26"
-                       Fill="#183E4B" Stroke="#C8E1DF" StrokeThickness="3"/>
-              <Path Data="M31 60L3 48L11 81L37 85M119 60L147 48L139 81L113 85"
-                    Fill="#536E77" Stroke="#344950" StrokeThickness="4"/>
-            </Canvas>
-          </Viewbox>
-        </Border>
-        <TextBlock Text="选择原版机体" FontSize="12" Foreground="#B4D0C8"/>
-        <ComboBox ItemsSource="{Binding BodyTemplateCards}"
-                  SelectedItem="{Binding SelectedBodyTemplate,Mode=TwoWay}"
-                  MinHeight="38" MaxDropDownHeight="330">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:VisualBodyTemplateRow">
-              <StackPanel Spacing="3" Margin="3">
-                <TextBlock Text="{Binding Display}" FontSize="12"/>
-                <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#91ADB3"/>
-              </StackPanel>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <Button Content="套用该机体的身体结构" Classes="primary"
-                IsEnabled="{Binding HasBodyTemplates}" Click="ApplyBodyTemplate_Click"/>
-        <Button Content="读取本机原版机械体预设" Click="ConnectGame_Click"/>
-        <Border Height="1" Background="#35474B"/>
-        <TextBlock Text="安装额外部件" FontSize="14" FontWeight="SemiBold"/>
-        <ComboBox ItemsSource="{Binding PartPresetCards}"
-                  SelectedItem="{Binding SelectedPartPreset,Mode=TwoWay}"
-                  MaxDropDownHeight="300">
-          <ComboBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:VisualPartPresetRow">
-              <StackPanel Spacing="2" Margin="3">
-                <TextBlock Text="{Binding Display}" FontSize="11"/>
-                <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="#91ADB3"/>
-              </StackPanel>
-            </DataTemplate>
-          </ComboBox.ItemTemplate>
-        </ComboBox>
-        <Button Content="添加到右侧选中的部件" Click="AddPart_Click"
-                IsEnabled="{Binding HasPartPresets}"/>
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="14" Margin="14,12,23,24">
+      <StackPanel Spacing="5">
+        <TextBlock Text="身体结构 · 自由装配" FontSize="20" FontWeight="SemiBold"/>
+        <TextBlock Text="从核心开始逐个添加子部件。没有固定的身体模板，可以任意设计层级、覆盖率、位置和部件名称。"
+                   Foreground="#9CB7B8" FontSize="12" TextWrapping="Wrap"/>
       </StackPanel>
-    </Border>
-    <Border Grid.Column="1" Classes="feature-card" Padding="16">
-      <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
-        <StackPanel Grid.Row="0" Spacing="4">
-          <TextBlock Text="身体部件与保护层级" FontSize="18" FontWeight="SemiBold"/>
-          <TextBlock Text="选择部件，查看它在机体中的依附位置与相对覆盖率。"
-                     FontSize="12" Foreground="#A3B6B9"/>
+      <Border Classes="feature-card" Padding="14">
+        <StackPanel Spacing="10">
+          <TextBlock Text="一、当前身体结构" FontSize="15" Foreground="#B7D8CE"
+                     FontWeight="SemiBold"/>
+          <ListBox ItemsSource="{Binding BodyParts}"
+                   SelectedItem="{Binding SelectedBodyPart,Mode=TwoWay}"
+                   MinHeight="80" MaxHeight="310">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:BodyRow">
+                <Border Margin="3,2" Padding="11" Background="#172931"
+                        BorderBrush="#2F454C" BorderThickness="1" CornerRadius="7">
+                  <Grid ColumnDefinitions="34,*,120" ColumnSpacing="12">
+                    <Border Background="#294347" CornerRadius="6" Width="31" Height="31">
+                      <PathIcon Data="M12 2L21 7V17L12 22L3 17V7ZM3 7L12 12L21 7"
+                                Width="19" Height="19" Foreground="#9FD0C3"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                 TextWrapping="Wrap"/>
+                      <ProgressBar Minimum="0" Maximum="100"
+                                   Value="{Binding EffectivePercent}" Height="5"
+                                   Foreground="#7EBDB1"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="5" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Effective}" FontSize="12"
+                                 Foreground="#B2DAD0" HorizontalAlignment="Right"/>
+                      <TextBlock Text="{Binding Layers}" FontSize="10"
+                                 Foreground="#8DA5AC" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Text="选择某个部件后，下方可以修改它，或在它下面安装新部件。"
+                     FontSize="11" Foreground="#8EA6AC" TextWrapping="Wrap"/>
         </StackPanel>
-        <ListBox Grid.Row="1" ItemsSource="{Binding BodyParts}"
-                 SelectedItem="{Binding SelectedBodyPart,Mode=TwoWay}"
-                 ScrollViewer.VerticalScrollBarVisibility="Auto">
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:BodyRow">
-              <Border Margin="4" Background="#15242B" BorderBrush="#2A444A"
-                      BorderThickness="1" CornerRadius="7" Padding="12">
-                <Grid ColumnDefinitions="36,*,110" ColumnSpacing="10">
-                  <Border Width="33" Height="33" CornerRadius="8" Background="#27424A">
-                    <PathIcon Data="M12 2L21 7V17L12 22L3 17V7ZM3 7L12 12L21 7M12 12V22"
-                              Foreground="#B1DAD1" Width="22" Height="22"
-                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                  </Border>
-                  <StackPanel Grid.Column="1" Spacing="5">
-                    <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                    <ProgressBar Value="{Binding EffectivePercent}" Minimum="0" Maximum="100"
-                                 Height="6" Foreground="#75B6AE" Background="#284047"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="2" Spacing="3">
-                    <TextBlock Text="{Binding Effective}" FontSize="13" FontFamily="Consolas"
-                               Foreground="#A6D0C9" HorizontalAlignment="Right"/>
-                    <TextBlock Text="{Binding Layers}" FontSize="10"
-                               Foreground="#829CA4" TextWrapping="Wrap"/>
-                  </StackPanel>
-                </Grid>
-              </Border>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
-        <Border Grid.Row="2" Background="#17282D" CornerRadius="7" Padding="13">
-          <StackPanel Spacing="9">
-            <TextBlock Text="编辑选中部件" FontSize="13" FontWeight="SemiBold"/>
-            <TextBlock Text="相对覆盖率（越高，越容易命中此分支）"
-                       Foreground="#A1B7B8" FontSize="11"/>
-            <Grid ColumnDefinitions="*,130" ColumnSpacing="12">
-              <Slider Grid.Column="0" Minimum="0.01" Maximum="1"
-                      Value="{Binding VisualPartCoverage,Mode=TwoWay}"
-                      TickFrequency="0.05" VerticalAlignment="Center"
-                      IsEnabled="{Binding CanRemoveBodyPart}"/>
-              <NumericUpDown Grid.Column="1" Minimum="0.01" Maximum="1" Increment="0.05"
-                             Value="{Binding VisualPartCoverage,Mode=TwoWay}" FormatString="N2"
-                             IsEnabled="{Binding CanRemoveBodyPart}"/>
-            </Grid>
+      </Border>
+      <Border Classes="feature-card" Padding="14">
+        <StackPanel Spacing="12">
+          <TextBlock Text="二、编辑选中部件" FontSize="15" FontWeight="SemiBold"
+                     Foreground="#B7D8CE"/>
+          <Grid ColumnDefinitions="190,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                RowSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="部件 DefName"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PartDefName,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="自定义显示名称"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PartCustomLabel,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="相对覆盖率（0–1）"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <NumericUpDown Grid.Row="2" Grid.Column="1"
+                           Minimum="0.01" Maximum="1" Increment="0.01" FormatString="N3"
+                           Value="{Binding VisualPartCoverage,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="部件高度"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Heights}"
+                      SelectedItem="{Binding PartHeight,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="内部或外部"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Depths}"
+                      SelectedItem="{Binding PartDepth,Mode=TwoWay}"/>
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Content="保存部件配置" Classes="primary"
+                    Click="ApplyCoverage_Click" IsEnabled="{Binding HasBodyPart}"/>
+            <Button Content="移除选中部件" Click="RemovePart_Click"
+                    IsEnabled="{Binding CanRemoveBodyPart}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+      <Border Classes="feature-card" Padding="14">
+        <StackPanel Spacing="12">
+          <TextBlock Text="三、在选中部件下添加新的子部件"
+                     FontSize="15" FontWeight="SemiBold" Foreground="#B7D8CE"/>
+          <TextBlock Text="直接填写你要用的部件名。名称应引用已存在的 BodyPartDef，也可以在工程内另行创建自定义 BodyPartDef。"
+                     FontSize="11" Foreground="#9FB4B5" TextWrapping="Wrap"/>
+          <Grid ColumnDefinitions="190,*" RowDefinitions="Auto,Auto,Auto,Auto"
+                ColumnSpacing="14" RowSpacing="10">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="子部件 DefName"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding NewPartDefName,Mode=TwoWay}"
+                     Watermark="例如 MechanicalArm"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="覆盖率"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="0.01"
+                           Maximum="1" Increment="0.01" FormatString="N3"
+                           Value="{Binding VisualNewPartCoverage,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="部件高度"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Heights}"
+                      SelectedItem="{Binding NewPartHeight,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="内部或外部"
+                       VerticalAlignment="Center" FontSize="12"/>
+            <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Depths}"
+                      SelectedItem="{Binding NewPartDepth,Mode=TwoWay}"/>
+          </Grid>
+          <Button Content="＋ 添加子部件" Click="AddCustomBodyPart_Click"
+                  Classes="primary" IsEnabled="{Binding HasBodyPart}"
+                  HorizontalAlignment="Left"/>
+        </StackPanel>
+      </Border>
+      <Expander Header="可选：从已安装原版机械体复制身体结构" IsExpanded="False">
+        <Border Padding="13" Background="#1B2D33" CornerRadius="7">
+          <StackPanel Spacing="10">
+            <TextBlock Text="这一操作会替换当前的身体树。仅当你主动选择复制时才执行。"
+                       Foreground="#D6B887" FontSize="11" TextWrapping="Wrap"/>
+            <ComboBox ItemsSource="{Binding BodyTemplateCards}"
+                      SelectedItem="{Binding SelectedBodyTemplate,Mode=TwoWay}"
+                      MaxDropDownHeight="250">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:VisualBodyTemplateRow">
+                  <TextBlock Text="{Binding Display}"/>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
             <StackPanel Orientation="Horizontal" Spacing="9">
-              <Button Content="保存覆盖率" Classes="primary" Click="ApplyCoverage_Click"
-                      IsEnabled="{Binding CanRemoveBodyPart}"/>
-              <Button Content="删除部件" Click="RemovePart_Click"
-                      IsEnabled="{Binding CanRemoveBodyPart}"/>
+              <Button Content="读取原版目录" Click="ConnectGame_Click"/>
+              <Button Content="确认复制此结构" Click="ApplyBodyTemplate_Click"
+                      IsEnabled="{Binding HasBodyTemplates}"/>
             </StackPanel>
           </StackPanel>
         </Border>
-      </Grid>
-    </Border>
-  </Grid>
+      </Expander>
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>

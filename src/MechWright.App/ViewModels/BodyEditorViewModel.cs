@@ -14,6 +14,17 @@ public sealed partial class MainWindowViewModel
     private string _partCustomLabel = "";
     private string _newPartDefName = "MechanicalArm";
     private string _newPartCoverage = "0.10";
+    private decimal _visualNewPartCoverage = 0.10m;
+    private string _newPartHeight = "Middle";
+    private string _newPartDepth = "Outside";
+    public decimal VisualNewPartCoverage
+    {
+        get=>_visualNewPartCoverage;
+        set{_visualNewPartCoverage=value;Notify();}
+    }
+    public string NewPartHeight {get=>_newPartHeight;set{_newPartHeight=value;Notify();}}
+    public string NewPartDepth {get=>_newPartDepth;set{_newPartDepth=value;Notify();}}
+
 
     public IReadOnlyList<string> Heights => BodyStructureEditor.Heights;
     public IReadOnlyList<string> Depths => BodyStructureEditor.Depths;
@@ -74,7 +85,8 @@ public sealed partial class MainWindowViewModel
         try
         {
             var path = BodyStructureEditor.AddChild(_document, SelectedBodyPart.Part,
-                NewPartDefName, NewPartCoverage);
+                NewPartDefName,VisualNewPartCoverage.ToString(
+                    CultureInfo.InvariantCulture),NewPartHeight,NewPartDepth);
             RefreshAll(defIndex, bodyPath: path);
             Status = "子部件已插入 · 相对 coverage 可在部件属性中修改";
         }
