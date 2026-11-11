@@ -29,7 +29,7 @@
                     SelectedItem="{Binding SelectedArchiveTextureGroup,Mode=TwoWay}"
                     IsVisible="{Binding HasArchiveTextureGroups}">
             <ComboBox.ItemTemplate>
-              <DataTemplate>
+              <DataTemplate x:DataType="vm:ArchiveTextureGroupRow">
                 <TextBlock Text="{Binding Display}"/>
               </DataTemplate>
             </ComboBox.ItemTemplate>
