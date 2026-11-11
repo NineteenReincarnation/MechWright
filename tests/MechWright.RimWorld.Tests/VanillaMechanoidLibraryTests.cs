@@ -46,6 +46,9 @@ public sealed class VanillaMechanoidLibraryTests
                   <PawnKindDef ParentName="BaseMechanoidKind">
                     <defName>Mech_Test</defName><race>Mech_Test</race>
                     <combatPower>400</combatPower><weaponTags><li>TestMechGun</li></weaponTags>
+                    <lifeStages><li><bodyGraphicData><texPath>Things/Pawn/MechTest</texPath>
+                    <graphicClass>Graphic_Multi</graphicClass><drawSize>2.2</drawSize>
+                    </bodyGraphicData></li></lifeStages>
                   </PawnKindDef>
                   <RecipeDef><defName>TestGestate</defName><products><Mech_Test>1</Mech_Test></products></RecipeDef>
                 </Defs>
@@ -70,6 +73,10 @@ public sealed class VanillaMechanoidLibraryTests
             Assert.Contains("基础伤害 12", weapon.Description);
             Assert.Contains("穿甲 0.25", weapon.Description);
             Assert.Single(mech.Recipes);
+            var graphic = Assert.Single(mech.Graphics);
+            Assert.Equal("Things/Pawn/MechTest", graphic.TexturePath);
+            Assert.Equal("Graphic_Multi", graphic.GraphicClass);
+            Assert.Equal("2.2", graphic.DrawSize);
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }

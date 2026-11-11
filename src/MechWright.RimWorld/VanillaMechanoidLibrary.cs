@@ -33,6 +33,10 @@ public sealed class VanillaMechanoidLibrary
     public sealed record BodyPart(string Name, int Level, string Coverage,
         string Height, string Depth);
 
+    public sealed record Graphic(
+        string Label, string TexturePath, string GraphicClass,
+        string DrawSize, string Package, string SourceFile);
+
     public sealed record RelatedDef(
         string Label, string DefName, string Description, string Package,
         string SourceFile);
@@ -43,6 +47,7 @@ public sealed class VanillaMechanoidLibrary
         IReadOnlyList<Fact> Fields, IReadOnlyList<RelatedDef> Kinds,
         IReadOnlyList<RelatedDef> WeaponCandidates,
         IReadOnlyList<RelatedDef> Recipes,
+        IReadOnlyList<Graphic> Graphics,
         IReadOnlyList<BodyPart> BodyParts,
         string BodyDefName, string WeightClass,
         string OriginalXml, IReadOnlyList<string> Notes)
@@ -294,6 +299,27 @@ public sealed class VanillaMechanoidLibrary
                 if (bodyDef.Xml.Element("corePart") is { } core) Append(core, 0);
             }
 
+            var graphics = new Dictionary<string, Graphic>(StringComparer.OrdinalIgnoreCase);
+            void AddGraphics(SourceDef node, string label)
+            {
+                foreach (var entry in node.Xml.Descendants()
+                    .Where(x => x.Name.LocalName is "bodyGraphicData" or "graphicData"))
+                {
+                    var texture = entry.Element("texPath")?.Value.Trim();
+                    if (string.IsNullOrWhiteSpace(texture)) continue;
+                    var graphic = new Graphic(label, texture,
+                        entry.Element("graphicClass")?.Value.Trim() ?? "未显式指定",
+                        entry.Element("drawSize")?.Value.Trim() ?? "未显式指定",
+                        node.Package, node.FilePath);
+                    graphics.TryAdd(texture + "|" + graphic.GraphicClass, graphic);
+                }
+            }
+            foreach (var ancestor in Parents(thing))
+                AddGraphics(ancestor, "ThingDef · " + (ancestor.Name ?? ancestor.TemplateName));
+            foreach (var kind in linkedKinds)
+                foreach (var ancestor in Parents(kind))
+                    AddGraphics(ancestor, "PawnKindDef · " + (kind.Name ?? ""));
+
             var notes = new List<string>
             {
                 "从本地原版 XML 读取；仅追溯普通 ParentName 模板和显式字段，不执行 PatchOperation。",
@@ -314,6 +340,7 @@ public sealed class VanillaMechanoidLibrary
                     (Read(k, "", "combatPower").Value ?? "未解析"))).ToList(),
                 weapons.Values.OrderBy(w => w.DefName).ToList(),
                 recipes,
+                graphics.Values.ToList(),
                 parts, body, weight,
                 thing.Xml.ToString(SaveOptions.DisableFormatting), notes));
         }
