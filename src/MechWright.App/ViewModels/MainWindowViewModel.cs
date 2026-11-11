@@ -271,6 +271,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         BodyParts.Clear();
         MechProperties.Clear();
         RefreshCombat();
+        RefreshGraphics();
         if (_document != null && _selectedDefinition != null)
         {
             foreach (var f in _document.Fields(_selectedDefinition.Entry)) Fields.Add(new FieldRow(f));

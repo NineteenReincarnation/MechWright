@@ -93,6 +93,41 @@
           </StackPanel>
           <Border Grid.Row="1" Height="1" Background="#30424A" Margin="0,0,0,8"/>
           <TabControl Grid.Row="2">
+            <TabItem Header="贴图预览">
+              <Grid RowDefinitions="Auto,Auto,*" Margin="9" RowSpacing="9">
+                <TextBlock Grid.Row="0" Text="GRAPHIC WORKBENCH · 使用本地 Mod PNG 只读预览，不复制原版素材"
+                           FontSize="12" Foreground="#8DBCB4" Margin="0,6" TextWrapping="Wrap"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+                  <ComboBox Grid.Column="0" ItemsSource="{Binding Graphics}"
+                            SelectedItem="{Binding SelectedGraphic,Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:GraphicRow">
+                        <TextBlock Text="{Binding Display}" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <TextBlock Grid.Column="1" Text="{Binding GraphicInfo}" Foreground="#A3B1B4"
+                             FontSize="11" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="215,*" ColumnSpacing="9">
+                  <Border Grid.Column="0" BorderThickness="1" BorderBrush="#30434B" CornerRadius="5" Padding="5">
+                    <ListBox ItemsSource="{Binding TextureCandidates}"
+                             SelectedItem="{Binding SelectedTexture,Mode=TwoWay}">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:TextureRow">
+                          <TextBlock Text="{Binding Display}" FontSize="11" TextWrapping="Wrap" Margin="5,8"/>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                  </Border>
+                  <Border Grid.Column="1" Background="#0A1116" BorderBrush="#30434B"
+                          BorderThickness="1" CornerRadius="5" Padding="16">
+                    <Image Source="{Binding TexturePreview}" Stretch="Uniform"
+                           MaxWidth="500" MaxHeight="460"/>
+                  </Border>
+                </Grid>
+              </Grid>
+            </TabItem>
             <TabItem Header="部件与覆盖率">
               <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8" Margin="8">
                 <TextBlock Grid.Row="0" Text="BodyDef 装配树 · coverage 为相对权重，不代表实际命中率" Foreground="#A3B1B4" FontSize="12" Margin="0,8"/>
