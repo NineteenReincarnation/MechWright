@@ -12,6 +12,8 @@ public sealed partial class MainWindowViewModel
     public bool ShowStartPage => !HasWorkspace && !HasDocument;
     public bool ShowWorkspacePage => !ShowStartPage;
     public bool CanExportProject => HasWorkspace;
+    public bool NeedsFirstMechanoid => HasWorkspace &&
+        (_workspace?.DefinitionCount ?? 0) == 0 && IsBasicStage;
 
     public int WorkflowStep
     {
@@ -32,6 +34,7 @@ public sealed partial class MainWindowViewModel
             Notify(nameof(IsAdvancedStage));
             Notify(nameof(CanGoBackStage));
             Notify(nameof(CanGoForwardStage));
+            Notify(nameof(NeedsFirstMechanoid));
             SelectStageDocument();
         }
     }
@@ -87,6 +90,7 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(ShowStartPage));
         Notify(nameof(ShowWorkspacePage));
         Notify(nameof(CanExportProject));
+        Notify(nameof(NeedsFirstMechanoid));
     }
 
     private void SelectStageDocument()

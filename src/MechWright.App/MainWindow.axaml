@@ -592,6 +592,22 @@
             </TabItem>
                 </TabControl>
               </Grid>
+              <Border IsVisible="{Binding NeedsFirstMechanoid}" Panel.ZIndex="3"
+                      Background="#101A21" BorderBrush="#314B51" BorderThickness="1"
+                      CornerRadius="8" Padding="28">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Spacing="14" MaxWidth="430">
+                  <TextBlock Text="工程已创建，接下来装配机械体"
+                             FontSize="21" FontWeight="SemiBold" TextAlignment="Center"/>
+                  <TextBlock Text="填写名称、战斗点数和基础属性，系统会同时建立 ThingDef、PawnKindDef 与 BodyDef。随后可以继续编辑身体结构、武器和贴图。"
+                             Foreground="#93A9B0" FontSize="13" TextWrapping="Wrap"
+                             TextAlignment="Center"/>
+                  <Button Content="装配第一台机械体" Classes="primary"
+                          Click="NewMechanoidWizard_Click" HorizontalAlignment="Center"/>
+                  <Button Content="高级：手动建立 XML 定义" Click="OpenAdvanced_Click"
+                          HorizontalAlignment="Center"/>
+                </StackPanel>
+              </Border>
             </Grid>
           </Border>
           <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="14">
