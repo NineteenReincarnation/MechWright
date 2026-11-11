@@ -175,6 +175,28 @@ public static class VisualMechDesigner
         });
     }
 
+    /// <summary>
+    /// Uses vanilla PawnKind weapon tags, not a fake range or invented gun Def.
+    /// The actual gun is selected by RimWorld from matching weapon definitions.
+    /// </summary>
+    public static void SetWeaponTags(DefDocument document, DefEntry kind,
+        IReadOnlyList<string> tags)
+    {
+        if (kind.Type != "PawnKindDef" || kind.Element.Document != document.Xml)
+            throw new ArgumentException("请选择当前机械体的 PawnKindDef。");
+        if (tags.Count is < 1 or > 12 || tags.Any(x =>
+            !Regex.IsMatch(x, @"^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.CultureInvariant)))
+            throw new ArgumentException("武器预设标签列表无效。");
+        document.Transform(_ =>
+        {
+            var existing = kind.Element.Element("weaponTags");
+            var replacement = new XElement("weaponTags",
+                tags.Distinct(StringComparer.Ordinal).Select(x => new XElement("li", x)));
+            if (existing == null) kind.Element.Add(replacement);
+            else existing.ReplaceWith(replacement);
+        });
+    }
+
     public static string? CurrentString(MechWorkspace project, string type,
         string name, string path)
     {

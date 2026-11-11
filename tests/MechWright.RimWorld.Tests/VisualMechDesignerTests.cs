@@ -61,6 +61,21 @@ public sealed class VisualMechDesignerTests
     }
 
     [Fact]
+    public void RangedPresetWritesNativeKindWeaponTags()
+    {
+        var project = new MechWorkspace("Test", "");
+        new MechanoidBlueprint("MP_Test", "普通机体").CreateIn(project);
+        var doc = project.FindDefinitionFile("PawnKindDef", "MP_Test")!.Document;
+        VisualMechDesigner.SetWeaponTags(doc, doc.Definitions().Single(),
+            ["Mech_LancerGun", "Mech_PikemanGun"]);
+        var tags = doc.Xml.Descendants("weaponTags").Elements("li")
+            .Select(x => x.Value).ToArray();
+        Assert.Equal(["Mech_LancerGun", "Mech_PikemanGun"], tags);
+        Assert.True(doc.Undo());
+        Assert.Empty(doc.Xml.Descendants("weaponTags"));
+    }
+
+    [Fact]
     public void PawnGraphicUsesSingleEditableNativeLifeStage()
     {
         var project = new MechWorkspace("Test", "");

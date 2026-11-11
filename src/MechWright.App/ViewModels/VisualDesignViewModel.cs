@@ -19,6 +19,14 @@ public sealed partial class MainWindowViewModel
         new(VisualMechDesigner.Melee.Select(x => new VisualMeleeRow(x)));
     public ObservableCollection<VisualBodyTemplateRow> BodyTemplateCards { get; } = new();
     public ObservableCollection<VisualToolRow> InstalledMelee { get; } = new();
+    public ObservableCollection<VisualRangedRow> RangedCards { get; } = new();
+    private VisualRangedRow? _selectedRangedCard;
+    public VisualRangedRow? SelectedRangedCard
+    {
+        get => _selectedRangedCard;
+        set { _selectedRangedCard = value; Notify(); }
+    }
+    public bool HasRangedCards => RangedCards.Count != 0;
     public ObservableCollection<VisualTextureRow> VisualTextures { get; } = new();
     private VisualChassisRow? _selectedChassisCard;
     private VisualMeleeRow? _selectedMeleeCard;
@@ -198,6 +206,47 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(HasBodyTemplates));
     }
 
+    private void RefreshVisualRangedPresets()
+    {
+        RangedCards.Clear();
+        var keys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var original in _vanillaMechs.Entries)
+        {
+            var fact = original.Fields.FirstOrDefault(x => x.XmlPath == "weaponTags");
+            if (fact?.Value is not { Length: > 0 } raw) continue;
+            var tags = raw.Split(',', StringSplitOptions.TrimEntries |
+                StringSplitOptions.RemoveEmptyEntries);
+            if (tags.Length == 0 || tags.Length > 12) continue;
+            var key = string.Join(",", tags);
+            if (!keys.Add(key)) continue;
+            RangedCards.Add(new VisualRangedRow(
+                original.Label, original.Package, tags, original.WeaponCandidates.Count));
+        }
+        SelectedRangedCard = RangedCards.FirstOrDefault();
+        Notify(nameof(HasRangedCards));
+    }
+
+    public void ApplySelectedRangedPreset()
+    {
+        var name = CurrentMechName;
+        if (_workspace == null || name == null || SelectedRangedCard == null)
+        {
+            VisualEditorInfo = "请先选择原版远程武器方案。"; return;
+        }
+        try
+        {
+            var file = _workspace.FindDefinitionFile("PawnKindDef", name)
+                ?? throw new InvalidOperationException("缺少机械体生成定义。");
+            var def = file.Document.Definitions().Single(x => x.Type == "PawnKindDef" &&
+                x.DefName == name);
+            VisualMechDesigner.SetWeaponTags(file.Document, def, SelectedRangedCard.Tags);
+            VisualEditorInfo = "已按“" + SelectedRangedCard.Label +
+                "”写入原版武器生成标签。具体武器由游戏根据标签选择。";
+            Status = VisualEditorInfo;
+        }
+        catch (Exception e) { VisualEditorInfo = e.Message; ReportError(e); }
+    }
+
     public void ApplySelectedBodyTemplate()
     {
         if (_workspace == null || SelectedBodyTemplate == null || CurrentMechName == null)
@@ -372,6 +421,13 @@ public sealed record VisualBodyTemplateRow(
     public string Display => $"{Label} · {Parts} 部件";
     public string Detail => Package + " · " + BodyDef;
 }
+public sealed record VisualRangedRow(
+    string Label, string Package, IReadOnlyList<string> Tags, int MatchingWeapons)
+{
+    public string Display => Label + " · " + Package;
+    public string Detail => MatchingWeapons + " 个已识别的候选武器";
+}
+
 public sealed record VisualToolRow(string ItemPath, string Label, string Damage, string Cooldown)
 {
     public string Display => $"{Label} · {Damage} 伤害 · {Cooldown}s";
