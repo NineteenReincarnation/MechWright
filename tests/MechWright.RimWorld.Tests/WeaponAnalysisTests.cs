@@ -22,12 +22,12 @@ public sealed class WeaponAnalysisTests
     {
         var doc = DefDocument.Parse(Sample);
         var profile = Assert.Single(WeaponAnalysis.Inspect(doc, doc.Definitions().First()));
-        Assert.Equal(22.9, profile.Range);
+        Assert.Equal(22.9, profile.Range!.Value, 6);
         Assert.Equal(3, profile.BurstShots);
-        Assert.Equal(7, profile.ShotDamage);
+        Assert.Equal(7, profile.ShotDamage!.Value, 6);
         Assert.Equal(20.0 / 60.0, profile.BurstDuration!.Value, 6);
         Assert.Equal(21 / (0.8 + 2.3 + 20d / 60), profile.TheoreticalDps!.Value, 6);
-        Assert.Equal(100, profile.WarmupPercentage + profile.BurstPercentage + profile.CooldownPercentage, 5);
+        Assert.Equal(100d, (profile.WarmupPercentage + profile.BurstPercentage + profile.CooldownPercentage)!.Value, 5);
     }
 
     [Fact]

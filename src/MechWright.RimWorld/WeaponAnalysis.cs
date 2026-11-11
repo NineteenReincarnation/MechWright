@@ -46,8 +46,8 @@ public static class WeaponAnalysis
         foreach (var verb in verbs)
         {
             var project = verb.Element("defaultProjectile")?.Value?.Trim() ?? "";
-            var count = ParseInteger(verb.Element("burstShotCount")) ?? 1;
-            var gap = ParseInteger(verb.Element("ticksBetweenBurstShots"));
+            var count = ParseInteger(verb.Element("burstShotCount"), 1) ?? 1;
+            var gap = ParseInteger(verb.Element("ticksBetweenBurstShots"), 0);
             var burstDuration = count == 1 ? 0 : gap.HasValue ? (count - 1) * gap.Value / 60.0 : (double?)null;
             double? damage = null;
             if (projectiles.TryGetValue(project, out var projectile))
@@ -66,9 +66,9 @@ public static class WeaponAnalysis
         return profiles;
     }
 
-    private static int? ParseInteger(XElement? element) =>
+    private static int? ParseInteger(XElement? element, int min) =>
         element != null && int.TryParse(element.Value, NumberStyles.Integer,
-            CultureInfo.InvariantCulture, out var number) && number > 0 ? number : null;
+            CultureInfo.InvariantCulture, out var number) && number >= min ? number : null;
 
     private static double? Parse(XElement? element) =>
         element != null && double.TryParse(element.Value, NumberStyles.Float,
