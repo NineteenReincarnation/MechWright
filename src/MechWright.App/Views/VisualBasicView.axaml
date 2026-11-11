@@ -38,6 +38,17 @@
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
+      <Border Background="#182D2F" CornerRadius="8" Padding="12">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <StackPanel Grid.Column="0" Spacing="5">
+            <TextBlock Text="更多自定义选项" FontSize="14" FontWeight="SemiBold"/>
+            <TextBlock Text="文字说明、额外属性、机械师与生成条件等，均可搜索添加。"
+                       FontSize="11" Foreground="#A0B7B8" TextWrapping="Wrap"/>
+          </StackPanel>
+          <Button Grid.Column="1" Content="＋ 添加设置"
+                  Click="AddContent_Click" Classes="primary"/>
+        </Grid>
+      </Border>
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <TextBlock Grid.Column="0" Text="调整基础性能" FontSize="18" FontWeight="SemiBold"
                    VerticalAlignment="Center"/>

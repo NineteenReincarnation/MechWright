@@ -115,6 +115,16 @@ public sealed partial class MainWindow : Window
     private void NextStage_Click(object? sender, RoutedEventArgs e) => _vm.NextStage();
     private void ReturnToReview_Click(object? sender, RoutedEventArgs e) => _vm.WorkflowStep = 4;
     private void OpenAdvanced_Click(object? sender, RoutedEventArgs e) => _vm.WorkflowStep = 5;
+    private async void OpenContentEditor_Click(object? sender,RoutedEventArgs e)
+    {
+        if (!_vm.HasWorkspace)
+        {
+            _vm.StatusMessage("请先创建或导入一台机械体，再添加配置。");
+            return;
+        }
+        try { await new VisualContentWindow(_vm).ShowDialog(this); }
+        catch (Exception ex) { _vm.ReportError(ex); }
+    }
     private void GoToAssets_Click(object? sender, RoutedEventArgs e) => _vm.WorkflowStep = 3;
 
     private void AddProjectXml_Click(object? sender, RoutedEventArgs e) =>

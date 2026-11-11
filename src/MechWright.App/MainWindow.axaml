@@ -21,6 +21,13 @@
         </StackPanel>
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
           <Button Content="新建机械体" Classes="primary" Click="NewMechanoidWizard_Click"/>
+          <Button Classes="primary" Click="OpenContentEditor_Click"
+                  IsEnabled="{Binding HasWorkspace}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="M12 3V21M3 12H21" Width="15" Height="15"/>
+              <TextBlock Text="添加内容"/>
+            </StackPanel>
+          </Button>
           <Button Content="导入 Mod" Click="ImportWorkspace_Click"/>
           <Button Content="原版图鉴" Click="OpenVanillaLibrary_Click"/>
           <Border Width="1" Background="#354750" Margin="4,5"/>

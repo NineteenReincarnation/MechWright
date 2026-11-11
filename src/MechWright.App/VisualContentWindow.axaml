@@ -1,0 +1,276 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MechWright.App.ViewModels"
+        x:Class="MechWright.App.VisualContentWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="1110" Height="800" MinWidth="860" MinHeight="615"
+        WindowStartupLocation="CenterOwner"
+        Title="MechWright · 添加和自定义机械体内容"
+        Icon="avares://MechWright.App/Assets/brand-chip.png"
+        Background="#0B1218" Foreground="#E6ECEB">
+  <Grid RowDefinitions="90,*,62" Margin="18" RowSpacing="12">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+      <StackPanel Grid.Column="0" Spacing="5" VerticalAlignment="Center">
+        <TextBlock Text="添加内容" FontSize="24" FontWeight="Bold"/>
+        <TextBlock Text="选一个分类，找到想要的设置。填数值或套用原版配置，点击添加即可。"
+                   FontSize="12" Foreground="#A1B4B8" TextWrapping="Wrap"/>
+      </StackPanel>
+      <Button Grid.Column="1" Content="从游戏读取原版选项"
+              Click="ScanGame_Click" VerticalAlignment="Center"/>
+    </Grid>
+
+    <Grid Grid.Row="1" ColumnDefinitions="190,*" ColumnSpacing="13">
+      <Border Grid.Column="0" Background="#121E25" BorderBrush="#344B52"
+              BorderThickness="1" CornerRadius="9" Padding="10">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="10">
+          <TextBlock Grid.Row="0" Text="选择类别" FontSize="13"
+                     FontWeight="SemiBold" Margin="6,9"/>
+          <ListBox Grid.Row="1" ItemsSource="{Binding ContentCategories}"
+                   SelectedItem="{Binding SelectedContentCategory,Mode=TwoWay}"
+                   Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ContentCategoryRow">
+                <Grid ColumnDefinitions="23,*" ColumnSpacing="9" Margin="5,10">
+                  <TextBlock Text="{Binding Symbol}" FontSize="17"
+                             Foreground="#91C5BE" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="1" Text="{Binding Title}"
+                             FontSize="12" VerticalAlignment="Center"/>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Grid.Row="2" Text="基础设置可直接使用。连接游戏目录后会出现更多原生配置。"
+                     Foreground="#80999D" FontSize="11" TextWrapping="Wrap" Margin="5,8"/>
+        </Grid>
+      </Border>
+
+      <Grid Grid.Column="1" RowDefinitions="Auto,*" RowSpacing="9">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <TextBox Grid.Column="0" Text="{Binding ContentSearch,Mode=TwoWay}"
+                   Watermark="搜索属性、能力、组件或武器"
+                   MinHeight="40"/>
+          <CheckBox Grid.Column="1" Content="包含原版样例字段"
+                    IsChecked="{Binding ShowObservedContent,Mode=TwoWay}"
+                    VerticalAlignment="Center"/>
+        </Grid>
+
+        <TabControl Grid.Row="1" Background="Transparent">
+          <TabItem Header="添加属性与设置">
+            <Grid ColumnDefinitions="*,335" ColumnSpacing="12" Margin="7">
+              <Border Grid.Column="0" Background="#101C23"
+                      BorderBrush="#2C454C" BorderThickness="1"
+                      CornerRadius="8" Padding="8">
+                <Grid RowDefinitions="Auto,*" RowSpacing="7">
+                  <TextBlock Grid.Row="0" Text="可用设置" FontSize="13"
+                             FontWeight="SemiBold" Margin="8,6"/>
+                  <ListBox Grid.Row="1" ItemsSource="{Binding ContentFields}"
+                           SelectedItem="{Binding SelectedContentField,Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ContentFieldRow">
+                        <Border BorderBrush="#254047" BorderThickness="0,0,0,1"
+                                Padding="10" Margin="3,1">
+                          <Grid ColumnDefinitions="33,*" ColumnSpacing="8">
+                            <Border Width="30" Height="30" CornerRadius="7"
+                                    Background="#294047">
+                              <TextBlock Text="{Binding Icon}" FontSize="17"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Foreground="#A7D4C9"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="4">
+                              <TextBlock Text="{Binding Title}" FontSize="13"
+                                         FontWeight="SemiBold"/>
+                              <TextBlock Text="{Binding Detail}" FontSize="11"
+                                         Foreground="#91A9AF"/>
+                            </StackPanel>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Grid>
+              </Border>
+              <Border Grid.Column="1" Background="#16252B"
+                      BorderBrush="#34515A" BorderThickness="1"
+                      CornerRadius="8" Padding="16">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="12">
+                  <StackPanel Grid.Row="0" Spacing="8">
+                    <TextBlock Text="{Binding SelectedContentField.Title}"
+                               FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding ContentCurrentValue}"
+                               FontSize="12" Foreground="#9DCFC2" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <TextBlock Grid.Row="1" Text="{Binding ContentSelectedHelp}"
+                             FontSize="12" Foreground="#A5B7BC" TextWrapping="Wrap"/>
+                  <Border Grid.Row="2" Height="1" Background="#3C545B"/>
+                  <StackPanel Grid.Row="3" Spacing="11">
+                    <StackPanel Spacing="7" IsVisible="{Binding ContentIsNumber}">
+                      <TextBlock Text="数值" FontSize="12" Foreground="#ADBFBE"/>
+                      <NumericUpDown Value="{Binding ContentNumber,Mode=TwoWay}"
+                                     Minimum="-999999999" Maximum="999999999"
+                                     Increment="1" FormatString="N2"/>
+                    </StackPanel>
+                    <StackPanel Spacing="7" IsVisible="{Binding ContentIsBoolean}">
+                      <TextBlock Text="是否启用" FontSize="12" Foreground="#ADBFBE"/>
+                      <CheckBox Content="启用此选项"
+                                IsChecked="{Binding ContentBoolean,Mode=TwoWay}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="7" IsVisible="{Binding ContentIsChoice}">
+                      <TextBlock Text="选择一个选项" FontSize="12" Foreground="#ADBFBE"/>
+                      <ComboBox ItemsSource="{Binding ContentChoices}"
+                                SelectedItem="{Binding ContentChoice,Mode=TwoWay}"/>
+                    </StackPanel>
+                    <StackPanel Spacing="7" IsVisible="{Binding ContentIsText}">
+                      <TextBlock Text="填写内容" FontSize="12" Foreground="#ADBFBE"/>
+                      <TextBox Text="{Binding ContentText,Mode=TwoWay}"
+                               AcceptsReturn="True" TextWrapping="Wrap" Height="96"/>
+                    </StackPanel>
+                  </StackPanel>
+                  <StackPanel Grid.Row="4" Spacing="9">
+                    <Button Classes="primary" Content="应用设置" Click="ApplyField_Click"
+                            IsEnabled="{Binding ContentHasField}" HorizontalAlignment="Stretch"/>
+                    <Button Content="撤回单独设置（恢复继承）" Click="RemoveField_Click"
+                            IsEnabled="{Binding ContentHasField}" HorizontalAlignment="Stretch"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </Grid>
+          </TabItem>
+
+          <TabItem Header="套用原版模块">
+            <Grid ColumnDefinitions="*,320" ColumnSpacing="12" Margin="7">
+              <Border Grid.Column="0" Background="#101C23"
+                      BorderBrush="#2C454C" BorderThickness="1"
+                      CornerRadius="8" Padding="8">
+                <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                  <TextBlock Grid.Row="0" Text="已安装原版中的真实配置模板" FontWeight="SemiBold"
+                             FontSize="13" Margin="7,6"/>
+                  <ListBox Grid.Row="1" ItemsSource="{Binding ContentTemplates}"
+                           SelectedItem="{Binding SelectedContentTemplate,Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ContentTemplateRow">
+                        <Border Margin="3,2" Padding="11"
+                                BorderBrush="#29444A" BorderThickness="0,0,0,1">
+                          <Grid ColumnDefinitions="34,*" ColumnSpacing="10">
+                            <TextBlock Text="{Binding Icon}" FontSize="22"
+                                       Foreground="#A9CFC6" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Spacing="5">
+                              <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
+                                         TextWrapping="Wrap"/>
+                              <TextBlock Text="{Binding Detail}" FontSize="11"
+                                         Foreground="#A0B6B8" TextWrapping="Wrap"/>
+                            </StackPanel>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Grid>
+              </Border>
+              <Border Grid.Column="1" Background="#16252B"
+                      BorderBrush="#34515A" BorderThickness="1"
+                      CornerRadius="8" Padding="17">
+                <StackPanel Spacing="16">
+                  <TextBlock Text="将原版配置加入机械体" FontSize="17"
+                             FontWeight="SemiBold" TextWrapping="Wrap"/>
+                  <TextBlock Text="{Binding SelectedContentTemplate.Title}"
+                             FontSize="15" Foreground="#D6E6E0" TextWrapping="Wrap"/>
+                  <TextBlock Text="{Binding SelectedContentTemplate.Detail}"
+                             FontSize="12" Foreground="#8FC7BA" TextWrapping="Wrap"/>
+                  <Button Classes="primary" Content="添加这个模块"
+                          Click="InstallModule_Click"
+                          IsEnabled="{Binding ContentHasTemplate}"/>
+                  <Border Height="1" Background="#3C545B"/>
+                  <TextBlock Text="你可以复制武器、攻击、组件、能力、标签等现有原版配置。添加后到“已添加内容”编辑内部参数。"
+                             FontSize="12" Foreground="#A6BFC0" TextWrapping="Wrap"/>
+                  <TextBlock Text="注意：带有其他原版定义引用或游戏代码依赖的模块，仍需要在对应 DLC 环境中验证。"
+                             FontSize="11" Foreground="#D7B988" TextWrapping="Wrap"/>
+                  <TextBlock Text="如果这里没有内容，请点击右上角“从游戏读取原版选项”。"
+                             FontSize="11" Foreground="#90A6B0" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Border>
+            </Grid>
+          </TabItem>
+
+          <TabItem Header="管理已添加内容">
+            <Grid ColumnDefinitions="*,330" ColumnSpacing="12" Margin="7">
+              <Border Grid.Column="0" Background="#101C23"
+                      BorderBrush="#2C454C" BorderThickness="1"
+                      CornerRadius="8" Padding="8">
+                <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                  <TextBlock Grid.Row="0" Text="当前机械体已经安装的模块"
+                             FontSize="13" FontWeight="SemiBold" Margin="7,6"/>
+                  <ListBox Grid.Row="1" ItemsSource="{Binding InstalledContentModules}"
+                           SelectedItem="{Binding SelectedContentModule,Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ContentModuleRow">
+                        <StackPanel Spacing="5" Margin="9,10">
+                          <TextBlock Text="{Binding Title}" FontSize="13"
+                                     FontWeight="SemiBold" TextWrapping="Wrap"/>
+                          <TextBlock Text="{Binding Detail}" FontSize="11"
+                                     Foreground="#9BB5B6"/>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Grid>
+              </Border>
+              <Border Grid.Column="1" Background="#16252B"
+                      BorderBrush="#34515A" BorderThickness="1"
+                      CornerRadius="8" Padding="13">
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowSpacing="8">
+                  <TextBlock Grid.Row="0" Text="{Binding SelectedContentModule.Title}"
+                             FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                  <TextBlock Grid.Row="1" Text="内部参数" FontSize="12" Foreground="#97B9B6"/>
+                  <ListBox Grid.Row="2" Height="150" ItemsSource="{Binding ContentParameters}"
+                           SelectedItem="{Binding SelectedContentParameter,Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ContentParameterRow">
+                        <Grid ColumnDefinitions="*,Auto" Margin="5,6">
+                          <TextBlock Text="{Binding Title}" FontSize="11"
+                                     TextWrapping="Wrap" MaxWidth="165"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Detail}"
+                                     FontSize="11" Foreground="#9FCBC3"
+                                     TextTrimming="CharacterEllipsis" MaxWidth="98"/>
+                        </Grid>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                  <StackPanel Grid.Row="3" Spacing="7">
+                    <TextBlock Text="修改选中参数" Foreground="#ADC2C1" FontSize="12"/>
+                    <NumericUpDown IsVisible="{Binding ContentParamIsNumber}"
+                                   Value="{Binding ContentModuleNumber,Mode=TwoWay}"
+                                   Minimum="-999999999" Maximum="999999999"
+                                   Increment="1" FormatString="N2"/>
+                    <CheckBox Content="启用" IsVisible="{Binding ContentParamIsBoolean}"
+                              IsChecked="{Binding ContentModuleBoolean,Mode=TwoWay}"/>
+                    <TextBox IsVisible="{Binding ContentParamIsText}"
+                             Text="{Binding ContentModuleText,Mode=TwoWay}"
+                             AcceptsReturn="True" TextWrapping="Wrap" Height="62"/>
+                  </StackPanel>
+                  <Button Grid.Row="4" Classes="primary" Content="保存这个参数"
+                          IsEnabled="{Binding ContentHasParameter}"
+                          Click="SaveModuleParam_Click"/>
+                  <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="10">
+                    <Button Content="复制" Click="DuplicateModule_Click"
+                            IsEnabled="{Binding ContentHasModule}"/>
+                    <Button Content="移除模块" Click="RemoveModule_Click"
+                            IsEnabled="{Binding ContentHasModule}"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </Grid>
+          </TabItem>
+        </TabControl>
+      </Grid>
+    </Grid>
+
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+      <Border Grid.Column="0" Background="#152B2A" CornerRadius="7" Padding="13">
+        <TextBlock Text="{Binding ContentStatus}" TextWrapping="Wrap"
+                   Foreground="#B0D8CA" FontSize="11" VerticalAlignment="Center"/>
+      </Border>
+      <Button Grid.Column="1" Content="完成" Classes="primary"
+              Click="Close_Click" MinWidth="115" VerticalAlignment="Center"/>
+    </Grid>
+  </Grid>
+</Window>
