@@ -1,0 +1,139 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualModuleBuilderView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="14" Margin="14,12,22,22">
+      <StackPanel Spacing="6">
+        <TextBlock Text="自由配置列表" FontSize="20" FontWeight="SemiBold"/>
+        <TextBlock Text="从空白开始创建，想增加多少项都可以。每项内部还能继续添加子字段和分组。"
+                   Foreground="#99B6B5" FontSize="12" TextWrapping="Wrap"/>
+      </StackPanel>
+      <Border Classes="feature-card" Padding="15">
+        <StackPanel Spacing="12">
+          <TextBlock Text="一、选择要添加的内容类型" FontSize="15" FontWeight="SemiBold"
+                     Foreground="#C2E1D9"/>
+          <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="12">
+            <StackPanel Grid.Column="0" Spacing="6">
+              <TextBlock Text="属于哪部分" FontSize="11" Foreground="#AAB9BA"/>
+              <ComboBox ItemsSource="{Binding FreeformTargets}"
+                        SelectedItem="{Binding SelectedFreeformTarget,Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:FreeformTargetRow">
+                    <TextBlock Text="{Binding Label}"/>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="6">
+              <TextBlock Text="内容类别" FontSize="11" Foreground="#AAB9BA"/>
+              <ComboBox ItemsSource="{Binding FreeformContainers}"
+                        SelectedItem="{Binding FreeformContainer,Mode=TwoWay}"
+                        MinHeight="36"/>
+            </StackPanel>
+            <Button Grid.Column="2" Content="＋ 添加一项" Classes="primary"
+                    VerticalAlignment="Bottom" Click="AddModule_Click"
+                    MinHeight="36"/>
+          </Grid>
+          <TextBlock Text="tools=近战　verbs=远程攻击　comps=组件　abilities=能力　modExtensions=扩展；其他分类也可自由添加。"
+                     Foreground="#8DA8AE" FontSize="11" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+      <Border Classes="feature-card" Padding="15">
+        <StackPanel Spacing="11">
+          <TextBlock Text="二、已经添加的配置项" FontSize="15" FontWeight="SemiBold"
+                     Foreground="#C2E1D9"/>
+          <ListBox ItemsSource="{Binding FreeformModules}"
+                   SelectedItem="{Binding SelectedFreeformModule,Mode=TwoWay}"
+                   MaxHeight="210" MinHeight="70">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FreeformModuleRow">
+                <Border Background="#1A3136" CornerRadius="7" Padding="12" Margin="2,3">
+                  <Grid ColumnDefinitions="34,*" ColumnSpacing="9">
+                    <PathIcon Data="M3 5H21V19H3ZM7 9H17M7 13H17" Width="21" Height="21"
+                              Foreground="#A3CEBF" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Display}" FontSize="13"
+                               TextWrapping="Wrap" VerticalAlignment="Center"/>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Button Content="删除选中的整项" Click="RemoveModule_Click"
+                  HorizontalAlignment="Left" IsEnabled="{Binding HasFreeformModule}"/>
+        </StackPanel>
+      </Border>
+      <Border Classes="feature-card" Padding="15">
+        <StackPanel Spacing="12">
+          <TextBlock Text="三、逐条填写内部字段" FontSize="15" FontWeight="SemiBold"
+                     Foreground="#C2E1D9"/>
+          <TextBlock Text="选择上面的配置项，再从下面的层级列表选一个父节点。新增字段将附加在该节点下方。"
+                     Foreground="#99B6B5" FontSize="11" TextWrapping="Wrap"/>
+          <ListBox ItemsSource="{Binding FreeformNodes}"
+                   SelectedItem="{Binding SelectedFreeformNode,Mode=TwoWay}"
+                   MinHeight="65" MaxHeight="260">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FreeformNodeRow">
+                <Border Padding="10,9" Margin="2" Background="#172A31"
+                        BorderBrush="#294349" BorderThickness="0,0,0,1">
+                  <TextBlock Text="{Binding Display}" FontSize="12"
+                             FontFamily="Consolas" TextWrapping="Wrap"/>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Border Background="#16292F" CornerRadius="7" Padding="13">
+            <StackPanel Spacing="10">
+              <TextBlock Text="在选中节点下新增字段" FontSize="13" FontWeight="SemiBold"/>
+              <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="10">
+                <StackPanel Grid.Column="0" Spacing="5">
+                  <TextBlock Text="字段名称" FontSize="11" Foreground="#AAB7BA"/>
+                  <TextBox Text="{Binding FreeformName,Mode=TwoWay}"
+                           Watermark="例如：power"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="5">
+                  <TextBlock Text="字段值（可修改）" FontSize="11" Foreground="#AAB7BA"/>
+                  <TextBox Text="{Binding FreeformValue,Mode=TwoWay}"
+                           Watermark="填写数据"/>
+                </StackPanel>
+                <Button Grid.Column="2" Content="添加字段" Classes="primary"
+                        Click="AddNode_Click" VerticalAlignment="Bottom"
+                        IsEnabled="{Binding HasFreeformModule}"/>
+              </Grid>
+              <CheckBox Content="创建为容器／分组（之后在里面继续添加字段）"
+                        IsChecked="{Binding FreeformMakeGroup,Mode=TwoWay}"/>
+            </StackPanel>
+          </Border>
+          <Border Background="#15262C" CornerRadius="7" Padding="13">
+            <StackPanel Spacing="10">
+              <TextBlock Text="编辑选中字段" FontSize="13" FontWeight="SemiBold"/>
+              <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="9">
+                <TextBox Grid.Column="0" Text="{Binding FreeformNodeValue,Mode=TwoWay}"
+                         Watermark="字段数据" MinHeight="38"/>
+                <Button Grid.Column="1" Content="保存值" Click="SaveNode_Click"
+                        IsEnabled="{Binding HasFreeformNode}"/>
+                <Button Grid.Column="2" Content="移除字段" Click="RemoveNode_Click"
+                        IsEnabled="{Binding CanRemoveFreeformNode}"/>
+              </Grid>
+              <TextBlock Text="为选中节点添加属性（例如某些组件需要 Class）"
+                         FontSize="11" Foreground="#AAB7BA"/>
+              <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="9">
+                <TextBox Grid.Column="0" Text="{Binding FreeformAttrName,Mode=TwoWay}"
+                         Watermark="属性名称"/>
+                <TextBox Grid.Column="1" Text="{Binding FreeformAttrValue,Mode=TwoWay}"
+                         Watermark="属性值"/>
+                <Button Grid.Column="2" Content="保存属性" Click="SaveAttribute_Click"
+                        IsEnabled="{Binding HasFreeformNode}"/>
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Border>
+      <Border Background="#15302E" CornerRadius="7" Padding="13">
+        <TextBlock Text="{Binding FreeformStatus}" FontSize="12" Foreground="#ACD9CC"
+                   TextWrapping="Wrap"/>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

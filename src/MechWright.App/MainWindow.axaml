@@ -221,7 +221,7 @@
                 <TabItem Header="身体结构"><views:VisualBodyView/></TabItem>
                 <TabItem Header="外观贴图"><views:VisualGraphicView/></TabItem>
               </TabControl>
-              <views:VisualCombatView IsVisible="{Binding IsWeaponStage}"/>
+              <views:VisualModuleBuilderView IsVisible="{Binding IsWeaponStage}"/>
               <TabControl IsVisible="{Binding IsAssetStage}">
                 <TabItem Header="机械培育"><views:VisualGestationView/></TabItem>
                 <TabItem Header="方向贴图"><views:VisualGraphicView/></TabItem>

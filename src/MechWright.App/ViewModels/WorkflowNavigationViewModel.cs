@@ -88,6 +88,7 @@ public sealed partial class MainWindowViewModel
         RefreshVisualDesigner();
         RefreshWorksheet();
         RefreshVisualGestation();
+        InitializeFreeformEditor();
     }
 
     private void RefreshWorkflowVisibility()
