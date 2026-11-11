@@ -116,7 +116,6 @@ public sealed partial class MainWindow : Window
     private void ReturnToReview_Click(object? sender, RoutedEventArgs e) => _vm.WorkflowStep = 4;
     private void OpenAdvanced_Click(object? sender, RoutedEventArgs e) => _vm.WorkflowStep = 5;
     private void GoToAssets_Click(object? sender, RoutedEventArgs e) => _vm.WorkflowStep = 3;
-    private void OpenCombatLists_Click(object? sender, RoutedEventArgs e) => CombatTabs.SelectedIndex = 1;
 
     private void AddProjectXml_Click(object? sender, RoutedEventArgs e) =>
         _vm.AddProjectXml();

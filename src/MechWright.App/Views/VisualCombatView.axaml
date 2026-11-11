@@ -54,7 +54,7 @@
           <ComboBox Grid.Column="0" ItemsSource="{Binding InstalledMelee}"
                     SelectedItem="{Binding SelectedInstalledMelee,Mode=TwoWay}"
                     HorizontalAlignment="Stretch" MinWidth="200"
-                    PlaceholderText="尚未添加近战攻击">
+                    >
             <ComboBox.ItemTemplate>
               <DataTemplate x:DataType="vm:VisualToolRow">
                 <TextBlock Text="{Binding Display}" FontSize="11"/>
