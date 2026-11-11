@@ -83,6 +83,7 @@ public sealed partial class MainWindowViewModel
         WorkflowStep = 0;
         RefreshWorkflowVisibility();
         SelectStageDocument();
+        RefreshVisualMechList();
         RefreshVisualDesigner();
     }
 

@@ -13,6 +13,40 @@ namespace MechWright.App.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
+    public ObservableCollection<VisualMechRow> VisualMechs { get; } = new();
+    private VisualMechRow? _selectedVisualMech;
+    public VisualMechRow? SelectedVisualMech
+    {
+        get => _selectedVisualMech;
+        set
+        {
+            if (ReferenceEquals(_selectedVisualMech, value)) return;
+            _selectedVisualMech = value;
+            Notify();
+            if (value == null || _workspace == null) return;
+            _workflowMechName = value.DefName;
+            SelectStageDocument();
+            RefreshVisualDesigner();
+        }
+    }
+
+    private void RefreshVisualMechList()
+    {
+        VisualMechs.Clear();
+        if (_workspace != null)
+            foreach (var def in _workspace.Files.SelectMany(f => f.Document.Definitions())
+                         .Where(x => x.Type == "ThingDef" &&
+                             x.DefName.StartsWith("MP_", StringComparison.Ordinal)))
+            {
+                if (VisualMechDesigner.CurrentString(_workspace, "ThingDef",
+                    def.DefName, "race/baseBodySize") == null) continue;
+                VisualMechs.Add(new VisualMechRow(def.DefName, def.Label));
+            }
+        _selectedVisualMech = VisualMechs.FirstOrDefault(x =>
+            x.DefName == CurrentMechName) ?? VisualMechs.FirstOrDefault();
+        Notify(nameof(SelectedVisualMech));
+    }
+
     public ObservableCollection<VisualChassisRow> ChassisCards { get; } =
         new(VisualMechDesigner.Chassis.Select(x => new VisualChassisRow(x)));
     public ObservableCollection<VisualMeleeRow> MeleeCards { get; } =
@@ -454,6 +488,13 @@ public sealed partial class MainWindowViewModel
         }
         Notify(nameof(HasVisualTextures));
     }
+}
+
+public sealed record VisualMechRow(string DefName, string Label)
+{
+    public string Display => string.IsNullOrWhiteSpace(Label) || Label == DefName
+        ? "自定义机械体" : Label;
+    public string Summary => "可视化设计项目";
 }
 
 public sealed record VisualChassisRow(VisualMechDesigner.ChassisPreset Preset)
