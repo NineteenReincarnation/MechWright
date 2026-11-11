@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>MechWright.App</AssemblyName>
+    <RootNamespace>MechWright.App</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+    <ProjectReference Include="../MechWright.Core/MechWright.Core.csproj" />
+    <ProjectReference Include="../MechWright.RimWorld/MechWright.RimWorld.csproj" />
+    <ProjectReference Include="../MechWright.Infrastructure/MechWright.Infrastructure.csproj" />
+    <AvaloniaResource Include="../../assets/branding/icon-transparent-256.png" Link="Assets/brand-chip.png" />
+  </ItemGroup>
+</Project>

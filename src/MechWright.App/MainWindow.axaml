@@ -1,0 +1,169 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MechWright.App.ViewModels"
+        x:Class="MechWright.App.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="MechWright · MECHANOID DESIGN SYSTEM"
+        Width="1440" Height="900" MinWidth="1050" MinHeight="660"
+        Icon="avares://MechWright.App/Assets/brand-chip.png"
+        Background="#0B1014"
+        Foreground="#E6ECEB">
+
+  <Grid RowDefinitions="68,*,154,32">
+    <!-- Fixed action rail; it never overlaps the editing workspace. -->
+    <Border Grid.Row="0" BorderBrush="#33434B" BorderThickness="0,0,0,1" Background="#121B21" Padding="19,10">
+      <DockPanel LastChildFill="True">
+        <StackPanel Orientation="Horizontal" Spacing="12" DockPanel.Dock="Left" VerticalAlignment="Center">
+          <Image Source="avares://MechWright.App/Assets/brand-chip.png" Width="31" Height="31"/>
+          <StackPanel Spacing="1">
+            <TextBlock Text="MECHWRIGHT" FontWeight="Bold" FontSize="19" LetterSpacing="2"/>
+            <TextBlock Text="MECHANOID DESIGN SYSTEM / RIMWORLD 1.7" FontSize="10" Foreground="#8DBCB4"/>
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Spacing="7" VerticalAlignment="Center">
+          <Button Content="新建 XML" Click="NewFile_Click"/>
+          <Button Content="打开 XML" Click="OpenFile_Click"/>
+          <Button Content="导入目录" Click="ScanCatalog_Click"/>
+          <Button Content="撤销" Click="Undo_Click"/>
+          <Button Content="重做" Click="Redo_Click"/>
+          <Button Content="保存 / 导出 XML" Click="Export_Click" Background="#32585C"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="267,*,350" Margin="10,10,10,0" ColumnSpacing="10">
+      <!-- Project navigation and local read-only reference index. -->
+      <Border Grid.Column="0" Background="#151E24" CornerRadius="7" BorderBrush="#293C44" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,2*,Auto,Auto,*,Auto" Margin="12">
+          <TextBlock Grid.Row="0" Text="01   定义导航 / DEF BROWSER" FontSize="12" FontWeight="Bold" Foreground="#8DBCB4" Margin="0,3,0,10"/>
+          <TextBox Grid.Row="1" Watermark="搜索当前 XML 定义" Text="{Binding SearchQuery,Mode=TwoWay}" Margin="0,0,0,7"/>
+          <ListBox Grid.Row="2" ItemsSource="{Binding VisibleDefinitions}" SelectedItem="{Binding SelectedDefinition,Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:DefinitionRow">
+                <TextBlock Text="{Binding Display}" FontSize="12" TextWrapping="Wrap" Margin="4,6"/>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Border Grid.Row="3" Margin="0,10,0,10" Height="1" Background="#30424A"/>
+          <TextBlock Grid.Row="4" Text="02   本地定义目录 / READ-ONLY" FontSize="12" FontWeight="Bold" Foreground="#8DBCB4" Margin="0,3,0,10"/>
+          <Grid Grid.Row="5" RowDefinitions="Auto,*">
+            <TextBox Grid.Row="0" Watermark="筛选原版 / DLC 定义" Text="{Binding CatalogQuery,Mode=TwoWay}" Margin="0,0,0,7"/>
+            <ListBox Grid.Row="1" ItemsSource="{Binding VisibleCatalog}" SelectedItem="{Binding SelectedCatalog,Mode=TwoWay}">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:CatalogRow">
+                  <TextBlock Text="{Binding Display}" FontSize="11" TextWrapping="Wrap" Margin="4,5"/>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </Grid>
+          <Button Grid.Row="6" Content="打开所选定义的源文件" Click="OpenCatalog_Click" Margin="0,9,0,0"/>
+        </Grid>
+      </Border>
+
+      <!-- Real, synchronized XML and body representations. -->
+      <Border Grid.Column="1" Background="#151E24" CornerRadius="7" BorderBrush="#293C44" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,*" Margin="14">
+          <StackPanel Grid.Row="0" Spacing="6" Margin="0,2,0,12">
+            <TextBlock Text="工程工作台 / DEFINITION WORKSPACE" FontWeight="Bold" FontSize="12" Foreground="#8DBCB4"/>
+            <TextBlock Text="{Binding SourceName}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Text="{Binding SelectedDefName}" FontSize="12" Foreground="#CFB482" TextTrimming="CharacterEllipsis"/>
+          </StackPanel>
+          <Border Grid.Row="1" Height="1" Background="#30424A" Margin="0,0,0,8"/>
+          <TabControl Grid.Row="2">
+            <TabItem Header="部件与覆盖率">
+              <Grid RowDefinitions="Auto,*" Margin="8">
+                <TextBlock Grid.Row="0" Text="BodyDef 子部件覆盖份额 · 相对权重并非实际命中概率" Foreground="#A3B1B4" FontSize="12" Margin="0,8"/>
+                <ScrollViewer Grid.Row="1">
+                  <ItemsControl ItemsSource="{Binding BodyParts}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:BodyRow">
+                        <Border BorderBrush="#2C3C45" BorderThickness="0,0,0,1" Padding="8">
+                          <Grid ColumnDefinitions="*,70,80,110">
+                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontFamily="Consolas" TextWrapping="Wrap" FontSize="12"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Coverage}" Foreground="#8DBCB4" FontFamily="Consolas"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Effective}" Foreground="#CFB482" FontFamily="Consolas"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Layers}" FontSize="11" Foreground="#A3B1B4"/>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </Grid>
+            </TabItem>
+            <TabItem Header="XML 预览">
+              <TextBox Text="{Binding XmlPreview}" IsReadOnly="True" FontFamily="Consolas"
+                       FontSize="12" TextWrapping="NoWrap" AcceptsReturn="True"
+                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="8"/>
+            </TabItem>
+            <TabItem Header="设计提示">
+              <ScrollViewer Margin="15">
+                <StackPanel Spacing="12">
+                  <TextBlock Text="FIELD-DRIVEN EDITING" Foreground="#8DBCB4" FontWeight="Bold" FontSize="17"/>
+                  <TextBlock Text="本工作台直接读取 Def XML。右侧字段检查器修改同一 XML 文档树，预览与部件覆盖率自动同步。" TextWrapping="Wrap"/>
+                  <TextBlock Text="属性中的未知子节点与 XML 特性不会因修改其他叶子字段而主动删除。未修改的导入文档按原字节文本输出。" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                  <TextBlock Text="BodyDef 的 Inside / Outside、coverage 与父子依附关系来自原版伤害机制；可视化数字不等于实战直接命中率。" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                  <TextBlock Text="后续将接入完整元数据目录、类型驱动字段编辑、双向 XML 合并、贴图预览、武器时间轴和批量导出。" TextWrapping="Wrap"/>
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
+          </TabControl>
+        </Grid>
+      </Border>
+
+      <!-- Inspector and precise edit/save intention. -->
+      <Border Grid.Column="2" Background="#151E24" CornerRadius="7" BorderBrush="#293C44" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,Auto,2*,Auto,Auto,Auto,Auto,Auto" Margin="14">
+          <TextBlock Grid.Row="0" Text="03   属性检查器 / INSPECTOR" FontSize="12" FontWeight="Bold" Foreground="#8DBCB4" Margin="0,3,0,12"/>
+          <TextBlock Grid.Row="1" Text="所有叶子字段 · 修改在点击应用后提交" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap" Margin="0,0,0,8"/>
+          <Border Grid.Row="2" Background="#30424A" Height="1" Margin="0,0,0,5"/>
+          <ListBox Grid.Row="3" ItemsSource="{Binding Fields}" SelectedItem="{Binding SelectedField,Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FieldRow">
+                <TextBlock Text="{Binding Display}" FontSize="11" FontFamily="Consolas" TextTrimming="CharacterEllipsis" Margin="3,6"/>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock Grid.Row="4" Text="{Binding SelectedPath}" FontSize="11" FontFamily="Consolas" Foreground="#CFB482" TextWrapping="Wrap" Margin="0,12,0,8"/>
+          <TextBox Grid.Row="5" Text="{Binding EditingValue,Mode=TwoWay}" AcceptsReturn="True" Height="68" TextWrapping="Wrap"/>
+          <Button Grid.Row="6" Content="应用字段更改" Click="ApplyEdit_Click" Margin="0,8,0,12" Background="#32585C"/>
+          <TextBlock Grid.Row="7" Text="新建定义 / INSERT DEF" FontSize="12" Foreground="#8DBCB4" FontWeight="Bold" Margin="0,0,0,8"/>
+          <Grid Grid.Row="8" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="7" RowSpacing="7">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="类型" VerticalAlignment="Center" Foreground="#A3B1B4"/>
+            <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding SupportedKinds}" SelectedItem="{Binding NewDefType,Mode=TwoWay}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="DefName" VerticalAlignment="Center" Foreground="#A3B1B4"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding NewDefName,Mode=TwoWay}"/>
+            <Button Grid.Row="2" Grid.ColumnSpan="2" Content="插入基础定义" Click="AddDefinition_Click"/>
+          </Grid>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <Border Grid.Row="2" Margin="10,10,10,4" Background="#111A20" CornerRadius="7" BorderBrush="#293C44" BorderThickness="1">
+      <Grid RowDefinitions="Auto,*" Margin="13">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="22" Margin="0,0,0,7">
+          <TextBlock Text="04   诊断 / VALIDATION" Foreground="#8DBCB4" FontWeight="Bold" FontSize="12"/>
+          <TextBlock Text="{Binding DiagnosticCount}" FontFamily="Consolas" Foreground="#CFB482" FontSize="11"/>
+          <TextBlock Text="{Binding CatalogCount}" FontFamily="Consolas" Foreground="#A3B1B4" FontSize="11"/>
+          <TextBlock Text="{Binding DefinitionCount}" FontFamily="Consolas" Foreground="#A3B1B4" FontSize="11"/>
+        </StackPanel>
+        <ListBox Grid.Row="1" ItemsSource="{Binding Diagnostics}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:DiagnosticRow">
+              <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" Margin="4,3"/>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="3" Background="#0B1014" Padding="15,3" BorderBrush="#243741" BorderThickness="0,1,0,0">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Text="{Binding Status}" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#A3B1B4"/>
+        <TextBlock Grid.Column="1" Text="{Binding DirtyFlag}" FontSize="11" Foreground="#8DBCB4"/>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>
