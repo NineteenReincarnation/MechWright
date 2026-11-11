@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media.Imaging;
 using MechWright.RimWorld;
+using MechWright.Infrastructure;
 
 namespace MechWright.App.ViewModels;
 
@@ -26,6 +28,13 @@ public sealed partial class MainWindowViewModel
     public ObservableCollection<VanillaRelatedRow> VanillaWeapons { get; } = new();
     public ObservableCollection<VanillaRelatedRow> VanillaRecipes { get; } = new();
     public ObservableCollection<VanillaPackageRow> VanillaPackages { get; } = new();
+    public ObservableCollection<VanillaGraphicRow> VanillaGraphics { get; } = new();
+    public ObservableCollection<VanillaTextureRow> VanillaTextures { get; } = new();
+    private VanillaGraphicRow? _selectedVanillaGraphic;
+    private VanillaTextureRow? _selectedVanillaTexture;
+    private Bitmap? _vanillaTextureImage;
+    private string _vanillaGraphicStatus = "未选择原版图形定义";
+    private long _vanillaImageRevision;
 
     public IReadOnlyList<string> VanillaPackageFilters { get; } =
         ["全部", "Core", "Royalty", "Ideology", "Biotech", "Anomaly", "Odyssey"];
@@ -90,6 +99,47 @@ public sealed partial class MainWindowViewModel
     {
         get => _vanillaNotes;
         private set { _vanillaNotes = value; Notify(); }
+    }
+
+    public VanillaGraphicRow? SelectedVanillaGraphic
+    {
+        get => _selectedVanillaGraphic;
+        set
+        {
+            if (ReferenceEquals(_selectedVanillaGraphic, value)) return;
+            _selectedVanillaGraphic = value;
+            Notify();
+            RefreshOriginalTextures();
+        }
+    }
+
+    public VanillaTextureRow? SelectedVanillaTexture
+    {
+        get => _selectedVanillaTexture;
+        set
+        {
+            _selectedVanillaTexture = value;
+            Notify();
+            _ = LoadOriginalTextureAsync(value);
+        }
+    }
+
+    public Bitmap? VanillaTextureImage
+    {
+        get => _vanillaTextureImage;
+        private set
+        {
+            var previous = _vanillaTextureImage;
+            _vanillaTextureImage = value;
+            Notify();
+            if (previous != null && !ReferenceEquals(previous, value)) previous.Dispose();
+        }
+    }
+
+    public string VanillaGraphicStatus
+    {
+        get => _vanillaGraphicStatus;
+        private set { _vanillaGraphicStatus = value; Notify(); }
     }
 
     public string VanillaCount =>
@@ -159,6 +209,14 @@ public sealed partial class MainWindowViewModel
         VanillaKinds.Clear();
         VanillaWeapons.Clear();
         VanillaRecipes.Clear();
+        VanillaGraphics.Clear();
+        VanillaTextures.Clear();
+        _selectedVanillaGraphic = null;
+        _selectedVanillaTexture = null;
+        Notify(nameof(SelectedVanillaGraphic));
+        Notify(nameof(SelectedVanillaTexture));
+        Interlocked.Increment(ref _vanillaImageRevision);
+        VanillaTextureImage = null;
         var profile = SelectedVanillaMech?.Profile;
         VanillaDescription = profile?.Description ?? "";
         VanillaOriginalXml = profile?.OriginalXml ?? "";
@@ -174,6 +232,73 @@ public sealed partial class MainWindowViewModel
             VanillaWeapons.Add(new VanillaRelatedRow(weapon));
         foreach (var recipe in profile.Recipes)
             VanillaRecipes.Add(new VanillaRelatedRow(recipe));
+        foreach (var graphic in profile.Graphics)
+            VanillaGraphics.Add(new VanillaGraphicRow(graphic));
+        SelectedVanillaGraphic = VanillaGraphics.FirstOrDefault();
+    }
+
+    private void RefreshOriginalTextures()
+    {
+        Interlocked.Increment(ref _vanillaImageRevision);
+        VanillaTextureImage = null;
+        VanillaTextures.Clear();
+        var graphic = SelectedVanillaGraphic?.Graphic;
+        if (graphic == null)
+        {
+            VanillaGraphicStatus = "该机械体尚未在已扫描 XML 中找到贴图路径";
+            SelectedVanillaTexture = null;
+            return;
+        }
+        // A vanilla Package's Defs and Textures belong to the same game Data package.
+        // Other locations and packed Unity assets remain intentionally unresolved.
+        var current = new FileInfo(graphic.SourceFile).Directory;
+        while (current != null && !current.Name.Equals("Defs",
+                   StringComparison.OrdinalIgnoreCase))
+            current = current.Parent;
+        var packageRoot = current?.Parent?.FullName;
+        var desc = new GraphicReferences.GraphicDescriptor(
+            "read-only XML", graphic.TexturePath, graphic.GraphicClass,
+            graphic.DrawSize, graphic.GraphicClass != "未显式指定");
+        var candidates = TextureAssetLocator.Resolve(packageRoot, desc);
+        foreach (var candidate in candidates)
+            VanillaTextures.Add(new VanillaTextureRow(candidate));
+        VanillaGraphicStatus = $"{graphic.Package} · {graphic.TexturePath} · " +
+            $"{candidates.Count(x => x.Exists)} / {candidates.Count} 本地 PNG" +
+            (candidates.Any(x => x.Exists) ? " · 只读预览" :
+                " · 原版资源可能位于 Unity 资源包，不能直接预览");
+        SelectedVanillaTexture = VanillaTextures.FirstOrDefault(x => x.Candidate.Exists)
+            ?? VanillaTextures.FirstOrDefault();
+    }
+
+    private async Task LoadOriginalTextureAsync(VanillaTextureRow? row)
+    {
+        var revision = Interlocked.Increment(ref _vanillaImageRevision);
+        VanillaTextureImage = null;
+        if (row?.Candidate.LocalPath is not { } local) return;
+        try
+        {
+            if (new FileInfo(local).Length > 12 * 1024 * 1024)
+            {
+                VanillaGraphicStatus = "原版 PNG 超出安全预览大小限制";
+                return;
+            }
+            var image = await Task.Run(() =>
+            {
+                using var stream = File.OpenRead(local);
+                return Bitmap.DecodeToWidth(stream, 480);
+            });
+            if (revision != Interlocked.Read(ref _vanillaImageRevision))
+            {
+                image.Dispose();
+                return;
+            }
+            VanillaTextureImage = image;
+        }
+        catch (Exception ex)
+        {
+            if (revision == Interlocked.Read(ref _vanillaImageRevision))
+                VanillaGraphicStatus = "原版 PNG 预览失败：" + ex.Message;
+        }
     }
 }
 
@@ -208,4 +333,14 @@ public sealed record VanillaRelatedRow(VanillaMechanoidLibrary.RelatedDef Def)
 public sealed record VanillaPackageRow(string Name, bool Present, int Count)
 {
     public string Display => Name + (Present ? $"  {Count} Defs" : "  未找到");
+}
+
+public sealed record VanillaGraphicRow(VanillaMechanoidLibrary.Graphic Graphic)
+{
+    public string Display => Graphic.Label + " · " + Graphic.TexturePath;
+    public string Info => Graphic.GraphicClass + " · drawSize " + Graphic.DrawSize;
+}
+public sealed record VanillaTextureRow(TextureAssetLocator.Candidate Candidate)
+{
+    public string Display => Candidate.Display;
 }

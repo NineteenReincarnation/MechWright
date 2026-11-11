@@ -239,6 +239,39 @@
                             </StackPanel>
                           </ScrollViewer>
                         </TabItem>
+                        <TabItem Header="贴图定义">
+                          <Grid Margin="7" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                            <ComboBox Grid.Row="0" ItemsSource="{Binding VanillaGraphics}"
+                                      SelectedItem="{Binding SelectedVanillaGraphic,Mode=TwoWay}">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:VanillaGraphicRow">
+                                  <TextBlock Text="{Binding Display}" FontSize="11"
+                                             TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Grid.Row="1" Text="{Binding VanillaGraphicStatus}" FontSize="11"
+                                       Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                            <Grid Grid.Row="2" ColumnDefinitions="155,*" ColumnSpacing="9">
+                              <ListBox Grid.Column="0" ItemsSource="{Binding VanillaTextures}"
+                                       SelectedItem="{Binding SelectedVanillaTexture,Mode=TwoWay}">
+                                <ListBox.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaTextureRow">
+                                    <TextBlock Text="{Binding Display}" FontSize="10"
+                                               TextWrapping="Wrap" Margin="4,7"/>
+                                  </DataTemplate>
+                                </ListBox.ItemTemplate>
+                              </ListBox>
+                              <Border Grid.Column="1" Background="#0A1116" BorderBrush="#30434B"
+                                      BorderThickness="1" CornerRadius="5" Padding="10">
+                                <Image Source="{Binding VanillaTextureImage}" Stretch="Uniform"
+                                       MaxWidth="500" MaxHeight="430"/>
+                              </Border>
+                            </Grid>
+                            <TextBlock Grid.Row="3" Text="此处仅按原版 XML 路径查找本地 PNG；不提取、复制或修改游戏资源包。"
+                                       FontSize="10" Foreground="#8DBCB4" TextWrapping="Wrap"/>
+                          </Grid>
+                        </TabItem>
                         <TabItem Header="源码 / 限制">
                           <Grid RowDefinitions="Auto,Auto,*" Margin="7" RowSpacing="7">
                             <TextBlock Grid.Row="0" Text="{Binding VanillaParentTemplate}"
