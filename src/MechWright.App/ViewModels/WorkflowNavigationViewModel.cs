@@ -45,7 +45,7 @@ public sealed partial class MainWindowViewModel
         0 => "基础配置",
         1 => "身体结构与外观",
         2 => "武器与战斗",
-        3 => "工程资源",
+        3 => "培育与资源",
         4 => "检查与导出",
         _ => "高级 XML 工具"
     };
@@ -54,7 +54,7 @@ public sealed partial class MainWindowViewModel
         0 => "确定机体身份、重量、身体大小与常规属性。",
         1 => "编辑 BodyDef 的父子部件与覆盖率，并检查各方向贴图。",
         2 => "查看普通武器的连发与伤害，并编辑原生武器/Comp 列表。",
-        3 => "将贴图、音频和程序集登记到 Mod 工程中。",
+        3 => "配置原版机械培育配方、方向贴图和其他项目资源。",
         4 => "查看 XML 诊断、引用关系与源文件，然后导出完整 Mod。",
         _ => "自定义原生字段、XML 属性和未收录的扩展内容。"
     };
@@ -86,6 +86,7 @@ public sealed partial class MainWindowViewModel
         SelectStageDocument();
         RefreshVisualMechList();
         RefreshVisualDesigner();
+        RefreshVisualGestation();
     }
 
     private void RefreshWorkflowVisibility()

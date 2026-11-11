@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualGestationView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="16" Margin="15,12,22,18">
+      <StackPanel Spacing="5">
+        <TextBlock Text="机械培育" FontSize="20" FontWeight="SemiBold"/>
+        <TextBlock Text="让机械师能培育这台机械体。选择培育类型、科技与材料，软件自动生成游戏原生配方。"
+                   FontSize="12" Foreground="#A5B7BA" TextWrapping="Wrap"/>
+      </StackPanel>
+      <Border Classes="feature-card" Padding="16">
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="17" RowSpacing="15">
+          <StackPanel Grid.Row="0" Grid.Column="0" Spacing="6">
+            <TextBlock Text="机械培育类型" FontSize="12" Foreground="#B9CAC6"/>
+            <ComboBox ItemsSource="{Binding GestationParents}"
+                      SelectedItem="{Binding SelectedGestationParent,Mode=TwoWay}"
+                      MinHeight="38">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:GestationParentRow">
+                  <TextBlock Text="{Binding Title}" FontSize="12"/>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+          <StackPanel Grid.Row="0" Grid.Column="1" Spacing="6">
+            <TextBlock Text="培育周期" FontSize="12" Foreground="#B9CAC6"/>
+            <NumericUpDown Value="{Binding GestationCycles,Mode=TwoWay}"
+                           Minimum="1" Maximum="10000" Increment="1" FormatString="N0"/>
+          </StackPanel>
+          <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="6">
+            <TextBlock Text="所需研究科技" FontSize="12" Foreground="#B9CAC6"/>
+            <ComboBox ItemsSource="{Binding GestationResearchOptions}"
+                      SelectedItem="{Binding SelectedGestationResearch,Mode=TwoWay}"
+                      MinHeight="38">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:GestationResearchRow">
+                  <TextBlock Text="{Binding Label}" FontSize="12"/>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+        </Grid>
+      </Border>
+      <TextBlock Text="培育材料" FontSize="17" FontWeight="SemiBold"/>
+      <Border Classes="feature-card" Padding="12">
+        <ItemsControl ItemsSource="{Binding GestationIngredients}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:GestationIngredientRow">
+              <Grid ColumnDefinitions="*,150,Auto" ColumnSpacing="13" Margin="5,5">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                  <Border Background="#28454A" CornerRadius="6" Width="31" Height="31">
+                    <PathIcon Data="M3 4H21V20H3Z M3 10H21 M8 4V20" Width="18" Height="18"
+                              Foreground="#AAD7CC" HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  <TextBlock Text="{Binding Label}" FontWeight="SemiBold"
+                             FontSize="13" VerticalAlignment="Center"/>
+                </StackPanel>
+                <NumericUpDown Grid.Column="1" Value="{Binding Amount,Mode=TwoWay}"
+                               Minimum="1" Maximum="1000000" Increment="1" FormatString="N0"/>
+                <Button Grid.Column="2" Content="移除" Click="RemoveIngredient_Click"/>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Border>
+      <Border Background="#17292C" BorderBrush="#2F4B4D" BorderThickness="1"
+              CornerRadius="7" Padding="13">
+        <Grid ColumnDefinitions="*,122,Auto" ColumnSpacing="10">
+          <ComboBox Grid.Column="0" ItemsSource="{Binding GestationMaterials}"
+                    SelectedItem="{Binding SelectedGestationMaterial,Mode=TwoWay}"
+                    MinHeight="38">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:GestationMaterialRow">
+                <TextBlock Text="{Binding Label}" FontSize="12"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <NumericUpDown Grid.Column="1" Value="{Binding NewGestationMaterialAmount,Mode=TwoWay}"
+                         Minimum="1" Maximum="1000000" Increment="1" FormatString="N0"/>
+          <Button Grid.Column="2" Content="添加材料" Click="AddIngredient_Click"
+                  Classes="primary"/>
+        </Grid>
+      </Border>
+      <Border Background="#12292A" CornerRadius="8" Padding="14">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+          <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Center">
+            <TextBlock Text="{Binding GestationStatus}" FontSize="12"
+                       Foreground="#B1CFC7" TextWrapping="Wrap"/>
+            <TextBlock Text="这是可修改的参考配方，并非原版继承默认值；保存前不会更改工程。"
+                       Foreground="#829C9F" FontSize="11" TextWrapping="Wrap"/>
+          </StackPanel>
+          <Button Grid.Column="1" Content="{Binding GestationSaveLabel}"
+                  Click="SaveRecipe_Click" Classes="primary" VerticalAlignment="Center"
+                  IsEnabled="{Binding HasVisualMech}"/>
+        </Grid>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

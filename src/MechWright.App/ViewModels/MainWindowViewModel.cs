@@ -429,6 +429,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             RefreshVanillaCatalog(scan);
             UseNativeFieldCatalog(scan);
             RefreshContentCatalog(scan);
+            SetGestationParentOptions(scan.GestationRecipeParents);
+            RefreshVisualGestation();
             RefreshBodyPresetOptions();
             RefreshVisualRangedPresets();
             RefreshVisualPartPresets();

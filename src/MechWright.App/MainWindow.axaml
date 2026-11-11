@@ -122,7 +122,7 @@
             <ListBoxItem>
               <StackPanel Orientation="Horizontal" Spacing="12" Margin="5,2">
                 <PathIcon Data="M3 5H11L14 8H21V19H3Z" Width="19" Height="19" Foreground="#A1D0C6"/>
-                <TextBlock Text="工程资源" FontSize="12" VerticalAlignment="Center"/>
+                <TextBlock Text="培育与资源" FontSize="12" VerticalAlignment="Center"/>
               </StackPanel>
             </ListBoxItem>
             <ListBoxItem>
@@ -223,6 +223,7 @@
               </TabControl>
               <views:VisualCombatView IsVisible="{Binding IsWeaponStage}"/>
               <TabControl IsVisible="{Binding IsAssetStage}">
+                <TabItem Header="机械培育"><views:VisualGestationView/></TabItem>
                 <TabItem Header="方向贴图"><views:VisualGraphicView/></TabItem>
                 <TabItem Header="其他项目资源"><views:VisualAssetsView/></TabItem>
               </TabControl>
