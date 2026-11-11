@@ -21,6 +21,11 @@ Build the **complete** RimWorld mechanoid XML visual design workbench described 
 - Prefer fully functional UI paths to placeholders. Never silently apply unconfirmed default values as user decisions.
 - All interaction should be undoable when appropriate. Validation points to the exact offending field.
 
+## Documentation style
+- Follow Structure Editor's concise bilingual README layout, keeping claims, download paths, requirements and license accurate.
+- Before editing README prose, consult [humanizer](https://github.com/blader/humanizer) (`SKILL.md`) to remove repetitive AI phrasing, inflated claims and unnecessary technical jargon. This is a writing reference, not a build dependency.
+- The checked-in Windows executable lives in `app/`, synchronized by CI after compilation and tests. Do not commit RimWorld Core/DLC assets.
+
 ## Build and verification
 - Once the solution exists: `dotnet restore`, `dotnet build -c Release`, `dotnet test -c Release` (from repo root).
 - Add focused tests whenever changing field semantics, XML round trips, Def resolution, export or nontrivial UI state. Cover imported unknown fields.
