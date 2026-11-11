@@ -294,7 +294,11 @@ public sealed partial class MainWindow : Window
                 AllowMultiple = false
             });
             var path = folders.FirstOrDefault()?.TryGetLocalPath();
-            if (path != null) await _vm.LoadCatalogAsync(path);
+            if (path != null)
+            {
+                await _vm.LoadCatalogAsync(path);
+                OpenVanillaLibrary_Click(sender, e);
+            }
         }
         catch (Exception ex) { _vm.ReportError(ex); }
     }
@@ -435,6 +439,16 @@ public sealed partial class MainWindow : Window
             else if (e.Key == Key.N) { NewFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
             else if (e.Key == Key.O) { OpenFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
             else if (e.Key == Key.S) { Export_Click(this, new RoutedEventArgs()); e.Handled = true; }
+            else if (e.Key == Key.Right && _vm.ShowWorkspacePage)
+            {
+                _vm.NextStage();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Left && _vm.ShowWorkspacePage)
+            {
+                _vm.PreviousStage();
+                e.Handled = true;
+            }
         }
         if (!e.Handled) base.OnKeyDown(e);
     }
