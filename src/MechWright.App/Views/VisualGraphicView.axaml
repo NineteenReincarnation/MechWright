@@ -3,7 +3,7 @@
              xmlns:vm="using:MechWright.App.ViewModels"
              x:Class="MechWright.App.Views.VisualGraphicView"
              x:DataType="vm:MainWindowViewModel">
-  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" Margin="14">
+  <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" Margin="14">
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
       <StackPanel Grid.Column="0" Spacing="6">
         <TextBlock Text="机械体外观" FontSize="18" FontWeight="SemiBold"/>
@@ -21,7 +21,27 @@
         </Button>
       </StackPanel>
     </Grid>
-    <Border Grid.Row="1" Classes="feature-card" Padding="16">
+    <Border Grid.Row="1" Classes="feature-card" Padding="12">
+      <StackPanel Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Content="打开 ZIP 贴图包" Click="SelectArchive_Click"/>
+          <ComboBox Width="330" ItemsSource="{Binding ArchiveTextureGroups}"
+                    SelectedItem="{Binding SelectedArchiveTextureGroup,Mode=TwoWay}"
+                    IsVisible="{Binding HasArchiveTextureGroups}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Display}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Content="导入选中贴图" Classes="primary"
+                  IsEnabled="{Binding CanImportArchiveTextures}" Click="ImportArchive_Click"/>
+        </StackPanel>
+        <TextBlock Text="{Binding ArchiveTextureInfo}" Foreground="#9CADB6"
+                   TextWrapping="Wrap" FontSize="12"/>
+      </StackPanel>
+    </Border>
+    <Border Grid.Row="2" Classes="feature-card" Padding="16">
       <Grid>
         <ItemsControl ItemsSource="{Binding VisualTextures}" IsVisible="{Binding HasVisualTextures}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Center">
@@ -58,7 +78,7 @@
         </StackPanel>
       </Grid>
     </Border>
-    <TextBlock Grid.Row="2" Text="所选图片只会加入当前 Mod 工程。导出时请勾选“包含资源”，游戏文件不会被修改。"
+    <TextBlock Grid.Row="3" Text="所选图片只会加入当前 Mod 工程。导出时请勾选“包含资源”，游戏文件不会被修改。"
                Foreground="#8AA4A9" FontSize="11" TextWrapping="Wrap"/>
   </Grid>
 </UserControl>
