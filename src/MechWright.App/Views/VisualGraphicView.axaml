@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualGraphicView"
+             x:DataType="vm:MainWindowViewModel">
+  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12" Margin="14">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+      <StackPanel Grid.Column="0" Spacing="6">
+        <TextBlock Text="机械体外观" FontSize="18" FontWeight="SemiBold"/>
+        <TextBlock Text="使用透明 PNG 制作方向贴图；程序会自动添加贴图引用，不用填写路径。"
+                   Foreground="#9CADB6" FontSize="12" TextWrapping="Wrap"/>
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+        <NumericUpDown Width="95" Minimum="0.1" Maximum="20" Increment="0.1"
+                       Value="{Binding VisualDrawSize,Mode=TwoWay}" FormatString="N1"/>
+        <Button Classes="primary" Click="SelectTextures_Click">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <PathIcon Width="17" Height="17" Data="M12 2V16M5 9L12 16L19 9M4 19H20V22H4Z"/>
+            <TextBlock Text="导入方向贴图"/>
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Grid>
+    <Border Grid.Row="1" Classes="feature-card" Padding="16">
+      <Grid>
+        <ItemsControl ItemsSource="{Binding VisualTextures}" IsVisible="{Binding HasVisualTextures}"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" ItemWidth="235" ItemHeight="280"/></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:VisualTextureRow">
+              <Border Background="#0E181E" BorderBrush="#2B454D" BorderThickness="1"
+                      CornerRadius="8" Margin="6" Padding="12">
+                <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                  <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="12"
+                             FontFamily="Consolas" Foreground="#B4D1C9" HorizontalAlignment="Center"/>
+                  <Image Grid.Row="1" Source="{Binding Preview}" Width="210" Height="214"
+                         Stretch="Uniform"/>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <StackPanel IsVisible="{Binding !HasVisualTextures}" Spacing="14"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="470">
+          <Border Width="140" Height="140" CornerRadius="70" Background="#1C323A">
+            <PathIcon Data="M3 5H21V19H3ZM5 16L10 11L13 14L17 9L20 13M8 9L8 9"
+                      Width="75" Height="75" Foreground="#74B0A8"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Border>
+          <TextBlock Text="还没有机械体外观" FontSize="19" FontWeight="SemiBold"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="选择 north、south、east 三个方向的 PNG 图片。文件名保持相同前缀，程序将自动识别并建立游戏贴图路径。"
+                     Foreground="#A0B5B7" TextWrapping="Wrap" TextAlignment="Center" FontSize="12"/>
+          <Button Content="选择 PNG 图片" Classes="primary" Click="SelectTextures_Click"
+                  HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <TextBlock Grid.Row="2" Text="所选图片只会加入当前 Mod 工程。导出时请勾选“包含资源”，游戏文件不会被修改。"
+               Foreground="#8AA4A9" FontSize="11" TextWrapping="Wrap"/>
+  </Grid>
+</UserControl>

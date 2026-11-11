@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualCombatView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="19" Margin="14,12,22,16">
+      <StackPanel Spacing="5">
+        <TextBlock Text="选择战斗方式" FontSize="19" FontWeight="SemiBold"/>
+        <TextBlock Text="使用原版可识别的近战攻击和武器生成标签。无需编辑 verbs、tools 或任何 XML。"
+                   Foreground="#A4B8BB" FontSize="12" TextWrapping="Wrap"/>
+      </StackPanel>
+      <TextBlock Text="近战攻击" FontSize="15" FontWeight="SemiBold" Foreground="#D5E4E0"/>
+      <ListBox ItemsSource="{Binding MeleeCards}" SelectedItem="{Binding SelectedMeleeCard,Mode=TwoWay}"
+               MaxHeight="170">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" ItemWidth="260" ItemHeight="125"/></ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:VisualMeleeRow">
+            <Border Classes="preset-card" Padding="14" Margin="4">
+              <Grid ColumnDefinitions="46,*" ColumnSpacing="12">
+                <Border Width="40" Height="40" Background="#23404B" CornerRadius="9">
+                  <TextBlock Text="{Binding Icon}" FontSize="26" Foreground="#B8DBD3"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"/>
+                  <TextBlock Text="{Binding Score}" Foreground="#91BCB6" FontSize="11"/>
+                  <TextBlock Text="{Binding Detail}" Foreground="#9DAFB6" FontSize="11" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Grid ColumnDefinitions="190,190,*" ColumnSpacing="12">
+        <StackPanel Grid.Column="0" Spacing="5">
+          <TextBlock Text="每次攻击伤害" FontSize="11" Foreground="#A9BCBF"/>
+          <NumericUpDown Value="{Binding VisualMeleeDamage,Mode=TwoWay}"
+                         Minimum="0.1" Maximum="10000" Increment="1" FormatString="N1"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="5">
+          <TextBlock Text="攻击间隔 · 秒" FontSize="11" Foreground="#A9BCBF"/>
+          <NumericUpDown Value="{Binding VisualMeleeCooldown,Mode=TwoWay}"
+                         Minimum="0.1" Maximum="3600" Increment="0.1" FormatString="N1"/>
+        </StackPanel>
+        <Button Grid.Column="2" Classes="primary" Content="添加近战攻击"
+                Click="AddVisualMelee_Click" HorizontalAlignment="Right"
+                VerticalAlignment="Bottom" MinWidth="145"/>
+      </Grid>
+      <Border Background="#152329" CornerRadius="8" Padding="13">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <ComboBox Grid.Column="0" ItemsSource="{Binding InstalledMelee}"
+                    SelectedItem="{Binding SelectedInstalledMelee,Mode=TwoWay}"
+                    HorizontalAlignment="Stretch" MinWidth="200"
+                    PlaceholderText="尚未添加近战攻击">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:VisualToolRow">
+                <TextBlock Text="{Binding Display}" FontSize="11"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Grid.Column="1" Content="移除选中的攻击" Click="RemoveVisualMelee_Click"
+                  IsEnabled="{Binding CanRemoveVisualMelee}"/>
+        </Grid>
+      </Border>
+      <Border Height="1" Background="#31454B"/>
+      <StackPanel Spacing="5">
+        <TextBlock Text="远程装备方案" FontSize="16" FontWeight="SemiBold"/>
+        <TextBlock Text="选择一台原版机械体，复制它的武器生成标签；游戏会按标签挑选合适的武器，而不是固定复制它的伤害数值。"
+                   Foreground="#A4B8BB" FontSize="12" TextWrapping="Wrap"/>
+      </StackPanel>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+        <ComboBox Grid.Column="0" ItemsSource="{Binding RangedCards}"
+                  SelectedItem="{Binding SelectedRangedCard,Mode=TwoWay}" MinHeight="40"
+                  MaxDropDownHeight="320">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:VisualRangedRow">
+              <StackPanel Spacing="4" Margin="3,5">
+                <TextBlock Text="{Binding Display}" FontSize="12"/>
+                <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#8FB8B3"/>
+              </StackPanel>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button Grid.Column="1" Content="套用远程方案" Classes="primary"
+                Click="ApplyRanged_Click" IsEnabled="{Binding HasRangedCards}"/>
+      </Grid>
+      <TextBlock Text="原版方案需要先连接 RimWorld 的 Core / DLC 目录。更复杂的自定义枪械可使用后续的武器编辑器。"
+                 FontSize="11" Foreground="#8099A0" TextWrapping="Wrap"/>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

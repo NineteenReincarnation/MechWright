@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualBasicView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="17" Margin="14,12,22,18">
+      <StackPanel Spacing="5">
+        <TextBlock Text="选择机体定位" FontSize="18" FontWeight="SemiBold"/>
+        <TextBlock Text="选择一个推荐配置，也可以从头调整。预设仅供设计参考，具体数值由你决定。"
+                   FontSize="12" Foreground="#9FB1B8" TextWrapping="Wrap"/>
+      </StackPanel>
+      <ListBox ItemsSource="{Binding ChassisCards}"
+               SelectedItem="{Binding SelectedChassisCard,Mode=TwoWay}"
+               HorizontalAlignment="Stretch" MaxHeight="270">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" ItemWidth="202" ItemHeight="118"/>
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:VisualChassisRow">
+            <Border Classes="preset-card" Margin="4" Padding="12">
+              <Grid ColumnDefinitions="45,*" ColumnSpacing="10">
+                <Border Background="#203940" Width="42" Height="42"
+                        CornerRadius="10" VerticalAlignment="Top">
+                  <TextBlock Text="{Binding Icon}" FontSize="27" Foreground="#A5D4CC"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="5">
+                  <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"/>
+                  <TextBlock Text="{Binding Score}" FontSize="11" Foreground="#80B4AD"/>
+                  <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#9DAFB6"
+                             TextWrapping="Wrap"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBlock Grid.Column="0" Text="调整基础性能" FontSize="18" FontWeight="SemiBold"
+                   VerticalAlignment="Center"/>
+        <ComboBox Grid.Column="1" Width="165" ItemsSource="{Binding VisualWeightClasses}"
+                  SelectedItem="{Binding VisualWeightClass,Mode=TwoWay}"/>
+      </Grid>
+      <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto"
+            ColumnSpacing="12" RowSpacing="14">
+        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="6">
+          <TextBlock Text="战斗点数 CP" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualCombatPower,Mode=TwoWay}"
+                         Minimum="0" Maximum="100000" Increment="10" FormatString="N0"/>
+        </StackPanel>
+        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="6">
+          <TextBlock Text="身体大小" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualBodySize,Mode=TwoWay}"
+                         Minimum="0.01" Maximum="100" Increment="0.1" FormatString="N2"/>
+        </StackPanel>
+        <StackPanel Grid.Row="0" Grid.Column="2" Spacing="6">
+          <TextBlock Text="生命倍率" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualHealthScale,Mode=TwoWay}"
+                         Minimum="0.01" Maximum="100" Increment="0.05" FormatString="N2"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="0" Spacing="6">
+          <TextBlock Text="移动速度 · 格/秒" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualMoveSpeed,Mode=TwoWay}"
+                         Minimum="0" Maximum="50" Increment="0.1" FormatString="N1"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="1" Spacing="6">
+          <TextBlock Text="质量 · kg" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualMass,Mode=TwoWay}"
+                         Minimum="0" Maximum="100000" Increment="5" FormatString="N0"/>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="2" Spacing="6">
+          <TextBlock Text="机械控制带宽" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualBandwidth,Mode=TwoWay}"
+                         Minimum="0" Maximum="1000" Increment="1" FormatString="N0"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="0" Spacing="6">
+          <TextBlock Text="锐器护甲" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualSharp,Mode=TwoWay}"
+                         Minimum="0" Maximum="20" Increment="0.05" FormatString="N2"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="1" Spacing="6">
+          <TextBlock Text="钝器护甲" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualBlunt,Mode=TwoWay}"
+                         Minimum="0" Maximum="20" Increment="0.05" FormatString="N2"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Grid.Column="2" Spacing="6">
+          <TextBlock Text="热能护甲" Foreground="#A8BABD"/>
+          <NumericUpDown Value="{Binding VisualHeat,Mode=TwoWay}"
+                         Minimum="0" Maximum="20" Increment="0.1" FormatString="N2"/>
+        </StackPanel>
+      </Grid>
+      <Border Background="#11262A" BorderBrush="#244A4A" BorderThickness="1"
+              CornerRadius="6" Padding="12">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+          <TextBlock Text="{Binding VisualEditorInfo}" TextWrapping="Wrap"
+                     Foreground="#B4D6CB" VerticalAlignment="Center"/>
+          <Button Grid.Column="1" Classes="primary" Click="ApplyVisualBasic_Click"
+                  IsEnabled="{Binding HasVisualMech}">
+            <StackPanel Orientation="Horizontal" Spacing="9">
+              <PathIcon Data="M4 12L9 17L20 5" Width="17" Height="17"/>
+              <TextBlock Text="应用机体配置"/>
+            </StackPanel>
+          </Button>
+        </Grid>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
