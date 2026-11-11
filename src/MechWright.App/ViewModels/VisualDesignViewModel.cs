@@ -27,6 +27,7 @@ public sealed partial class MainWindowViewModel
             _workflowMechName = value.DefName;
             SelectStageDocument();
             RefreshVisualDesigner();
+            RefreshWorksheet();
         }
     }
 

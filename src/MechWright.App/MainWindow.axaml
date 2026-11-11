@@ -216,7 +216,7 @@
           <Border Grid.Row="1" Background="#101820" BorderBrush="#293B44" BorderThickness="1"
                   CornerRadius="7" Padding="9">
             <Grid>
-              <views:VisualBasicView IsVisible="{Binding IsBasicStage}"/>
+              <views:VisualWorksheetView IsVisible="{Binding IsBasicStage}"/>
               <TabControl IsVisible="{Binding IsBodyStage}">
                 <TabItem Header="身体结构"><views:VisualBodyView/></TabItem>
                 <TabItem Header="外观贴图"><views:VisualGraphicView/></TabItem>

@@ -94,7 +94,8 @@ public sealed partial class MainWindowViewModel
                 x.Label.Contains(WorksheetSearch,StringComparison.OrdinalIgnoreCase) ||
                 x.Path.Contains(WorksheetSearch,StringComparison.OrdinalIgnoreCase))
             .OrderBy(x=>Array.IndexOf(order,x.Category) is var pos && pos>=0?pos:99)
-            .ThenBy(x=>VisualContentEditor.Common.IndexOf(x) is var i && i>=0?i:1000)
+            .ThenBy(x=>Array.FindIndex(VisualContentEditor.Common.ToArray(), y =>
+                y.DefType==x.DefType && y.Path==x.Path) is var i && i>=0 ? i : 1000)
             .ThenBy(x=>x.Label,StringComparer.Ordinal).ToArray();
 
         string? lastCategory=null;

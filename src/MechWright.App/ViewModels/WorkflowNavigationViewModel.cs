@@ -86,6 +86,7 @@ public sealed partial class MainWindowViewModel
         SelectStageDocument();
         RefreshVisualMechList();
         RefreshVisualDesigner();
+        RefreshWorksheet();
         RefreshVisualGestation();
     }
 

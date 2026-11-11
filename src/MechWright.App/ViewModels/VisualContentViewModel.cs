@@ -398,6 +398,7 @@ public sealed partial class MainWindowViewModel
         var index=SelectedDefinition?.Entry.Index;
         RefreshAll(index);
         RefreshVisualDesigner();
+        RefreshWorksheet();
         RefreshInstalledContent();
         Notify(nameof(ContentCurrentValue));
         RefreshVisualReview();

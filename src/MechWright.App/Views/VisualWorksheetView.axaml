@@ -1,0 +1,89 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualWorksheetView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="12,7,23,25" Spacing="13">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="0,4,0,4">
+        <StackPanel Grid.Column="0" Spacing="5">
+          <TextBlock Text="机械体配置清单" FontSize="20" FontWeight="SemiBold"/>
+          <TextBlock Text="按顺序填写或修改每个参数。没有必选的机体模板，每一项都可单独保存。"
+                     FontSize="12" Foreground="#9BB6B8" TextWrapping="Wrap"/>
+        </StackPanel>
+        <Button Grid.Column="1" Classes="primary" Click="AddField_Click"
+                VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <PathIcon Data="M12 4V20M4 12H20" Width="16" Height="16"/>
+            <TextBlock Text="添加配置项"/>
+          </StackPanel>
+        </Button>
+      </Grid>
+      <Border CornerRadius="7" Background="#18292F" Padding="12">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+          <TextBox Grid.Column="0" Watermark="查找已显示的字段"
+                   Text="{Binding WorksheetSearch,Mode=TwoWay}" MinHeight="36"/>
+          <TextBlock Grid.Column="1" Text="{Binding WorksheetCount}"
+                     VerticalAlignment="Center" Foreground="#94B8B3" FontSize="11"/>
+        </Grid>
+      </Border>
+      <ItemsControl ItemsSource="{Binding WorksheetFields}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate><StackPanel Spacing="5"/></ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:WorksheetFieldRow">
+            <StackPanel Spacing="7">
+              <Border IsVisible="{Binding ShowCategoryHeader}" Margin="0,13,0,6"
+                      BorderBrush="#426367" BorderThickness="0,0,0,1" Padding="4,5,0,11">
+                <TextBlock Text="{Binding Category}" FontSize="15" FontWeight="SemiBold"
+                           Foreground="#B2D8CD"/>
+              </Border>
+              <Border BorderThickness="1" BorderBrush="#2F454C"
+                      CornerRadius="7" Background="#131F26" Padding="13">
+                <Grid ColumnDefinitions="215,*,112" ColumnSpacing="14">
+                  <StackPanel Grid.Column="0" Spacing="5" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
+                               TextWrapping="Wrap" ToolTip.Tip="{Binding Hint}"/>
+                    <TextBlock Text="{Binding CurrentStatus}" FontSize="10"
+                               Foreground="#95B8AC" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding SourceLabel}" FontSize="10"
+                               Foreground="#829DA6"/>
+                  </StackPanel>
+                  <Grid Grid.Column="1" VerticalAlignment="Center" MinHeight="38">
+                    <NumericUpDown IsVisible="{Binding IsNumber}"
+                                   Value="{Binding Number,Mode=TwoWay}"
+                                   Minimum="-999999999" Maximum="999999999"
+                                   FormatString="N2" Increment="1"/>
+                    <CheckBox IsVisible="{Binding IsBoolean}" Content="启用"
+                              IsChecked="{Binding Boolean,Mode=TwoWay}"
+                              VerticalAlignment="Center"/>
+                    <ComboBox IsVisible="{Binding IsChoice}" ItemsSource="{Binding Choices}"
+                              SelectedItem="{Binding Choice,Mode=TwoWay}" MinHeight="38"/>
+                    <TextBox IsVisible="{Binding IsText}" MinHeight="38"
+                             Text="{Binding Text,Mode=TwoWay}"/>
+                  </Grid>
+                  <StackPanel Grid.Column="2" Spacing="7"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                    <Button Content="保存" Classes="primary"
+                            Click="SaveRow_Click" MinHeight="31"/>
+                    <Button Content="恢复继承" Click="ResetRow_Click"
+                            IsEnabled="{Binding CanReset}" MinHeight="30"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <Border Background="#122A29" CornerRadius="7" Padding="13" Margin="0,12,0,0">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+          <TextBlock Text="{Binding WorksheetMessage}" TextWrapping="Wrap"
+                     Foreground="#B4D7CD" VerticalAlignment="Center" FontSize="12"/>
+          <Button Grid.Column="1" Click="AddField_Click"
+                  Content="＋ 添加任意其他原生字段" Classes="primary"/>
+        </Grid>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
