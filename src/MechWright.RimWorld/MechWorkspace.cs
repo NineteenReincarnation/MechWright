@@ -19,6 +19,7 @@ public sealed class MechWorkspace
     public string SourceRoot { get; }
     public IReadOnlyList<WorkspaceFile> Files => _files.AsReadOnly();
     public bool IsDirty => _files.Any(x => x.Document.IsDirty);
+    public string? OriginalAboutXml { get; set; }
     public int DefinitionCount => _files.Sum(x => x.Document.Definitions().Count);
 
     public MechWorkspace(string name, string sourceRoot)
