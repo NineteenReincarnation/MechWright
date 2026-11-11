@@ -138,10 +138,10 @@ public static class VisualGestationEditor
         // An imported custom recipe may contain additional logic or ingredient
         // filters. Refuse a destructive rewrite of these unknown structures.
         var present=def.Element.Element("ingredients");
-        if(present!=null && present.Elements().Any(x=>x.Name!="li" ||
-            x.Elements().Any(y=>y.Name is not ("filter" or "count")) ||
-            x.Element("filter")?.Elements().Any(y=>y.Name!="thingDefs")==true ||
-            x.Element("filter")?.Element("thingDefs")?.Elements().Any(y=>y.Name!="li")==true))
+        if(present!=null && present.Elements().Any(x=>x.Name.LocalName!="li" ||
+            x.Elements().Any(y=>y.Name.LocalName is not ("filter" or "count")) ||
+            x.Element("filter")?.Elements().Any(y=>y.Name.LocalName!="thingDefs")==true ||
+            x.Element("filter")?.Element("thingDefs")?.Elements().Any(y=>y.Name.LocalName!="li")==true))
             throw new InvalidOperationException("原配方有特殊材料逻辑，普通表单不能覆盖；请使用高级编辑。");
         doc.Transform(_=>
         {
