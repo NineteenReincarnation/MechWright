@@ -57,6 +57,21 @@
       <Setter Property="BorderBrush" Value="#9AD2C6"/>
       <Setter Property="BorderThickness" Value="2"/>
     </Style>
+    <Style Selector="Border.preset-card">
+      <Setter Property="Background" Value="#1A2B31"/>
+      <Setter Property="BorderBrush" Value="#35515A"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="9"/>
+    </Style>
+    <Style Selector="ListBoxItem:selected Border.preset-card">
+      <Setter Property="Background" Value="#294C4D"/>
+      <Setter Property="BorderBrush" Value="#6FB7A9"/>
+      <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="MinHeight" Value="38"/>
+      <Setter Property="FontSize" Value="13"/>
+    </Style>
     <Style Selector="Border.feature-card">
       <Setter Property="Background" Value="#16232A"/>
       <Setter Property="BorderBrush" Value="#30484C"/>

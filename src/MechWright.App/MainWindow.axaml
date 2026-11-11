@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:MechWright.App.ViewModels"
+        xmlns:views="using:MechWright.App.Views"
         x:Class="MechWright.App.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="MechWright · 机械体设计工作台"
@@ -93,12 +94,42 @@
           </StackPanel>
           <ListBox Grid.Row="1" SelectedIndex="{Binding WorkflowStep,Mode=TwoWay}"
                    Background="Transparent" BorderThickness="0">
-            <ListBoxItem Content="01  基础配置"/>
-            <ListBoxItem Content="02  身体与外观"/>
-            <ListBoxItem Content="03  武器与战斗"/>
-            <ListBoxItem Content="04  工程资源"/>
-            <ListBoxItem Content="05  检查并导出"/>
-            <ListBoxItem Content="高级 XML 工具"/>
+            <ListBoxItem>
+              <StackPanel Orientation="Horizontal" Spacing="12" Margin="5,2">
+                <PathIcon Data="M4 5H20V19H4ZM8 9H16M8 13H16" Width="19" Height="19" Foreground="#A1D0C6"/>
+                <TextBlock Text="基础配置" FontSize="12" VerticalAlignment="Center"/>
+              </StackPanel>
+            </ListBoxItem>
+            <ListBoxItem>
+              <StackPanel Orientation="Horizontal" Spacing="12" Margin="5,2">
+                <PathIcon Data="M12 2L21 7V17L12 22L3 17V7ZM3 7L12 12L21 7M12 12V22" Width="19" Height="19" Foreground="#A1D0C6"/>
+                <TextBlock Text="身体与外观" FontSize="12" VerticalAlignment="Center"/>
+              </StackPanel>
+            </ListBoxItem>
+            <ListBoxItem>
+              <StackPanel Orientation="Horizontal" Spacing="12" Margin="5,2">
+                <PathIcon Data="M5 20L18 7M14 3L21 10M3 16L8 21" Width="19" Height="19" Foreground="#A1D0C6"/>
+                <TextBlock Text="武器与战斗" FontSize="12" VerticalAlignment="Center"/>
+              </StackPanel>
+            </ListBoxItem>
+            <ListBoxItem>
+              <StackPanel Orientation="Horizontal" Spacing="12" Margin="5,2">
+                <PathIcon Data="M3 5H11L14 8H21V19H3Z" Width="19" Height="19" Foreground="#A1D0C6"/>
+                <TextBlock Text="工程资源" FontSize="12" VerticalAlignment="Center"/>
+              </StackPanel>
+            </ListBoxItem>
+            <ListBoxItem>
+              <StackPanel Orientation="Horizontal" Spacing="12" Margin="5,2">
+                <PathIcon Data="M4 12L9 17L20 5" Width="19" Height="19" Foreground="#A1D0C6"/>
+                <TextBlock Text="检查并导出" FontSize="12" VerticalAlignment="Center"/>
+              </StackPanel>
+            </ListBoxItem>
+            <ListBoxItem>
+              <StackPanel Orientation="Horizontal" Spacing="12" Margin="5,2">
+                <PathIcon Data="M3 12L8 7M3 12L8 17M21 12L16 7M21 12L16 17M13 5L10 19" Width="19" Height="19" Foreground="#A1D0C6"/>
+                <TextBlock Text="高级 XML 工具" FontSize="12" VerticalAlignment="Center"/>
+              </StackPanel>
+            </ListBoxItem>
           </ListBox>
           <Border Grid.Row="2" Height="1" Background="#304149" Margin="0,5"/>
           <TextBlock Grid.Row="3" Text="工程文件" FontSize="12" Foreground="#8CBEB4"/>
@@ -143,276 +174,12 @@
           <Border Grid.Row="1" Background="#101820" BorderBrush="#293B44" BorderThickness="1"
                   CornerRadius="7" Padding="9">
             <Grid>
-              <Grid IsVisible="{Binding IsBasicStage}" ColumnDefinitions="*,300" ColumnSpacing="12">
-                <TabControl Grid.Column="0">
-                  <TabItem Header="基础属性">
-              <Grid RowDefinitions="Auto,*,Auto" RowSpacing="9" Margin="8">
-                <TextBlock Grid.Row="0" Text="ThingDef / PawnKindDef 常用原生字段 · 建议值不会自动写出" Foreground="#A3B1B4" FontSize="12" TextWrapping="Wrap" Margin="0,7"/>
-                <ListBox Grid.Row="1" ItemsSource="{Binding MechProperties}"
-                         SelectedItem="{Binding SelectedMechProperty,Mode=TwoWay}">
-                  <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:MechPropertyRow">
-                      <Grid ColumnDefinitions="180,*" Margin="8,5">
-                        <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="12" FontWeight="Medium"/>
-                        <TextBlock Grid.Column="1" Text="{Binding DisplayValue}" FontSize="11" Foreground="#8DBCB4" TextWrapping="Wrap"/>
-                      </Grid>
-                    </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
-                <Border Grid.Row="2" Background="#111A20" BorderBrush="#34454D" BorderThickness="1" Padding="10" CornerRadius="5">
-                  <StackPanel Spacing="8">
-                    <TextBlock Text="{Binding PropertyHint}" FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding PropertyValue,Mode=TwoWay}" PlaceholderText="输入自定义值"/>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                      <Button Content="应用明确覆写" Click="ApplyMechProperty_Click"/>
-                      <Button Content="恢复继承 / 未定义" Click="ResetMechProperty_Click"/>
-                    </StackPanel>
-                  </StackPanel>
-                </Border>
-              </Grid>
-            </TabItem>
-                </TabControl>
-                <Border Grid.Column="1" Background="#101920" BorderBrush="#2D4049" BorderThickness="1" CornerRadius="9" Padding="15">
-  <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,Auto" RowSpacing="10">
-    <StackPanel Grid.Row="0" Spacing="5">
-      <TextBlock Text="精确字段编辑" FontWeight="SemiBold" FontSize="14"/>
-      <TextBlock Text="选择字段并修改。只有点击应用后才写入 XML。" FontSize="11" Foreground="#91A7B1" TextWrapping="Wrap"/>
-    </StackPanel>
-    <Border Grid.Row="1" Height="1" Background="#31434B"/>
-    <ListBox Grid.Row="2" ItemsSource="{Binding Fields}" SelectedItem="{Binding SelectedField,Mode=TwoWay}">
-      <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:FieldRow">
-          <TextBlock Text="{Binding Display}" FontSize="11" FontFamily="Consolas" TextTrimming="CharacterEllipsis" Margin="5,7"/>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-    <StackPanel Grid.Row="3" Spacing="5">
-      <TextBlock Text="{Binding SelectedPath}" FontSize="11" FontFamily="Consolas" Foreground="#E0C58A" TextWrapping="Wrap"/>
-      <TextBlock Text="{Binding SelectedFieldHint}" FontSize="11" Foreground="#91A7B1" TextWrapping="Wrap"/>
-    </StackPanel>
-    <TextBox Grid.Row="4" Text="{Binding EditingValue,Mode=TwoWay}" AcceptsReturn="True" Height="65" TextWrapping="Wrap"/>
-    <Button Grid.Row="5" Classes="primary" Content="应用字段更改" Click="ApplyEdit_Click"/>
-  </Grid>
-</Border>
-              </Grid>
+              <views:VisualBasicView IsVisible="{Binding IsBasicStage}"/>
               <TabControl IsVisible="{Binding IsBodyStage}">
-                <TabItem Header="部件与覆盖率">
-              <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8" Margin="8">
-                <TextBlock Grid.Row="0" Text="BodyDef 装配树 · coverage 为相对权重，不代表实际命中率" Foreground="#A3B1B4" FontSize="12" Margin="0,8"/>
-                <ListBox Grid.Row="1" ItemsSource="{Binding BodyParts}" SelectedItem="{Binding SelectedBodyPart,Mode=TwoWay}"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="#33434B" BorderThickness="1" CornerRadius="5">
-                  <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:BodyRow">
-                      <Border BorderBrush="#2C3C45" BorderThickness="0,0,0,1" Padding="7">
-                        <Grid ColumnDefinitions="*,68,74,102" ColumnSpacing="4">
-                          <StackPanel Grid.Column="0" Spacing="4">
-                            <TextBlock Text="{Binding Name}" FontFamily="Consolas" TextWrapping="Wrap" FontSize="12"/>
-                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding EffectivePercent}" Height="4"
-                                         Foreground="#8DBCB4" Background="#26363D"/>
-                          </StackPanel>
-                          <TextBlock Grid.Column="1" Text="{Binding Coverage}" Foreground="#8DBCB4" FontFamily="Consolas" FontSize="11"/>
-                          <TextBlock Grid.Column="2" Text="{Binding Effective}" Foreground="#CFB482" FontFamily="Consolas" FontSize="11"/>
-                          <TextBlock Grid.Column="3" Text="{Binding Layers}" FontSize="10" Foreground="#A3B1B4"/>
-                        </Grid>
-                      </Border>
-                    </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
-                <Border Grid.Row="2" BorderBrush="#35474F" BorderThickness="1" Background="#101920" CornerRadius="5" Padding="10">
-                  <ScrollViewer MaxHeight="232" VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="8">
-                      <TextBlock Text="选中部件 / PART INSPECTOR" Foreground="#8DBCB4" FontWeight="SemiBold" FontSize="12"/>
-                      <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <StackPanel Grid.Column="0" Spacing="3">
-                          <TextBlock Text="BodyPartDef 引用" Foreground="#A3B1B4" FontSize="11"/>
-                          <TextBox Text="{Binding PartDefName,Mode=TwoWay}" PlaceholderText="MechanicalHead"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="3">
-                          <TextBlock Text="相对覆盖率（核心为 1）" Foreground="#A3B1B4" FontSize="11"/>
-                          <TextBox Text="{Binding PartCoverage,Mode=TwoWay}" PlaceholderText="0.10"/>
-                        </StackPanel>
-                      </Grid>
-                      <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <StackPanel Grid.Column="0" Spacing="3">
-                          <TextBlock Text="高度 Height" Foreground="#A3B1B4" FontSize="11"/>
-                          <ComboBox ItemsSource="{Binding Heights}" SelectedItem="{Binding PartHeight,Mode=TwoWay}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="3">
-                          <TextBlock Text="深度 Depth" Foreground="#A3B1B4" FontSize="11"/>
-                          <ComboBox ItemsSource="{Binding Depths}" SelectedItem="{Binding PartDepth,Mode=TwoWay}"/>
-                        </StackPanel>
-                      </Grid>
-                      <TextBox Text="{Binding PartCustomLabel,Mode=TwoWay}" PlaceholderText="可选显示名称（customLabel）"/>
-                      <WrapPanel Orientation="Horizontal" ItemHeight="36" ItemWidth="105">
-                        <Button Content="应用部件属性" Click="ApplyBody_Click" IsEnabled="{Binding HasBodyPart}"/>
-                        <Button Content="上移" Click="MoveBodyUp_Click" IsEnabled="{Binding CanRemoveBodyPart}"/>
-                        <Button Content="下移" Click="MoveBodyDown_Click" IsEnabled="{Binding CanRemoveBodyPart}"/>
-                        <Button Content="删除子树" Click="RemoveBody_Click" IsEnabled="{Binding CanRemoveBodyPart}"/>
-                      </WrapPanel>
-                      <Border Height="1" Background="#2C3C45" Margin="0,2"/>
-                      <TextBlock Text="添加子部件 / APPEND CHILD" FontSize="11" Foreground="#CFB482"/>
-                      <Grid ColumnDefinitions="*,104,108" ColumnSpacing="7">
-                        <TextBox Grid.Column="0" Text="{Binding NewPartDefName,Mode=TwoWay}" PlaceholderText="部件 DefName"/>
-                        <TextBox Grid.Column="1" Text="{Binding NewPartCoverage,Mode=TwoWay}" PlaceholderText="coverage"/>
-                        <Button Grid.Column="2" Content="添加子部件" Click="AddBody_Click" IsEnabled="{Binding HasBodyPart}"/>
-                      </Grid>
-                    </StackPanel>
-                  </ScrollViewer>
-                </Border>
-              </Grid>
-            </TabItem>
-<TabItem Header="贴图预览">
-              <Grid RowDefinitions="Auto,Auto,*" Margin="9" RowSpacing="9">
-                <TextBlock Grid.Row="0" Text="GRAPHIC WORKBENCH · 使用本地 Mod PNG 只读预览，不复制原版素材"
-                           FontSize="12" Foreground="#8DBCB4" Margin="0,6" TextWrapping="Wrap"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
-                  <ComboBox Grid.Column="0" ItemsSource="{Binding Graphics}"
-                            SelectedItem="{Binding SelectedGraphic,Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
-                      <DataTemplate x:DataType="vm:GraphicRow">
-                        <TextBlock Text="{Binding Display}" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                      </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                  </ComboBox>
-                  <TextBlock Grid.Column="1" Text="{Binding GraphicInfo}" Foreground="#A3B1B4"
-                             FontSize="11" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="2" ColumnDefinitions="215,*" ColumnSpacing="9">
-                  <Border Grid.Column="0" BorderThickness="1" BorderBrush="#30434B" CornerRadius="5" Padding="5">
-                    <ListBox ItemsSource="{Binding TextureCandidates}"
-                             SelectedItem="{Binding SelectedTexture,Mode=TwoWay}">
-                      <ListBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:TextureRow">
-                          <TextBlock Text="{Binding Display}" FontSize="11" TextWrapping="Wrap" Margin="5,8"/>
-                        </DataTemplate>
-                      </ListBox.ItemTemplate>
-                    </ListBox>
-                  </Border>
-                  <Border Grid.Column="1" Background="#0A1116" BorderBrush="#30434B"
-                          BorderThickness="1" CornerRadius="5" Padding="16">
-                    <Grid>
-                      <Image Source="{Binding TexturePreview}" Stretch="Uniform"
-                             MaxWidth="500" MaxHeight="460"/>
-                      <StackPanel IsVisible="{Binding ShowTexturePlaceholder}"
-                                  VerticalAlignment="Center" HorizontalAlignment="Center"
-                                  Spacing="12" MaxWidth="310">
-                        <TextBlock Text="尚未找到可预览的贴图" FontSize="15" FontWeight="SemiBold"
-                                   Foreground="#C1D6D2" TextAlignment="Center"/>
-                        <TextBlock Text="在“工程资源”中登记本地 PNG，并为机械体定义 texPath。完成后预览会自动关联资源。"
-                                   Foreground="#94AAB1" TextWrapping="Wrap" TextAlignment="Center"
-                                   FontSize="12"/>
-                        <Button Content="前往工程资源" Click="GoToAssets_Click"
-                                HorizontalAlignment="Center"/>
-                      </StackPanel>
-                    </Grid>
-                  </Border>
-                </Grid>
-              </Grid>
-            </TabItem>
+                <TabItem Header="身体结构"><views:VisualBodyView/></TabItem>
+                <TabItem Header="外观贴图"><views:VisualGraphicView/></TabItem>
               </TabControl>
-              <TabControl x:Name="CombatTabs" IsVisible="{Binding IsWeaponStage}">
-                <TabItem Header="战斗分析">
-              <Grid RowDefinitions="Auto,*" Margin="9" RowSpacing="8">
-                <TextBlock Grid.Row="0" Text="普通装备武器时序 · 仅计算明确配置的数值，未解析继承属性不推定 DPS" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap" Margin="0,7"/>
-                <ScrollViewer Grid.Row="1">
-                  <ItemsControl ItemsSource="{Binding WeaponProfiles}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:WeaponProfileRow">
-                        <Border Margin="0,3" BorderBrush="#35474F" BorderThickness="1" CornerRadius="5" Padding="11">
-                          <StackPanel Spacing="9">
-                            <TextBlock Text="{Binding WeaponName}" Foreground="#8DBCB4" FontSize="16" FontWeight="SemiBold"/>
-                            <TextBlock Text="{Binding Verb}" Foreground="#CFB482" FontSize="11" FontFamily="Consolas"/>
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                              <StackPanel Grid.Column="0" Spacing="6">
-                                <TextBlock Text="{Binding Projectile}" FontSize="11" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding ShotCount}" FontSize="11"/>
-                                <TextBlock Text="{Binding Range}" FontSize="11"/>
-                              </StackPanel>
-                              <StackPanel Grid.Column="1" Spacing="6">
-                                <TextBlock Text="{Binding Damage}" FontSize="11"/>
-                                <TextBlock Text="{Binding Dps}" FontSize="11" TextWrapping="Wrap"/>
-                              </StackPanel>
-                            </Grid>
-                            <TextBlock Text="{Binding Warmup}" Foreground="#A3B1B4" FontSize="11"/>
-                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding WarmupPercent}" Height="6" Foreground="#CFB482"/>
-                            <TextBlock Text="{Binding Burst}" Foreground="#A3B1B4" FontSize="11"/>
-                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding BurstPercent}" Height="6" Foreground="#8DBCB4"/>
-                            <TextBlock Text="{Binding Cooldown}" Foreground="#A3B1B4" FontSize="11"/>
-                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding CooldownPercent}" Height="6" Foreground="#768D9A"/>
-                          </StackPanel>
-                        </Border>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </ScrollViewer>
-                <Border Grid.Row="1" IsVisible="{Binding ShowCombatEmpty}"
-                        Background="#111D24" BorderBrush="#2D444C" BorderThickness="1"
-                        Padding="20" CornerRadius="7">
-                  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
-                              Spacing="12" MaxWidth="390">
-                    <TextBlock Text="当前机体还没有可解析的武器配置" FontSize="16"
-                               FontWeight="SemiBold" TextAlignment="Center"/>
-                    <TextBlock Text="在“原生列表结构”中添加武器攻击所需的 verbs / tools。完成后可查看连发时间、伤害与理论 DPS。"
-                               FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
-                               Foreground="#94AAB1"/>
-                    <Button Content="编辑武器列表" Classes="primary"
-                            Click="OpenCombatLists_Click" HorizontalAlignment="Center"/>
-                  </StackPanel>
-                </Border>
-              </Grid>
-            </TabItem>
-<TabItem Header="原生列表结构">
-              <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="9" Margin="8">
-                <TextBlock Grid.Row="0" Text="NATIVE LIST STRUCTURES · 工具 / 武器 / Comp / 标签"
-                           Foreground="#8DBCB4" FontSize="12" Margin="0,4"/>
-                <ComboBox Grid.Row="1" ItemsSource="{Binding NativeListGroups}"
-                          SelectedItem="{Binding SelectedListGroup,Mode=TwoWay}">
-                  <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:NativeListGroupRow">
-                      <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11"/>
-                    </DataTemplate>
-                  </ComboBox.ItemTemplate>
-                </ComboBox>
-                <Grid Grid.Row="2" ColumnDefinitions="*" RowDefinitions="*">
-                  <ListBox ItemsSource="{Binding NativeListEntries}"
-                           SelectedItem="{Binding SelectedListEntry,Mode=TwoWay}">
-                    <ListBox.ItemTemplate>
-                      <DataTemplate x:DataType="vm:NativeListItemRow">
-                        <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11"
-                                   TextWrapping="Wrap" Margin="4,6"/>
-                      </DataTemplate>
-                    </ListBox.ItemTemplate>
-                  </ListBox>
-                </Grid>
-                <Border Grid.Row="3" Background="#101920" BorderBrush="#34454D"
-                        BorderThickness="1" Padding="10" CornerRadius="5">
-                  <StackPanel Spacing="7">
-                    <TextBlock Text="{Binding ListHelp}" Foreground="#A3B1B4" FontSize="11"
-                               TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding ListXml,Mode=TwoWay}" AcceptsReturn="True"
-                             AcceptsTab="True" TextWrapping="NoWrap" Height="127"
-                             FontFamily="Consolas" FontSize="11"
-                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
-                    <WrapPanel Orientation="Horizontal" ItemHeight="34" ItemWidth="93">
-                      <Button Content="新增项" Click="AddNativeList_Click"
-                              IsEnabled="{Binding HasListGroup}"/>
-                      <Button Content="应用修改" Click="ReplaceNativeList_Click"
-                              IsEnabled="{Binding HasSelectedListEntry}"/>
-                      <Button Content="复制项" Click="DuplicateNativeList_Click"
-                              IsEnabled="{Binding HasSelectedListEntry}"/>
-                      <Button Content="上移" Click="MoveNativeListUp_Click"
-                              IsEnabled="{Binding HasSelectedListEntry}"/>
-                      <Button Content="下移" Click="MoveNativeListDown_Click"
-                              IsEnabled="{Binding HasSelectedListEntry}"/>
-                      <Button Content="删除项" Click="RemoveNativeList_Click"
-                              IsEnabled="{Binding HasSelectedListEntry}"/>
-                    </WrapPanel>
-                  </StackPanel>
-                </Border>
-              </Grid>
-            </TabItem>
-              </TabControl>
+              <views:VisualCombatView IsVisible="{Binding IsWeaponStage}"/>
               <TabControl IsVisible="{Binding IsAssetStage}">
                 <TabItem Header="工程资源">
               <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="9" Margin="8">
@@ -517,6 +284,58 @@
                   </WrapPanel>
                 </Border>
                 <TabControl Grid.Row="1">
+<TabItem Header="原生列表结构">
+              <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="9" Margin="8">
+                <TextBlock Grid.Row="0" Text="NATIVE LIST STRUCTURES · 工具 / 武器 / Comp / 标签"
+                           Foreground="#8DBCB4" FontSize="12" Margin="0,4"/>
+                <ComboBox Grid.Row="1" ItemsSource="{Binding NativeListGroups}"
+                          SelectedItem="{Binding SelectedListGroup,Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NativeListGroupRow">
+                      <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Grid Grid.Row="2" ColumnDefinitions="*" RowDefinitions="*">
+                  <ListBox ItemsSource="{Binding NativeListEntries}"
+                           SelectedItem="{Binding SelectedListEntry,Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:NativeListItemRow">
+                        <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11"
+                                   TextWrapping="Wrap" Margin="4,6"/>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Grid>
+                <Border Grid.Row="3" Background="#101920" BorderBrush="#34454D"
+                        BorderThickness="1" Padding="10" CornerRadius="5">
+                  <StackPanel Spacing="7">
+                    <TextBlock Text="{Binding ListHelp}" Foreground="#A3B1B4" FontSize="11"
+                               TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding ListXml,Mode=TwoWay}" AcceptsReturn="True"
+                             AcceptsTab="True" TextWrapping="NoWrap" Height="127"
+                             FontFamily="Consolas" FontSize="11"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    <WrapPanel Orientation="Horizontal" ItemHeight="34" ItemWidth="93">
+                      <Button Content="新增项" Click="AddNativeList_Click"
+                              IsEnabled="{Binding HasListGroup}"/>
+                      <Button Content="应用修改" Click="ReplaceNativeList_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="复制项" Click="DuplicateNativeList_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="上移" Click="MoveNativeListUp_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="下移" Click="MoveNativeListDown_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="删除项" Click="RemoveNativeList_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+              </Grid>
+            </TabItem>
+
                   <TabItem Header="原版字段库">
               <Grid Margin="9" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
                 <TextBlock Grid.Row="0" Text="{Binding NativeFieldStatus}" FontSize="11"
