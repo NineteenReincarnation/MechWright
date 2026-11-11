@@ -54,6 +54,17 @@ internal static class UiSmokeCheck
                 Require(vm.InstalledMelee.Count == 1,
                     "Clicking a melee preset did not create native tool configuration.");
                 vm.WorkflowStep = 3;
+                // Exercise user-facing generic content editor, not XML text entry.
+                vm.OpenContentEditor("机械师与生成");
+                var spawn=vm.ContentFields.First(x=>x.Spec.Path=="maxPerGroup");
+                vm.SelectedContentField=spawn;
+                vm.ContentNumber=4;
+                vm.ApplySelectedContentField();
+                Require(VisualContentEditor.Read(project,"MP_UiSmoke",spawn.Spec)=="4",
+                    "Simple visual content editor did not add spawn configuration.");
+                vm.CloseContentEditor();
+                _ = new VisualContentWindow(vm);
+                vm.CloseContentEditor();
                 vm.WorkflowStep = 4;
                 Require(vm.IsReviewStage, "Review stage is inaccessible.");
                 Require(vm.VisualReviewChecks.Count == 5,
