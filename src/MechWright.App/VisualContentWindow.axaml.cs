@@ -18,6 +18,19 @@ public sealed partial class VisualContentWindow : Window
         Closed += (_, _) => _vm.CloseContentEditor();
     }
 
+    private void SaveFieldRow_Click(object? sender,RoutedEventArgs e)
+    {
+        if(sender is Button { DataContext: WorksheetFieldRow row })
+            _vm.SaveContentFieldRow(row);
+    }
+    private void RemoveFieldRow_Click(object? sender,RoutedEventArgs e)
+    {
+        if(sender is Button { DataContext: WorksheetFieldRow row })
+            _vm.ResetContentFieldRow(row);
+    }
+    private void AddCustomField_Click(object? sender,RoutedEventArgs e) =>
+        _vm.ApplyCustomContentField();
+
     private void ApplyField_Click(object? sender,RoutedEventArgs e) =>
         _vm.ApplySelectedContentField();
     private void RemoveField_Click(object? sender,RoutedEventArgs e) =>
