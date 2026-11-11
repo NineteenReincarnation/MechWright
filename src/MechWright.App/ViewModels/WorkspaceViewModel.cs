@@ -63,6 +63,8 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(WorkspaceTitle));
         SelectedProjectFile = ProjectFiles.FirstOrDefault();
         RefreshProjectAssets();
+        RefreshWorkflowVisibility();
+        StartDesign();
         Status = $"已打开工程 · {workspace.Name} · {workspace.DefinitionCount} 个定义";
     }
 
@@ -84,6 +86,7 @@ public sealed partial class MainWindowViewModel
             SelectedDefinition = Definitions.FirstOrDefault(x => x.Entry.Type == "ThingDef" &&
                 x.Entry.DefName == blueprint.DefName);
             RefreshProjectAssets();
+            StartDesign(blueprint.DefName);
             Status = $"已创建 {blueprint.DefName} · ThingDef / PawnKindDef / BodyDef 三个相互关联的 XML，可继续补充 Body、武器与培育配置。";
         }
         catch (Exception ex) { ReportError(ex); }

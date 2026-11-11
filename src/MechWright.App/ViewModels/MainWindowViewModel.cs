@@ -265,6 +265,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         Notify(nameof(CanUndo));
         Notify(nameof(CanRedo));
         Notify(nameof(HasDocument));
+        RefreshWorkflowVisibility();
     }
 
     private void RefreshFields(string? preferredPath = null, string? bodyPath = null)

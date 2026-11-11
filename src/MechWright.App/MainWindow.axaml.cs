@@ -71,12 +71,14 @@ public sealed partial class MainWindow : Window
 
     private async void NewMechanoidWizard_Click(object? sender, RoutedEventArgs e)
     {
-        if (!_vm.HasWorkspace) return;
+        if (!_vm.HasWorkspace && !await ConfirmDiscardAsync()) return;
         try
         {
             var blueprint = await new MechanoidWizardWindow()
                 .ShowDialog<MechWright.RimWorld.MechanoidBlueprint?>(this);
-            if (blueprint != null) _vm.GenerateMechanoid(blueprint);
+            if (blueprint == null) return;
+            if (!_vm.HasWorkspace) _vm.CreateWorkspace();
+            _vm.GenerateMechanoid(blueprint);
         }
         catch (Exception ex) { _vm.ReportError(ex); }
     }
@@ -99,6 +101,9 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex) { _vm.ReportError(ex); }
     }
+
+    private void PreviousStage_Click(object? sender, RoutedEventArgs e) => _vm.PreviousStage();
+    private void NextStage_Click(object? sender, RoutedEventArgs e) => _vm.NextStage();
 
     private void AddProjectXml_Click(object? sender, RoutedEventArgs e) =>
         _vm.AddProjectXml();
