@@ -9,12 +9,13 @@ namespace MechWright.App.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
-    public IReadOnlyList<FreeformDefinitionEditor.DefType> FreeformDefTypes { get; } =
-        FreeformDefinitionEditor.CommonTypes;
+    public IReadOnlyList<FreeformDefTypeRow> FreeformDefTypes { get; } =
+        FreeformDefinitionEditor.CommonTypes
+            .Select(x=>new FreeformDefTypeRow(x.Type,x.Label)).ToArray();
     public ObservableCollection<FreeformDefinitionRow> FreeformDefinitions { get; }=new();
     public ObservableCollection<FreeformDefinitionNodeRow> FreeformDefinitionNodes { get; }=new();
 
-    private FreeformDefinitionEditor.DefType? _selectedFreeformDefType;
+    private FreeformDefTypeRow? _selectedFreeformDefType;
     private FreeformDefinitionRow? _selectedFreeformDefinition;
     private FreeformDefinitionNodeRow? _selectedFreeformDefinitionNode;
     private string _freeformDefType="ThingDef";
@@ -28,7 +29,7 @@ public sealed partial class MainWindowViewModel
     private string _definitionAttributeValue="";
     private string _definitionBuilderStatus="先新建定义，再逐条增加内部字段。";
 
-    public FreeformDefinitionEditor.DefType? SelectedFreeformDefType
+    public FreeformDefTypeRow? SelectedFreeformDefType
     {
         get=>_selectedFreeformDefType;
         set
@@ -206,6 +207,7 @@ public sealed partial class MainWindowViewModel
     }
 }
 
+public sealed record FreeformDefTypeRow(string Type,string Label);
 public sealed record FreeformDefinitionRow(FreeformDefinitionEditor.Definition Def)
 {
     public string DefName=>Def.DefName;

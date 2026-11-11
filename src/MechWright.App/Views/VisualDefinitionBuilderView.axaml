@@ -22,7 +22,7 @@
                       ItemsSource="{Binding FreeformDefTypes}"
                       SelectedItem="{Binding SelectedFreeformDefType,Mode=TwoWay}">
               <ComboBox.ItemTemplate>
-                <DataTemplate x:DataType="vm:FreeformDefinitionEditor.DefType">
+                <DataTemplate x:DataType="vm:FreeformDefTypeRow">
                   <TextBlock Text="{Binding Label}"/>
                 </DataTemplate>
               </ComboBox.ItemTemplate>

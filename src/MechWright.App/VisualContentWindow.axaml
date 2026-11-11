@@ -9,7 +9,7 @@
         Title="MechWright · 添加自定义内容"
         Icon="avares://MechWright.App/Assets/brand-chip.png"
         Background="#0B1218" Foreground="#E6ECEB">
-  <Grid RowDefinitions="Auto,* ,Auto" RowSpacing="11" Margin="16">
+  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="11" Margin="16">
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
       <StackPanel Grid.Column="0" Spacing="5">
         <TextBlock Text="自由添加配置" FontSize="21" FontWeight="SemiBold"/>
