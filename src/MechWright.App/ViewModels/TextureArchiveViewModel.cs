@@ -5,12 +5,12 @@ namespace MechWright.App.ViewModels;
 
 public sealed partial class MainWindowViewModel
 {
-    public ObservableCollection<DirectionalTextureArchive.TextureGroup> ArchiveTextureGroups { get; } = new();
-    private DirectionalTextureArchive.TextureGroup? _selectedArchiveTextureGroup;
+    public ObservableCollection<ArchiveTextureGroupRow> ArchiveTextureGroups { get; } = new();
+    private ArchiveTextureGroupRow? _selectedArchiveTextureGroup;
     private string? _textureArchivePath;
     private string _archiveTextureInfo = "可直接打开机械体贴图 ZIP，选择其中一台机械体导入。";
 
-    public DirectionalTextureArchive.TextureGroup? SelectedArchiveTextureGroup
+    public ArchiveTextureGroupRow? SelectedArchiveTextureGroup
     {
         get => _selectedArchiveTextureGroup;
         set { _selectedArchiveTextureGroup = value; Notify(); Notify(nameof(CanImportArchiveTextures)); }
@@ -34,7 +34,7 @@ public sealed partial class MainWindowViewModel
         try
         {
             foreach (var group in DirectionalTextureArchive.Inspect(zipPath))
-                ArchiveTextureGroups.Add(group);
+                ArchiveTextureGroups.Add(new ArchiveTextureGroupRow(group));
             _textureArchivePath = zipPath;
             SelectedArchiveTextureGroup = ArchiveTextureGroups.FirstOrDefault();
             Notify(nameof(HasArchiveTextureGroups));
@@ -60,7 +60,7 @@ public sealed partial class MainWindowViewModel
         try
         {
             var files = DirectionalTextureArchive.Extract(
-                _textureArchivePath, SelectedArchiveTextureGroup);
+                _textureArchivePath, SelectedArchiveTextureGroup.Group);
             RegisterMechTextures(files);
             ArchiveTextureInfo = "已选择 " + SelectedArchiveTextureGroup.Name +
                 " 的方向贴图，已交给当前机械体的资源登记流程。";
@@ -71,4 +71,9 @@ public sealed partial class MainWindowViewModel
             ReportError(ex);
         }
     }
+}
+
+public sealed record ArchiveTextureGroupRow(DirectionalTextureArchive.TextureGroup Group)
+{
+    public string Display => Group.Display;
 }
