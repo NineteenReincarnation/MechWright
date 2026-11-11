@@ -389,7 +389,6 @@ public sealed partial class MainWindow : Window
     private void ApplyBody_Click(object? sender, RoutedEventArgs e) => _vm.ApplyBodyPart();
     private void JumpReference_Click(object? sender, RoutedEventArgs e) => _vm.JumpToReference();
     private void ApplyMechProperty_Click(object? sender, RoutedEventArgs e) => _vm.ApplyMechProperty();
-    private void CompareVanilla_Click(object? sender, RoutedEventArgs e) => _vm.CompareVanillaWithCurrent();
     private void ApplyNativeField_Click(object? sender, RoutedEventArgs e) => _vm.ApplyNativeField();
     private void AddNativeList_Click(object? sender, RoutedEventArgs e) => _vm.AddNativeListEntry();
     private void ReplaceNativeList_Click(object? sender, RoutedEventArgs e) => _vm.ReplaceNativeListEntry();
