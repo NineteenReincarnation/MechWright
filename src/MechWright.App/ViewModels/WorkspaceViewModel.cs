@@ -91,6 +91,8 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(DirtyFlag));
     }
 
+    public void StatusMessage(string message) => Status = message;
+
     public void WorkspaceExported(string path)
     {
         if (_workspace == null) return;

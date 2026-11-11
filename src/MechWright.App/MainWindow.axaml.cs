@@ -62,6 +62,131 @@ public sealed partial class MainWindow : Window
         if (await ConfirmDiscardAsync()) _vm.NewFile();
     }
 
+
+    private async void NewWorkspace_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!await ConfirmDiscardAsync()) return;
+        _vm.CreateWorkspace();
+    }
+
+    private async void ImportWorkspace_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!await ConfirmDiscardAsync()) return;
+        try
+        {
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "选择 Mod 根目录（包含 Defs / Patches 或 1.7/Defs）",
+                AllowMultiple = false
+            });
+            var folder = folders.FirstOrDefault()?.TryGetLocalPath();
+            if (folder == null) return;
+            _vm.StatusMessage("正在读取 Mod 工程 XML；原文件不会被修改");
+            var project = await WorkspaceDiskService.ImportAsync(folder);
+            _vm.OpenWorkspace(project);
+        }
+        catch (Exception ex) { _vm.ReportError(ex); }
+    }
+
+    private void AddProjectXml_Click(object? sender, RoutedEventArgs e) =>
+        _vm.AddProjectXml();
+
+    private sealed record ProjectExportOptions(string Name, string PackageId, string FolderName);
+
+    private async Task<ProjectExportOptions?> GetProjectExportOptionsAsync(string name)
+    {
+        var dialog = new Window
+        {
+            Title = "EXPORT PROJECT · 工程 XML 导出设置",
+            Width = 500, Height = 380, MinWidth = 420, MinHeight = 350,
+            CanResize = true,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = Brushes.Black
+        };
+        var nameBox = new TextBox { Text = name };
+        var suggested = System.Text.RegularExpressions.Regex.Replace(
+            name.ToLowerInvariant(), "[^a-z0-9]", "");
+        if (suggested.Length == 0) suggested = "newmod";
+        var packageBox = new TextBox { Text = $"local.mechwright.{suggested}" };
+        var folderBox = new TextBox { Text = "MechWright-" + suggested };
+        var warning = new TextBlock
+        {
+            Text = "仅导出工程 XML 与 About 元数据。不会自动复制贴图、声音或游戏 DLC 资源；不会覆盖已有文件夹。",
+            Foreground = Brushes.LightGray,
+            TextWrapping = TextWrapping.Wrap
+        };
+        var issue = new TextBlock { Foreground = Brushes.IndianRed, TextWrapping = TextWrapping.Wrap };
+        var ok = new Button { Content = "确认参数并选择目标目录" };
+        var cancel = new Button { Content = "取消" };
+        ok.Click += (_, _) =>
+        {
+            var folder = folderBox.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(folder) ||
+                folder is "." or ".." ||
+                folder.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
+                folder.Contains('/') || folder.Contains('\\') ||
+                folder.Contains(':') || folder.EndsWith('.'))
+            {
+                issue.Text = "输出目录名只能是单个合法文件夹名称，不允许路径或上级目录。";
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(nameBox.Text))
+            {
+                issue.Text = "请填写 Mod 名称。";
+                return;
+            }
+            dialog.Close(new ProjectExportOptions(nameBox.Text.Trim(),
+                packageBox.Text?.Trim() ?? "", folder));
+        };
+        cancel.Click += (_, _) => dialog.Close(null);
+        var panel = new StackPanel { Margin = new Avalonia.Thickness(16), Spacing = 10 };
+        panel.Children.Add(new TextBlock { Text = "MOD NAME · 显示名称", Foreground = Brushes.LightGray });
+        panel.Children.Add(nameBox);
+        panel.Children.Add(new TextBlock { Text = "PACKAGE ID · 使用独立反向域名标识", Foreground = Brushes.LightGray });
+        panel.Children.Add(packageBox);
+        panel.Children.Add(new TextBlock { Text = "OUTPUT FOLDER · 新目录名称", Foreground = Brushes.LightGray });
+        panel.Children.Add(folderBox);
+        panel.Children.Add(warning);
+        panel.Children.Add(issue);
+        var buttons = new StackPanel
+        {
+            Orientation = Orientation.Horizontal, Spacing = 9,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Children = { cancel, ok }
+        };
+        panel.Children.Add(buttons);
+        dialog.Content = new ScrollViewer { Content = panel };
+        return await dialog.ShowDialog<ProjectExportOptions?>(this);
+    }
+
+    private async void ExportWorkspace_Click(object? sender, RoutedEventArgs e)
+    {
+        var project = _vm.Workspace;
+        if (project == null)
+        {
+            _vm.StatusMessage("请先新建或导入多文件工程");
+            return;
+        }
+        var options = await GetProjectExportOptionsAsync(project.Name);
+        if (options == null) return;
+        try
+        {
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "选择导出目录的上级文件夹（不会覆盖已有内容）",
+                AllowMultiple = false
+            });
+            var parent = folders.FirstOrDefault()?.TryGetLocalPath();
+            if (parent == null) return;
+            var destination = Path.Combine(parent, options.FolderName);
+            _vm.StatusMessage("正在安全导出完整 XML 工程…");
+            await WorkspaceDiskService.ExportAsync(project, destination,
+                options.Name, options.PackageId);
+            _vm.WorkspaceExported(destination);
+        }
+        catch (Exception ex) { _vm.ReportError(ex); }
+    }
+
     private async void OpenFile_Click(object? sender, RoutedEventArgs e)
     {
         if (!await ConfirmDiscardAsync()) return;

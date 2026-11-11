@@ -9,46 +9,68 @@
         Background="#0B1014"
         Foreground="#E6ECEB">
 
-  <Grid RowDefinitions="68,*,154,32">
-    <!-- Fixed action rail; it never overlaps the editing workspace. -->
-    <Border Grid.Row="0" BorderBrush="#33434B" BorderThickness="0,0,0,1" Background="#121B21" Padding="19,10">
-      <DockPanel LastChildFill="True">
-        <StackPanel Orientation="Horizontal" Spacing="12" DockPanel.Dock="Left" VerticalAlignment="Center">
-          <Image Source="avares://MechWright.App/Assets/brand-chip.png" Width="31" Height="31"/>
-          <StackPanel Spacing="1">
-            <TextBlock Text="MECHWRIGHT" FontWeight="Bold" FontSize="19" LetterSpacing="2"/>
-            <TextBlock Text="MECHANOID DESIGN SYSTEM / RIMWORLD 1.7" FontSize="10" Foreground="#8DBCB4"/>
+  <Grid RowDefinitions="99,*,154,32">
+    <!-- Single responsive command rail. Tools remain keyboard reachable at narrow widths. -->
+    <Border Grid.Row="0" BorderBrush="#33434B" BorderThickness="0,0,0,1" Background="#121B21" Padding="15,7">
+      <Grid RowDefinitions="31,43" RowSpacing="4">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <Image Source="avares://MechWright.App/Assets/brand-chip.png" Width="24" Height="24"/>
+          <TextBlock Text="MECHWRIGHT" FontWeight="Bold" FontSize="17" LetterSpacing="2" VerticalAlignment="Center"/>
+          <TextBlock Text=" / RIMWORLD 1.7 / MECHANOID DESIGN SYSTEM" FontSize="10" Foreground="#8DBCB4" VerticalAlignment="Center"/>
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled">
+          <StackPanel Orientation="Horizontal" Spacing="7">
+            <Button Content="新建工程" Click="NewWorkspace_Click"/>
+            <Button Content="导入 Mod 工程" Click="ImportWorkspace_Click"/>
+            <Button Content="导出工程 XML" Click="ExportWorkspace_Click" Background="#32585C"/>
+            <Border Width="1" Background="#384B54" Margin="5,5"/>
+            <Button Content="新建 XML" Click="NewFile_Click"/>
+            <Button Content="打开 XML" Click="OpenFile_Click"/>
+            <Button Content="编辑源码" Click="EditRaw_Click"/>
+            <Button Content="原版 / DLC 目录" Click="ScanCatalog_Click"/>
+            <Button Content="撤销" Click="Undo_Click"/>
+            <Button Content="重做" Click="Redo_Click"/>
+            <Button Content="导出当前 XML" Click="Export_Click"/>
           </StackPanel>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Spacing="7" VerticalAlignment="Center">
-          <Button Content="新建 XML" Click="NewFile_Click"/>
-          <Button Content="打开 XML" Click="OpenFile_Click"/>
-          <Button Content="编辑源码" Click="EditRaw_Click"/>
-          <Button Content="导入目录" Click="ScanCatalog_Click"/>
-          <Button Content="撤销" Click="Undo_Click"/>
-          <Button Content="重做" Click="Redo_Click"/>
-          <Button Content="保存 / 导出 XML" Click="Export_Click" Background="#32585C"/>
-        </StackPanel>
-      </DockPanel>
+        </ScrollViewer>
+      </Grid>
     </Border>
 
-    <Grid Grid.Row="1" ColumnDefinitions="267,*,350" Margin="10,10,10,0" ColumnSpacing="10">
+    <Grid Grid.Row="1" ColumnDefinitions="310,*,350" Margin="10,10,10,0" ColumnSpacing="10">
       <!-- Project navigation and local read-only reference index. -->
       <Border Grid.Column="0" Background="#151E24" CornerRadius="7" BorderBrush="#293C44" BorderThickness="1">
-        <Grid RowDefinitions="Auto,Auto,2*,Auto,Auto,*,Auto" Margin="12">
-          <TextBlock Grid.Row="0" Text="01   定义导航 / DEF BROWSER" FontSize="12" FontWeight="Bold" Foreground="#8DBCB4" Margin="0,3,0,10"/>
-          <TextBox Grid.Row="1" PlaceholderText="搜索当前 XML 定义" Text="{Binding SearchQuery,Mode=TwoWay}" Margin="0,0,0,7"/>
-          <ListBox Grid.Row="2" ItemsSource="{Binding VisibleDefinitions}" SelectedItem="{Binding SelectedDefinition,Mode=TwoWay}">
+        <Grid RowDefinitions="Auto,90,Auto,Auto,Auto,Auto,*,Auto,Auto,*,Auto" Margin="12">
+          <StackPanel Grid.Row="0" Spacing="2" Margin="0,2,0,7">
+            <TextBlock Text="01   工程文件 / PROJECT FILES" FontSize="12" FontWeight="Bold" Foreground="#8DBCB4"/>
+            <TextBlock Text="{Binding WorkspaceTitle}" FontSize="11" Foreground="#A3B1B4" TextTrimming="CharacterEllipsis"/>
+          </StackPanel>
+          <ListBox Grid.Row="1" ItemsSource="{Binding ProjectFiles}" SelectedItem="{Binding SelectedProjectFile,Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ProjectFileRow">
+                <TextBlock Text="{Binding Display}" FontSize="11" FontFamily="Consolas" TextTrimming="CharacterEllipsis" Margin="4,4"/>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBox Grid.Row="2" PlaceholderText="1.7/Defs/NewDefs.xml"
+                   Text="{Binding NewProjectXmlPath,Mode=TwoWay}" Margin="0,7,0,5"/>
+          <Button Grid.Row="3" Content="＋ 添加工程 XML" Click="AddProjectXml_Click"
+                  IsEnabled="{Binding HasWorkspace}" Margin="0,0,0,9"/>
+          <TextBlock Grid.Row="4" Text="02   当前文件 / DEF BROWSER" FontSize="12" FontWeight="Bold"
+                     Foreground="#8DBCB4" Margin="0,2,0,8"/>
+          <TextBox Grid.Row="5" PlaceholderText="筛选当前 XML 定义" Text="{Binding SearchQuery,Mode=TwoWay}" Margin="0,0,0,5"/>
+          <ListBox Grid.Row="6" ItemsSource="{Binding VisibleDefinitions}" SelectedItem="{Binding SelectedDefinition,Mode=TwoWay}">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:DefinitionRow">
                 <TextBlock Text="{Binding Display}" FontSize="12" TextWrapping="Wrap" Margin="4,6"/>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <Border Grid.Row="3" Margin="0,10,0,10" Height="1" Background="#30424A"/>
-          <TextBlock Grid.Row="4" Text="02   本地定义目录 / READ-ONLY" FontSize="12" FontWeight="Bold" Foreground="#8DBCB4" Margin="0,3,0,10"/>
-          <Grid Grid.Row="5" RowDefinitions="Auto,*">
-            <TextBox Grid.Row="0" PlaceholderText="筛选原版 / DLC 定义" Text="{Binding CatalogQuery,Mode=TwoWay}" Margin="0,0,0,7"/>
+          <Border Grid.Row="7" Margin="0,8,0,9" Height="1" Background="#30424A"/>
+          <TextBlock Grid.Row="8" Text="03   本机原版 / DLC 定义" FontSize="12" FontWeight="Bold"
+                     Foreground="#8DBCB4" Margin="0,2,0,8"/>
+          <Grid Grid.Row="9" RowDefinitions="Auto,*">
+            <TextBox Grid.Row="0" PlaceholderText="筛选游戏定义" Text="{Binding CatalogQuery,Mode=TwoWay}" Margin="0,0,0,5"/>
             <ListBox Grid.Row="1" ItemsSource="{Binding VisibleCatalog}" SelectedItem="{Binding SelectedCatalog,Mode=TwoWay}">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:CatalogRow">
@@ -57,7 +79,7 @@
               </ListBox.ItemTemplate>
             </ListBox>
           </Grid>
-          <Button Grid.Row="6" Content="打开所选定义的源文件" Click="OpenCatalog_Click" Margin="0,9,0,0"/>
+          <Button Grid.Row="10" Content="打开所选原版定义" Click="OpenCatalog_Click" Margin="0,7,0,0"/>
         </Grid>
       </Border>
 
