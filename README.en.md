@@ -22,8 +22,10 @@ Designing RimWorld mechanoids often involves several XML files for body structur
 
 ## Features
 
-- **Visual mechanoid design**: Choose scout, standard, assault or heavy chassis presets, then adjust power, armor, speed and size with numeric controls.
-- **Body and combat presets**: Reuse installed vanilla mechanoid body layouts, adjust part coverage visually, and pick melee attacks or native ranged equipment tag presets.
+- **Freeform vertical worksheet**: Enter every stat from top to bottom with inline value controls and per-row save/inheritance reset. No chassis preset is required.
+- **Add unlimited native entries**: Search and append scalar options, repeated XML list items, nested groups, editable values, and node attributes using ordinary UI controls.
+- **Construct bodies from scratch**: Add child parts to any selected BodyDef node and configure coverage, height, inside/outside placement independently.
+- **Create blank native Defs**: Author new body parts, weapon and projectile definitions, recipes, abilities, and other native types field by field. C#-dependent game behavior still needs runtime validation.
 - **Visual editing**: Edit body parts, coverage, and native XML lists while preserving unknown fields.
 - **Vanilla reference library**: Read mechanoid definitions from installed RimWorld Core and DLC files, including stats, body structures, weapon information, and comparisons.
 - **Combat and texture previews**: Inspect weapon burst timing, theoretical DPS, and locally available mechanoid textures.
