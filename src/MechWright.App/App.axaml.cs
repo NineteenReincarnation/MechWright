@@ -13,6 +13,7 @@ public sealed partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();
+            UiSmokeCheck.Attach(desktop);
         }
         base.OnFrameworkInitializationCompleted();
     }

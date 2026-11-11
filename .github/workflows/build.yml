@@ -68,6 +68,19 @@ jobs:
           }
           # Runtime SDK packages occasionally include native debug symbols.
           Get-ChildItem $output -Recurse -File -Filter '*.pdb' | Remove-Item -Force
+      - name: Windows UI workflow smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = Join-Path (Resolve-Path 'artifacts/windows') 'MechWright.App.exe'
+          $process = Start-Process -FilePath $exe -ArgumentList '--ui-smoke-test' -PassThru
+          if (!$process.WaitForExit(45000)) {
+            Stop-Process -Id $process.Id -Force
+            throw 'The GUI smoke test did not finish within 45 seconds.'
+          }
+          if ($process.ExitCode -ne 0) {
+            throw "GUI smoke test failed with exit code $($process.ExitCode)."
+          }
       - name: Verify app bundle
         shell: pwsh
         run: |
