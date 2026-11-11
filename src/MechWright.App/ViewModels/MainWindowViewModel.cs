@@ -246,6 +246,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         Notify(nameof(SelectedDefName));
         RefreshFields(fieldPath, bodyPath);
 
+        InvalidateVanillaComparison();
         XmlPreview = _document?.Export() ?? "";
         Diagnostics.Clear();
         if (_workspace != null)
@@ -274,6 +275,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         RefreshCombat();
         RefreshGraphics();
         RefreshXmlAttributes();
+        RefreshNativeFields();
         if (_document != null && _selectedDefinition != null)
         {
             foreach (var f in _document.Fields(_selectedDefinition.Entry)) Fields.Add(new FieldRow(f));
@@ -422,6 +424,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             FilterCatalog();
             RefreshReferences();
             RefreshVanillaCatalog(scan);
+            UseNativeFieldCatalog(scan);
             Status = $"本地定义索引完成 · {_catalog.Count} 项 · 原版机械体 {_vanillaMechs.Count} 台 · 只读";
         }
         catch (Exception ex) { ReportError(ex); }
