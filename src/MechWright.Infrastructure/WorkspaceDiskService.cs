@@ -66,6 +66,9 @@ public static class WorkspaceDiskService
             DefDocument.Parse(content, about);
             workspace.OriginalAboutXml = content;
         }
+        // Discover only files belonging to the chosen Mod root. No Core/DLC
+        // assets are linked, bundled or redistributed.
+        await Task.Run(() => WorkspaceAssetService.ImportAssets(workspace, token), token);
         return workspace;
     }
 
@@ -113,7 +116,8 @@ public static class WorkspaceDiskService
 
     public static async Task<string> ExportAsync(
         MechWorkspace project, string destination,
-        string displayName, string packageId, CancellationToken token = default)
+        string displayName, string packageId, bool includeAssets = false,
+        CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(project);
         if (string.IsNullOrWhiteSpace(displayName) || displayName.Length > 128)
@@ -149,6 +153,9 @@ public static class WorkspaceDiskService
                 await File.WriteAllTextAsync(target, file.Document.Export(),
                     OutputEncoding(file.Document.Xml.Declaration?.Encoding), token);
             }
+
+            if (includeAssets)
+                await WorkspaceAssetService.CopyAsync(project, stage, token);
 
             var aboutFolder = Path.Combine(stage, "About");
             Directory.CreateDirectory(aboutFolder);
