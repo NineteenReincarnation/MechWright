@@ -22,7 +22,8 @@ Designing RimWorld mechanoids often involves several XML files for body structur
 
 ## Features
 
-- **Mechanoid setup**: Enter basic stats, preview XML, and generate linked ThingDef, PawnKindDef, and BodyDef files.
+- **Visual mechanoid design**: Choose scout, standard, assault or heavy chassis presets, then adjust power, armor, speed and size with numeric controls.
+- **Body and combat presets**: Reuse installed vanilla mechanoid body layouts, adjust part coverage visually, and pick melee attacks or native ranged equipment tag presets.
 - **Visual editing**: Edit body parts, coverage, and native XML lists while preserving unknown fields.
 - **Vanilla reference library**: Read mechanoid definitions from installed RimWorld Core and DLC files, including stats, body structures, weapon information, and comparisons.
 - **Combat and texture previews**: Inspect weapon burst timing, theoretical DPS, and locally available mechanoid textures.

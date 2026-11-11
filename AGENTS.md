@@ -17,6 +17,11 @@ Build the **complete** RimWorld mechanoid XML visual design workbench described 
 - Keep feature-related logic close; avoid giant service classes, reflection-heavy form switches, circular dependencies, unnecessary abstraction and empty scaffolding.
 
 ## UX contract
+- **Assume every new user has never written XML.** The normal workflow must consist of visual preset cards, clear icons, ordinary controls, previews and confirmation. Never expose `<li>`, `defName` paths, raw lists, inherited C# fields or manual XML text as the primary way to design a unit.
+- Keep raw XML, files, attributes and arbitrary field editing in **Advanced XML Tools** only. Normal flows must stay independently usable end to end.
+- Every preset must write valid native RimWorld XML through the domain layer, preserve document history, show selection feedback and refuse unsupported structures rather than fake success.
+- Add a real empty state for each feature. Avoid blank panes, disabled actions with no reason, and hidden prerequisite steps. Graphical resource import should derive paths automatically.
+- The linked ThingDef / PawnKindDef / BodyDef are one mechanical unit in user language; follow its selection across stages. Surface game technical names only in opt-in advanced details.
 - Retro digital **without visual noise**. Legibility, no clipping, no white flashes, accessible keyboard focus, true selection state, responsive docking, reduced motion, high DPI.
 - Prefer fully functional UI paths to placeholders. Never silently apply unconfirmed default values as user decisions.
 - All interaction should be undoable when appropriate. Validation points to the exact offending field.
