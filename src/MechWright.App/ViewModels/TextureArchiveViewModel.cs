@@ -62,7 +62,7 @@ public sealed partial class MainWindowViewModel
             var files = DirectionalTextureArchive.Extract(
                 _textureArchivePath, SelectedArchiveTextureGroup.Group);
             RegisterMechTextures(files);
-            ArchiveTextureInfo = "已选择 " + SelectedArchiveTextureGroup.Name +
+            ArchiveTextureInfo = "已选择 " + SelectedArchiveTextureGroup.Group.Name +
                 " 的方向贴图，已交给当前机械体的资源登记流程。";
         }
         catch (Exception ex)
