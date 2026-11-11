@@ -49,39 +49,9 @@ public sealed partial class MainWindowViewModel
         foreach (var field in VisualContentEditor.Common)
             available[(field.DefType,field.Path)] = field;
 
-        // Discover user-inserted fields even when the external game catalog
-        // is not connected: an imported Mod may use completely new scalar names.
-        foreach (var type in new[] { "ThingDef", "PawnKindDef" })
-        {
-            var file = _workspace.FindDefinitionFile(type,name);
-            var def = file?.Document.Definitions()
-                .FirstOrDefault(x => x.Type == type && x.DefName == name);
-            if (def == null) continue;
-            foreach (var leaf in def.Element.Descendants()
-                .Where(x => !x.HasElements &&
-                    x.Nodes().All(n => n is XText or XCData)))
-            {
-                var ancestors=leaf.Ancestors().TakeWhile(x=>x!=def.Element)
-                    .Reverse().ToArray();
-                var steps=ancestors.Select(x=>x.Name.LocalName)
-                    .Append(leaf.Name.LocalName).ToArray();
-                if (steps.Contains("li",StringComparer.Ordinal) ||
-                    steps.Length>5 || steps.Length==0 ||
-                    steps[0]=="defName" || steps[^1]=="defName") continue;
-                var path=string.Join('/',steps);
-                if (available.ContainsKey((type,path)))continue;
-                var known=StandardFieldRules.Describe(steps[^1]);
-                var kind=known?.Kind ?? (bool.TryParse(leaf.Value,out _)
-                    ? "Boolean"
-                    : decimal.TryParse(leaf.Value,NumberStyles.Float,
-                        CultureInfo.InvariantCulture,out _) ? "Number" : "Text");
-                available[(type,path)]=new VisualContentEditor.Option(
-                    type,path,known?.Description ?? steps[^1],
-                    VisualContentEditor.CategoryOf(type,path),kind,
-                    leaf.Value, known?.Hint ?? "工程中的自定义原生字段",
-                    "当前工程",known!=null, known?.Allowed);
-            }
-        }
+        // Preserve arbitrary user-added scalar fields, including ones not in Core/DLC.
+        foreach(var field in VisualContentEditor.ExistingOptions(_workspace,name))
+            available.TryAdd((field.DefType,field.Path),field);
         var order=new[]
         {
             "身份与描述","基础性能","机械师与生成","武器与战斗",

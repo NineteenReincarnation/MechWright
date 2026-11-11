@@ -99,6 +99,38 @@ public static class VisualContentEditor
     private static string FriendlyLabel(string name) =>
         name.Length > 0 ? char.ToUpperInvariant(name[0]) + name[1..] : name;
 
+    /// <summary>Existing scalar fields are included even if absent from the game catalog.</summary>
+    public static IReadOnlyList<Option> ExistingOptions(MechWorkspace project,string name)
+    {
+        var items=new List<Option>();
+        foreach(var type in new[]{"ThingDef","PawnKindDef"})
+        {
+            var file=project.FindDefinitionFile(type,name);
+            var def=file?.Document.Definitions().FirstOrDefault(x=>
+                x.Type==type && x.DefName==name);
+            if(def==null)continue;
+            foreach(var leaf in def.Element.Descendants().Where(x=>!x.HasElements &&
+                x.Nodes().All(n=>n is XText or XCData)))
+            {
+                var steps=leaf.Ancestors().TakeWhile(x=>x!=def.Element)
+                    .Reverse().Select(x=>x.Name.LocalName)
+                    .Append(leaf.Name.LocalName).ToArray();
+                if(steps.Length is <1 or >5 || steps.Contains("li",StringComparer.Ordinal)
+                   || steps[0]=="defName" || steps[^1]=="defName")continue;
+                var path=string.Join('/',steps);
+                var known=StandardFieldRules.Describe(steps[^1]);
+                var kind=known?.Kind ?? (bool.TryParse(leaf.Value,out _)
+                    ? "Boolean" : double.TryParse(leaf.Value,NumberStyles.Float,
+                    CultureInfo.InvariantCulture,out _)? "Number":"Text");
+                items.Add(new Option(type,path,known?.Description??steps[^1],
+                    CategoryOf(type,path),kind,leaf.Value,
+                    known?.Hint??"从当前工程识别的自定义配置项","当前工程",
+                    known!=null,known?.Allowed));
+            }
+        }
+        return items.DistinctBy(x=>(x.DefType,x.Path)).ToArray();
+    }
+
     public static string? Read(MechWorkspace project, string mechDefName, Option field)
     {
         var file = project.FindDefinitionFile(field.DefType, mechDefName);
