@@ -75,7 +75,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     public bool IsBusy
     {
         get => _isBusy;
-        private set { _isBusy = value; Notify(); }
+        private set { _isBusy = value; Notify(); Notify(nameof(VanillaEmptyMessage)); }
     }
     public string DefinitionCount => $"{Definitions.Count} DEFINITIONS";
     public string CatalogCount => $"{_catalog.Count} LOCAL DEFS";

@@ -4,9 +4,17 @@
              x:Class="MechWright.App.Views.VanillaLibraryView"
              x:DataType="vm:MainWindowViewModel"
              Background="#101A21" Foreground="#E6ECEB">
-<Grid RowDefinitions="Auto,Auto,*" Margin="7" RowSpacing="7">
-                <TextBlock Grid.Row="0" Text="{Binding VanillaStatus}"
-                           FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap" Margin="0,5"/>
+<Grid RowDefinitions="Auto,Auto,*" Margin="7" RowSpacing="10">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="14" Margin="0,4">
+                  <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="游戏目录 / GAME SOURCE" FontWeight="SemiBold" FontSize="12"
+                               Foreground="#8DBCB4"/>
+                    <TextBlock Text="{Binding VanillaStatus}" FontSize="11"
+                               Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                  </StackPanel>
+                  <Button Grid.Column="1" Content="选择 RimWorld 安装目录"
+                          Click="SelectRimWorld_Click" MinWidth="190" VerticalAlignment="Center"/>
+                </Grid>
                 <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
                               VerticalScrollBarVisibility="Disabled">
                   <ItemsControl ItemsSource="{Binding VanillaPackages}">
@@ -228,5 +236,22 @@
                     </Grid>
                   </Border>
                 </Grid>
-              </Grid>
+                              <Border Grid.Row="2" IsVisible="{Binding ShowVanillaEmpty}"
+                        Background="#101A21" BorderBrush="#293E47" BorderThickness="1"
+                        CornerRadius="8" Padding="28">
+                  <StackPanel MaxWidth="430" HorizontalAlignment="Center"
+                              VerticalAlignment="Center" Spacing="15">
+                    <TextBlock Text="还没有读取原版机械体资料" FontSize="20" FontWeight="SemiBold"
+                               Foreground="#E8EFED" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding VanillaEmptyMessage}" FontSize="12"
+                               Foreground="#9BB0B9" TextWrapping="Wrap"
+                               TextAlignment="Center"/>
+                    <Button Content="连接游戏目录并加载机械体" Classes="primary"
+                            Click="SelectRimWorld_Click" HorizontalAlignment="Center"/>
+                    <TextBlock Text="只读取游戏 XML。需要对应 DLC 已安装，不会向项目复制游戏文件。"
+                               FontSize="11" Foreground="#688E91" TextWrapping="Wrap"
+                               TextAlignment="Center"/>
+                  </StackPanel>
+                </Border>
+</Grid>
 </UserControl>

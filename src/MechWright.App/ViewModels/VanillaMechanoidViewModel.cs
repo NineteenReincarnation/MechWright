@@ -13,7 +13,7 @@ public sealed partial class MainWindowViewModel
     private string _vanillaSearch = "";
     private string _vanillaPackage = "全部";
     private string _vanillaWeight = "全部";
-    private string _vanillaStatus = "尚未扫描游戏 · 从顶部“原版 / DLC 目录”选择 RimWorld 根目录或 Data 文件夹";
+    private string _vanillaStatus = "尚未扫描游戏 · 点击本窗口的“选择 RimWorld 安装目录”，连接 Core 与已安装 DLC";
     private string _vanillaDescription = "";
     private string _vanillaOriginalXml = "";
     private string _vanillaSource = "";
@@ -144,6 +144,11 @@ public sealed partial class MainWindowViewModel
 
     public string VanillaCount =>
         $"{VisibleVanillaMechs.Count} / {_vanillaMechs.Count} 机械体";
+    public bool HasVanillaData => _vanillaMechs.Count != 0;
+    public bool ShowVanillaEmpty => !HasVanillaData;
+    public string VanillaEmptyMessage => IsBusy
+        ? "正在索引本地 RimWorld 的 XML 定义。"
+        : "请选择游戏的安装目录或 Data 文件夹。加载完成后，左侧可以按机体名称、DLC 和重量等级筛选。";
 
     public string VanillaTitle => SelectedVanillaMech?.Profile.Summary ?? "选择一台原版机械体";
     public string VanillaGrade => SelectedVanillaMech?.Profile.WeightClass ?? "—";
@@ -180,6 +185,9 @@ public sealed partial class MainWindowViewModel
                 VanillaStatus += $" · {scan.Warnings.Count} 处文件读取提示";
         }
         FilterVanillaMechs();
+        Notify(nameof(HasVanillaData));
+        Notify(nameof(ShowVanillaEmpty));
+        Notify(nameof(VanillaEmptyMessage));
     }
 
     private void FilterVanillaMechs()
