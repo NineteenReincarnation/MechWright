@@ -31,7 +31,7 @@
             <Button Content="打开 XML" Click="OpenFile_Click"/>
             <Button Content="编辑源码" Click="EditRaw_Click"/>
             <Button Content="原版机械体图鉴" Click="OpenVanillaLibrary_Click" Background="#28535A"/>
-          <Button Content="原版 / DLC 目录" Click="ScanCatalog_Click"/>
+            <Button Content="原版 / DLC 目录" Click="ScanCatalog_Click"/>
             <Button Content="撤销" Click="Undo_Click"/>
             <Button Content="重做" Click="Redo_Click"/>
             <Button Content="导出当前 XML" Click="Export_Click"/>

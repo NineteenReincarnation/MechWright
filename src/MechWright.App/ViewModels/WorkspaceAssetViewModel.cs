@@ -82,6 +82,7 @@ public sealed partial class MainWindowViewModel
             WorkspaceAssetService.Register(_workspace, AssetInputFile, AssetOutputPath);
             AssetMessage = "已登记 · " + AssetOutputPath + "；导出时需要启用复制资源。";
             RefreshProjectAssets();
+            RefreshGraphics();
             Status = "已将本地资源添加到项目清单，未修改源文件";
         }
         catch (Exception ex)
@@ -99,6 +100,7 @@ public sealed partial class MainWindowViewModel
         {
             _workspace.RemoveAsset(name);
             RefreshProjectAssets();
+            RefreshGraphics();
             AssetMessage = "已从项目导出清单中移除 " + name + "；本地文件未删除。";
             Status = AssetMessage;
         }

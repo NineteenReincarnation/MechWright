@@ -18,8 +18,13 @@ public static class WorkspaceDiskService
     private const long MaxTotalBytes = 128 * 1024 * 1024;
     private static readonly string[] DefFolders = ["Defs", "Patches", "Languages"];
 
-    public static async Task<MechWorkspace> ImportAsync(
-        string sourceFolder, CancellationToken token = default)
+    public static Task<MechWorkspace> ImportAsync(
+        string sourceFolder, CancellationToken token = default) =>
+        Task.Run(() => ImportCoreAsync(sourceFolder, token), token);
+
+    // Entire XML parse / index pass stays off the Avalonia UI thread.
+    private static async Task<MechWorkspace> ImportCoreAsync(
+        string sourceFolder, CancellationToken token)
     {
         var root = Path.GetFullPath(sourceFolder);
         if (!Directory.Exists(root))
@@ -68,7 +73,7 @@ public static class WorkspaceDiskService
         }
         // Discover only files belonging to the chosen Mod root. No Core/DLC
         // assets are linked, bundled or redistributed.
-        await Task.Run(() => WorkspaceAssetService.ImportAssets(workspace, token), token);
+        WorkspaceAssetService.ImportAssets(workspace, token);
         return workspace;
     }
 
