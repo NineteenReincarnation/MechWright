@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MechWright.Core;
 using MechWright.RimWorld;
+using MechWright.Infrastructure;
 
 namespace MechWright.App.ViewModels;
 
@@ -427,7 +428,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             RefreshReferences();
             RefreshVanillaCatalog(scan);
             UseNativeFieldCatalog(scan);
-            Status = $"本地定义索引完成 · {_catalog.Count} 项 · 原版机械体 {_vanillaMechs.Count} 台 · 只读";
+            if (scan.IsGameInstallation)
+            {
+                RecentGamePath.Remember(folder);
+                Status = $"已连接原版游戏目录 · {_vanillaMechs.Count} 台机械体 · {_catalog.Count} 个原生定义";
+            }
+            else
+            {
+                Status = "所选路径不是完整的 RimWorld 根目录或 Data 文件夹，请重新选择。";
+            }
         }
         catch (Exception ex) { ReportError(ex); }
         finally { IsBusy = false; }

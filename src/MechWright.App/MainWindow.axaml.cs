@@ -18,6 +18,12 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = _vm;
+        Opened += async (_, _) =>
+        {
+            var saved = RecentGamePath.Find();
+            if (saved == null) return;
+            await _vm.LoadCatalogAsync(saved);
+        };
     }
 
     private async Task<bool> ConfirmDiscardAsync()
