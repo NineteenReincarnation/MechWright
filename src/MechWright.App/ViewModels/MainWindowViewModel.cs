@@ -26,6 +26,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     private FieldRow? _selectedField;
     private CatalogRow? _selectedCatalog;
     private ReferenceRow? _selectedReference;
+    private MechPropertyRow? _selectedMechProperty;
+    private string _propertyValue = "";
 
     public ObservableCollection<DefinitionRow> Definitions { get; } = new();
     public ObservableCollection<DefinitionRow> VisibleDefinitions { get; } = new();
@@ -34,6 +36,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     public ObservableCollection<DiagnosticRow> Diagnostics { get; } = new();
     public ObservableCollection<CatalogRow> VisibleCatalog { get; } = new();
     public ObservableCollection<ReferenceRow> References { get; } = new();
+    public ObservableCollection<MechPropertyRow> MechProperties { get; } = new();
     public string[] SupportedKinds { get; } = ["ThingDef", "PawnKindDef", "BodyDef", "BodyPartDef", "RecipeDef"];
     private IReadOnlyList<CatalogEntry> _catalog = Array.Empty<CatalogEntry>();
 
@@ -123,6 +126,55 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         set { _selectedReference = value; Notify(); }
     }
 
+    public MechPropertyRow? SelectedMechProperty
+    {
+        get => _selectedMechProperty;
+        set
+        {
+            _selectedMechProperty = value;
+            Notify();
+            Notify(nameof(PropertyHint));
+            PropertyValue = value?.Value ?? value?.Spec.Suggestion ?? "";
+        }
+    }
+    public string PropertyValue
+    {
+        get => _propertyValue;
+        set { _propertyValue = value; Notify(); }
+    }
+    public string PropertyHint => SelectedMechProperty == null ? "选择标准字段"
+        : $"{SelectedMechProperty.Spec.Help} · 建议值：{SelectedMechProperty.Spec.Suggestion}（不自动写出）";
+
+    public void ApplyMechProperty()
+    {
+        if (_document == null || SelectedDefinition == null || SelectedMechProperty == null) return;
+        var index = SelectedDefinition.Entry.Index;
+        var field = SelectedMechProperty.Spec;
+        try
+        {
+            MechanoidProperties.Apply(_document, SelectedDefinition.Entry, field, PropertyValue);
+            RefreshAll(index);
+            SelectedMechProperty = MechProperties.FirstOrDefault(x => x.Spec == field);
+            Status = $"已显式写入 {field.Label} = {PropertyValue}；可撤销";
+        }
+        catch (Exception ex) { ReportError(ex); }
+    }
+
+    public void ResetMechProperty()
+    {
+        if (_document == null || SelectedDefinition == null || SelectedMechProperty == null) return;
+        var index = SelectedDefinition.Entry.Index;
+        var field = SelectedMechProperty.Spec;
+        try
+        {
+            MechanoidProperties.Reset(_document, SelectedDefinition.Entry, field);
+            RefreshAll(index);
+            SelectedMechProperty = MechProperties.FirstOrDefault(x => x.Spec == field);
+            Status = $"已移除 {field.Label} 的显式覆写（由原版继承或保持未定义）";
+        }
+        catch (Exception ex) { ReportError(ex); }
+    }
+
     public void JumpToReference()
     {
         if (SelectedReference is not { } item || !item.Reference.CanNavigateLocally)
@@ -194,12 +246,16 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     {
         Fields.Clear();
         BodyParts.Clear();
+        MechProperties.Clear();
         if (_document != null && _selectedDefinition != null)
         {
             foreach (var f in _document.Fields(_selectedDefinition.Entry)) Fields.Add(new FieldRow(f));
             foreach (var part in _document.BodyParts(_selectedDefinition.Entry))
                 BodyParts.Add(new BodyRow(part));
+            foreach (var spec in MechanoidProperties.For(_selectedDefinition.Entry.Type))
+                MechProperties.Add(new MechPropertyRow(spec, MechanoidProperties.Read(_selectedDefinition.Entry, spec)));
         }
+        SelectedMechProperty = MechProperties.FirstOrDefault();
         SelectedField = preferredPath == null ? Fields.FirstOrDefault()
             : Fields.FirstOrDefault(x => x.Field.Path == preferredPath);
         SelectedBodyPart = bodyPath == null ? BodyParts.FirstOrDefault()
@@ -379,4 +435,14 @@ public sealed class ReferenceRow(DefinitionReference reference)
         _ => "待解析 / 外部 Mod"
     };
     public string Path => reference.FieldPath;
+}
+
+public sealed class MechPropertyRow(MechanoidProperties.Spec spec, string? value)
+{
+    public MechanoidProperties.Spec Spec { get; } = spec;
+    public string? Value { get; } = value;
+    public string Label => spec.Label;
+    public string DisplayValue => value == null
+        ? $"未显式配置  /  建议 {spec.Suggestion}"
+        : $"显式值  {value}";
 }

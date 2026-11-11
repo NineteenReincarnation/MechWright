@@ -143,6 +143,32 @@
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="8"/>
             </TabItem>
+            <TabItem Header="基础属性">
+              <Grid RowDefinitions="Auto,*,Auto" RowSpacing="9" Margin="8">
+                <TextBlock Grid.Row="0" Text="ThingDef / PawnKindDef 常用原生字段 · 建议值不会自动写出" Foreground="#A3B1B4" FontSize="12" TextWrapping="Wrap" Margin="0,7"/>
+                <ListBox Grid.Row="1" ItemsSource="{Binding MechProperties}"
+                         SelectedItem="{Binding SelectedMechProperty,Mode=TwoWay}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:MechPropertyRow">
+                      <Grid ColumnDefinitions="180,*" Margin="8,5">
+                        <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="12" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="1" Text="{Binding DisplayValue}" FontSize="11" Foreground="#8DBCB4" TextWrapping="Wrap"/>
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Grid.Row="2" Background="#111A20" BorderBrush="#34454D" BorderThickness="1" Padding="10" CornerRadius="5">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding PropertyHint}" FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding PropertyValue,Mode=TwoWay}" Watermark="输入自定义值"/>
+                    <WrapPanel Orientation="Horizontal" Spacing="8">
+                      <Button Content="应用明确覆写" Click="ApplyMechProperty_Click"/>
+                      <Button Content="恢复继承 / 未定义" Click="ResetMechProperty_Click"/>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+              </Grid>
+            </TabItem>
             <TabItem Header="引用关系">
               <Grid RowDefinitions="Auto,*,Auto" Margin="8" RowSpacing="8">
                 <TextBlock Grid.Row="0" Text="本文件与本机已索引 Def 的引用关系。待解析不等于游戏加载错误。" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap"/>

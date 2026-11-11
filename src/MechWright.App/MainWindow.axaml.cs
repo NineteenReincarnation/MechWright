@@ -200,6 +200,8 @@ public sealed partial class MainWindow : Window
     private void AddDefinition_Click(object? sender, RoutedEventArgs e) => _vm.AddDefinition();
     private void ApplyBody_Click(object? sender, RoutedEventArgs e) => _vm.ApplyBodyPart();
     private void JumpReference_Click(object? sender, RoutedEventArgs e) => _vm.JumpToReference();
+    private void ApplyMechProperty_Click(object? sender, RoutedEventArgs e) => _vm.ApplyMechProperty();
+    private void ResetMechProperty_Click(object? sender, RoutedEventArgs e) => _vm.ResetMechProperty();
     private void AddBody_Click(object? sender, RoutedEventArgs e) => _vm.AddBodyPart();
     private void RemoveBody_Click(object? sender, RoutedEventArgs e) => _vm.RemoveBodyPart();
     private void MoveBodyUp_Click(object? sender, RoutedEventArgs e) => _vm.MoveBodyPart(-1);
