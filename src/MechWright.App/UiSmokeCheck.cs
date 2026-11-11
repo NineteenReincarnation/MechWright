@@ -43,6 +43,13 @@ internal static class UiSmokeCheck
                 Require(VisualMechDesigner.CurrentString(project, "PawnKindDef",
                     "MP_UiSmoke", "combatPower") == "420",
                     "Visual chassis preset did not update the native PawnKindDef.");
+                Require(vm.WorksheetFields.Count >= 10,
+                    "The vertical field worksheet did not show standard rows.");
+                var cp=vm.WorksheetFields.First(x=>x.Spec.Path=="combatPower");
+                cp.Number=437;
+                vm.SaveWorksheetField(cp);
+                Require(VisualContentEditor.Read(project,"MP_UiSmoke",cp.Spec)=="437",
+                    "Editing a worksheet field did not save into native PawnKindDef.");
                 vm.WorkflowStep = 1;
                 Require(vm.SelectedDefinition?.Entry.Type == "BodyDef" &&
                     vm.BodyParts.Count > 0, "Body stage did not select the linked BodyDef.");
@@ -53,6 +60,24 @@ internal static class UiSmokeCheck
                 vm.AddVisualMelee();
                 Require(vm.InstalledMelee.Count == 1,
                     "Clicking a melee preset did not create native tool configuration.");
+                vm.SelectedFreeformTarget=vm.FreeformTargets[0];
+                vm.FreeformContainer="tools";
+                vm.AddFreeformModule();
+                Require(vm.FreeformModules.Count>=1,
+                    "Freeform list editor did not create a new item.");
+                vm.SelectedFreeformNode=vm.FreeformNodes.First();
+                vm.FreeformName="power";
+                vm.FreeformValue="19";
+                vm.AddFreeformField();
+                Require(project.FindDefinitionFile("ThingDef","MP_UiSmoke")!
+                    .Document.Export().Contains("<power>19</power>"),
+                    "Freeform native field was not added.");
+                vm.FreeformDefType="BodyPartDef";
+                vm.FreeformNewDefName="MP_SmokeWing";
+                vm.FreeformNewDefLabel="Smoke wing";
+                vm.CreateFreeformDefinition();
+                Require(project.FindDefinitionFile("BodyPartDef","MP_SmokeWing")!=null,
+                    "Blank custom BodyPartDef was not created.");
                 vm.WorkflowStep = 3;
                 Require(vm.GestationIngredients.Count >= 1,
                     "Visual gestation material editor did not initialize.");
