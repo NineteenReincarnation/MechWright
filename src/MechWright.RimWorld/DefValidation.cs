@@ -10,6 +10,8 @@ public static class DefValidation
     {
         var diagnostics = new List<Diagnostic>();
         var root = document.Xml.Root;
+        if (root?.Name.LocalName == "LanguageData")
+            return diagnostics; // Native RimWorld translation XML.
         if (root?.Name.LocalName == "Patch")
             return diagnostics; // Root-level RimWorld Patch XML is a valid project resource.
         if (root?.Name.LocalName != "Defs")

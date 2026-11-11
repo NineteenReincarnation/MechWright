@@ -62,10 +62,31 @@ public class MechWorkspaceTests
     [InlineData("Defs/../../outside.xml")]
     [InlineData("C:/Windows/evil.xml")]
     [InlineData("Defs/not-xml.txt")]
+    [InlineData("Defs/CON.xml")]
     public void RejectsUnsafeProjectPaths(string path)
     {
         var project = Create();
         Assert.Throws<ArgumentException>(() => project.AddXml(path, "<Defs/>"));
+    }
+
+    [Fact]
+    public void NewProjectFileIsDirtyUntilFullProjectExport()
+    {
+        var project = new MechWorkspace("New", "");
+        project.AddXml("1.7/Defs/New.xml", "<Defs/>");
+        Assert.True(project.IsDirty);
+        project.MarkAllSaved();
+        Assert.False(project.IsDirty);
+        project.AddXml("1.7/Defs/Another.xml", "<Defs/>");
+        Assert.True(project.IsDirty);
+    }
+
+    [Fact]
+    public void ImportedProjectFilesStartClean()
+    {
+        var project = new MechWorkspace("Imported", "folder");
+        project.AddXml("1.7/Defs/Body.xml", "<Defs/>", fromDisk: true);
+        Assert.False(project.IsDirty);
     }
 
     [Fact]

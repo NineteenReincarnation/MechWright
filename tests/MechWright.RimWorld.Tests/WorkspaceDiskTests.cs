@@ -35,6 +35,53 @@ public sealed class WorkspaceDiskTests
     }
 
     [Fact]
+    public async Task ImportSupportsDirectDefsFolderAndLanguages()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "MechWrightTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var folder = Path.Combine(root, "Defs");
+            Directory.CreateDirectory(folder);
+            await File.WriteAllTextAsync(Path.Combine(folder, "Body.xml"), "<Defs/>");
+            var project = await WorkspaceDiskService.ImportAsync(folder);
+            Assert.NotNull(project.FindFile("Defs/Body.xml"));
+            Assert.False(project.IsDirty);
+
+            var other = Path.Combine(root, "Mod");
+            Directory.CreateDirectory(Path.Combine(other, "Languages", "ChineseSimplified", "DefInjected"));
+            await File.WriteAllTextAsync(
+                Path.Combine(other, "Languages", "ChineseSimplified", "DefInjected", "Labels.xml"),
+                "<LanguageData><MP_Manta.label>机械蝠鲼</MP_Manta.label></LanguageData>");
+            var language = await WorkspaceDiskService.ImportAsync(other);
+            Assert.Single(language.Files);
+            Assert.Empty(language.Validate());
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
+    public async Task ExistingAboutPreservesOtherMetadataAndUsesConfirmedNameAndId()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "MechWrightTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            var project = new MechWorkspace("Test", root)
+            {
+                OriginalAboutXml = "<ModMetaData><name>Old</name><packageId>old.id</packageId><description>Keep this</description></ModMetaData>"
+            };
+            project.AddXml("1.7/Defs/Mechs.xml", "<Defs/>");
+            var dest = Path.Combine(root, "new");
+            await WorkspaceDiskService.ExportAsync(project, dest, "New", "new.author.mod");
+            var about = await File.ReadAllTextAsync(Path.Combine(dest, "About", "About.xml"));
+            Assert.Contains("<name>New</name>", about);
+            Assert.Contains("<packageId>new.author.mod</packageId>", about);
+            Assert.Contains("<description>Keep this</description>", about);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public async Task ExportRefusesExistingDirectoryWithoutOverwriting()
     {
         var root = Path.Combine(Path.GetTempPath(), "MechWrightTests", Guid.NewGuid().ToString("N"));

@@ -18,7 +18,7 @@ public sealed class MechWorkspace
     public string Name { get; }
     public string SourceRoot { get; }
     public IReadOnlyList<WorkspaceFile> Files => _files.AsReadOnly();
-    public bool IsDirty => _files.Any(x => x.Document.IsDirty);
+    public bool IsDirty => _files.Any(x => x.IsNew || x.Document.IsDirty);
     public string? OriginalAboutXml { get; set; }
     public int DefinitionCount => _files.Sum(x => x.Document.Definitions().Count);
 
@@ -28,7 +28,7 @@ public sealed class MechWorkspace
         SourceRoot = sourceRoot;
     }
 
-    public WorkspaceFile AddXml(string relativePath, string contents)
+    public WorkspaceFile AddXml(string relativePath, string contents, bool fromDisk = false)
     {
         relativePath = ValidateRelativePath(relativePath);
         if (_byPath.ContainsKey(relativePath))
@@ -36,7 +36,7 @@ public sealed class MechWorkspace
         if (_files.Count >= 5000)
             throw new InvalidOperationException("Maximum XML document count exceeded.");
         var file = new WorkspaceFile(relativePath,
-            DefDocument.Parse(contents, relativePath));
+            DefDocument.Parse(contents, relativePath)) { IsNew = !fromDisk };
         _files.Add(file);
         _byPath.Add(relativePath, file);
         Reindex();
@@ -108,7 +108,11 @@ public sealed class MechWorkspace
 
     public void MarkAllSaved()
     {
-        foreach (var file in _files) file.Document.MarkSaved();
+        foreach (var file in _files)
+        {
+            file.Document.MarkSaved();
+            file.IsNew = false;
+        }
     }
 
     public void Reindex()
@@ -141,6 +145,12 @@ public sealed class MechWorkspace
             segments.Any(x => x.EndsWith(' ') || x.EndsWith('.') ||
                 x.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
             throw new ArgumentException("Unsafe XML project path.");
+        // Windows device names are invalid even when followed by a .xml extension.
+        var devices = new[] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2",
+            "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+        if (segments.Any(x => devices.Contains(x.Split('.')[0], StringComparer.OrdinalIgnoreCase)))
+            throw new ArgumentException("Reserved Windows filename in project path.");
         if (!path.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Only XML project files are supported.");
         return string.Join('/', segments);
@@ -149,6 +159,7 @@ public sealed class MechWorkspace
 
 public sealed record WorkspaceFile(string RelativePath, DefDocument Document)
 {
+    public bool IsNew { get; internal set; }
     public string Display => RelativePath;
 }
 

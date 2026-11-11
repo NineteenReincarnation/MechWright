@@ -106,6 +106,6 @@ public sealed class ProjectFileRow(WorkspaceFile file) : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     public WorkspaceFile File { get; } = file;
-    public string Display => (File.Document.IsDirty ? "● " : "○ ") + File.RelativePath;
+    public string Display => (File.Document.IsDirty || File.IsNew ? "● " : "○ ") + File.RelativePath;
     public void Refresh() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Display)));
 }

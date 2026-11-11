@@ -16,7 +16,7 @@ public static class WorkspaceDiskService
 {
     private const int MaxFiles = 5000;
     private const long MaxTotalBytes = 128 * 1024 * 1024;
-    private static readonly string[] DefFolders = ["Defs", "Patches"];
+    private static readonly string[] DefFolders = ["Defs", "Patches", "Languages"];
 
     public static async Task<MechWorkspace> ImportAsync(
         string sourceFolder, CancellationToken token = default)
@@ -43,8 +43,15 @@ public static class WorkspaceDiskService
             if (size > DefDocument.MaxXmlCharacters * 4L || total > MaxTotalBytes)
                 throw new InvalidDataException("Project XML size exceeds the safety limit.");
             var relative = Path.GetRelativePath(root, file).Replace('\\', '/');
+            if (DefFolders.Contains(Path.GetFileName(root), StringComparer.OrdinalIgnoreCase))
+            {
+                var prefix = Path.GetFileName(root);
+                var parentName = Path.GetFileName(Path.GetDirectoryName(root));
+                relative = (string.Equals(parentName, "1.7", StringComparison.OrdinalIgnoreCase)
+                    ? "1.7/" : "") + prefix + "/" + relative;
+            }
             var text = await File.ReadAllTextAsync(file, token);
-            try { workspace.AddXml(relative, text); }
+            try { workspace.AddXml(relative, text, fromDisk: true); }
             catch (XmlException ex)
             {
                 throw new InvalidDataException($"Invalid XML in {relative}: {ex.Message}", ex);
@@ -70,11 +77,14 @@ public static class WorkspaceDiskService
             var candidate = Path.Combine(root, folder);
             if (Directory.Exists(candidate)) sources.Add(candidate);
         }
-        var version = Path.Combine(root, "1.7");
-        foreach (var folder in DefFolders)
+        foreach (var subRoot in new[] { "1.7", "Common" })
         {
-            var candidate = Path.Combine(version, folder);
-            if (Directory.Exists(candidate)) sources.Add(candidate);
+            var version = Path.Combine(root, subRoot);
+            foreach (var folder in DefFolders)
+            {
+                var candidate = Path.Combine(version, folder);
+                if (Directory.Exists(candidate)) sources.Add(candidate);
+            }
         }
         // A folder chosen directly from inside Defs or Patches is supported.
         if (sources.Count == 0 && DefFolders.Contains(Path.GetFileName(root),
@@ -108,7 +118,7 @@ public static class WorkspaceDiskService
         ArgumentNullException.ThrowIfNull(project);
         if (string.IsNullOrWhiteSpace(displayName) || displayName.Length > 128)
             throw new ArgumentException("The Mod name must contain 1–128 characters.");
-        if (project.OriginalAboutXml == null &&
+        if (string.IsNullOrWhiteSpace(packageId) ||
             !Regex.IsMatch(packageId, @"^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)+$"))
             throw new ArgumentException("Enter a valid packageId (for example local.author.modname).");
 
@@ -137,14 +147,15 @@ public static class WorkspaceDiskService
                     throw new InvalidDataException("Unsafe project file path escapes the export root.");
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 await File.WriteAllTextAsync(target, file.Document.Export(),
-                    new UTF8Encoding(false), token);
+                    OutputEncoding(file.Document.Xml.Declaration?.Encoding), token);
             }
 
             var aboutFolder = Path.Combine(stage, "About");
             Directory.CreateDirectory(aboutFolder);
-            var aboutText = project.OriginalAboutXml ?? CreateAboutXml(displayName, packageId);
+            var aboutText = CreateAboutXml(displayName, packageId, project.OriginalAboutXml);
+            var aboutEncoding = DefDocument.Parse(aboutText).Xml.Declaration?.Encoding;
             await File.WriteAllTextAsync(Path.Combine(aboutFolder, "About.xml"),
-                aboutText, new UTF8Encoding(false), token);
+                aboutText, OutputEncoding(aboutEncoding), token);
 
             token.ThrowIfCancellationRequested();
             Directory.Move(stage, final);
@@ -159,13 +170,32 @@ public static class WorkspaceDiskService
     private static bool HasReparsePoint(string path) =>
         (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
 
-    private static string CreateAboutXml(string title, string id)
+    private static Encoding OutputEncoding(string? declared)
     {
-        var doc = new XDocument(new XDeclaration("1.0", "utf-8", null),
-            new XElement("ModMetaData",
-                new XElement("name", title),
-                new XElement("packageId", id),
-                new XElement("supportedVersions", new XElement("li", "1.7"))));
-        return doc.Declaration + Environment.NewLine + doc.ToString();
+        // A file declaring UTF-16 must actually be written in UTF-16;
+        // silently forcing UTF-8 would make a valid import invalid on export.
+        return declared?.ToLowerInvariant() switch
+        {
+            null or "" or "utf-8" => new UTF8Encoding(false),
+            "utf-16" or "utf-16le" => new UnicodeEncoding(false, true),
+            "utf-16be" => new UnicodeEncoding(true, true),
+            _ => throw new InvalidDataException($"Unsupported XML encoding '{declared}'.")
+        };
+    }
+
+    private static string CreateAboutXml(string title, string id, string? original)
+    {
+        var doc = original == null
+            ? new XDocument(new XDeclaration("1.0", "utf-8", null),
+                new XElement("ModMetaData",
+                    new XElement("supportedVersions", new XElement("li", "1.7"))))
+            : DefDocument.Parse(original).Xml;
+        var root = doc.Root;
+        if (root?.Name.LocalName != "ModMetaData")
+            throw new InvalidDataException("Imported About.xml is not a ModMetaData document.");
+        root.SetElementValue("name", title);
+        root.SetElementValue("packageId", id);
+        return (doc.Declaration == null ? "" : doc.Declaration + Environment.NewLine)
+            + doc.ToString(SaveOptions.DisableFormatting);
     }
 }
