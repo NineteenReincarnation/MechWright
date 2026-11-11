@@ -72,8 +72,9 @@ internal static class UiSmokeCheck
                 vm.CloseContentEditor();
                 vm.WorkflowStep = 4;
                 Require(vm.IsReviewStage, "Review stage is inaccessible.");
-                Require(vm.VisualReviewChecks.Count == 5,
-                    "Novice review did not display the five visual checks.");
+                Require(vm.VisualReviewChecks.Count == 6 &&
+                    vm.VisualReviewChecks.Any(x=>x.Title=="机械培育" && x.Ready),
+                    "Novice review did not display and recognize gestation.");
                 vm.WorkflowStep = 5;
                 Require(vm.IsAdvancedStage, "Advanced editing remains inaccessible.");
 

@@ -269,7 +269,12 @@ public sealed class NativeListTemplateCatalog
         var result = new List<Template>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var counts = new Dictionary<(string,string),int>();
-        foreach (var source in defs)
+        // Put mechanoid-related examples first so generic game components
+        // cannot fill each container's bounded suggestion budget.
+        foreach (var source in defs.OrderByDescending(x =>
+                     x.Name?.StartsWith("Mech_",StringComparison.OrdinalIgnoreCase)==true ||
+                     x.ParentName?.Contains("Mechanoid",StringComparison.OrdinalIgnoreCase)==true ||
+                     x.FilePath.Contains("Mechanoid",StringComparison.OrdinalIgnoreCase)))
         {
             if (source.IsAbstract || source.Name == null ||
                 source.Type is not ("ThingDef" or "PawnKindDef")) continue;

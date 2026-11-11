@@ -62,19 +62,27 @@ public sealed partial class MainWindowViewModel
             hasGraphic ? $"已登记 {images} 张 PNG，机体外观已关联。"
                 : "还缺少 north / south / east 等方向的贴图，可以在外观页面导入。",
             hasGraphic));
+        var recipePresent = VisualGestationEditor.Exists(_workspace,name);
+        VisualReviewChecks.Add(new VisualReviewRow("机械培育",
+            recipePresent ? "已配置机械培育配方，导出时会包含其材料与科技要求。"
+                : "尚未配置机械培育（可选；普通机械体可以不培育）。",
+            recipePresent,Optional:true));
         var errors = _workspace.Validate().Count(x => x.Issue.Severity == Severity.Error);
         VisualReviewChecks.Add(new VisualReviewRow("XML 结构检查",
             errors == 0 ? "本地 XML 检查没有发现阻断错误。"
                 : $"发现 {errors} 处 XML 结构错误，请先处理。", errors == 0));
 
-        var done = VisualReviewChecks.Count(x => x.Ready);
-        VisualReviewSummary = $"{done} / {VisualReviewChecks.Count} 项已完成 · " +
+        var done = VisualReviewChecks.Count(x => x.Ready && !x.Optional);
+        var required = VisualReviewChecks.Count(x => !x.Optional);
+        VisualReviewSummary = $"{done} / {required} 项必要配置已完成 · " +
             (errors == 0 ? "可以导出并在 RimWorld 中测试" : "存在需要处理的 XML 错误");
     }
 }
-public sealed record VisualReviewRow(string Title, string Description, bool Ready)
+public sealed record VisualReviewRow(string Title, string Description,
+    bool Ready, bool Optional = false)
 {
-    public string Symbol => Ready ? "✓" : "!";
-    public IBrush Accent => Ready ? Brushes.LightSeaGreen : Brushes.Goldenrod;
-    public string State => Ready ? "完成" : "需要注意";
+    public string Symbol => Optional && !Ready ? "○" : Ready ? "✓" : "!";
+    public IBrush Accent => Optional && !Ready
+        ? Brushes.SlateGray : Ready ? Brushes.LightSeaGreen : Brushes.Goldenrod;
+    public string State => Optional && !Ready ? "可选" : Ready ? "完成" : "需要注意";
 }
