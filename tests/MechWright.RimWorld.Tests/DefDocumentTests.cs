@@ -97,6 +97,28 @@ public sealed class DefDocumentTests
     }
 
     [Fact]
+    public void RawXmlReplacement_IsOneUndoableChange()
+    {
+        var document = DefDocument.Parse(Input);
+        var modified = Input.Replace("4.2", "3.9");
+        document.ReplaceSource(modified);
+        Assert.Contains("<MoveSpeed>3.9</MoveSpeed>", document.Export());
+        Assert.True(document.Undo());
+        Assert.Equal(Input, document.Export());
+        Assert.True(document.Redo());
+        Assert.Contains("<MoveSpeed>3.9</MoveSpeed>", document.Export());
+    }
+
+    [Fact]
+    public void UnknownXmlWithCommentInsideLeaf_IsNotEditableViaFieldGrid()
+    {
+        var document = DefDocument.Parse("<Defs><ThingDef><defName>MP_X</defName><modField>one<!-- keep -->two</modField></ThingDef></Defs>");
+        var fields = document.Fields(document.Definitions().Single());
+        Assert.DoesNotContain(fields, f => f.Name == "modField");
+        Assert.Contains("<!-- keep -->", document.Export());
+    }
+
+    [Fact]
     public void SuccessfulSave_ResetsDirtyStateWithoutReparsing()
     {
         var document = DefDocument.Parse(Input);

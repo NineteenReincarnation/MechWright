@@ -225,6 +225,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         if (_document.Redo()) { RefreshAll(index, path); Status = "已重做"; }
     }
 
+    public void ReplaceRawXml(string raw)
+    {
+        if (_document == null) throw new InvalidOperationException("No XML document is open.");
+        var previousDefName = SelectedDefinition?.Entry.DefName;
+        _document.ReplaceSource(raw);
+        RefreshAll();
+        if (previousDefName != null)
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Entry.DefName == previousDefName);
+        Status = "完整 XML 已重新解析为一次可撤销修改 · 尚未写入磁盘";
+    }
+
     public void AddDefinition()
     {
         if (_document == null) { Status = "请先新建或打开 XML 文件"; return; }

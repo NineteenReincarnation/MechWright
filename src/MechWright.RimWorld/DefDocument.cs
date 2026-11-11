@@ -13,7 +13,7 @@ public sealed class DefDocument
     private readonly Stack<Change> _undo = new();
     private readonly Stack<Change> _redo = new();
     private string _original;
-    public XDocument Xml { get; }
+    public XDocument Xml { get; private set; }
     public string SourceName { get; }
     public bool IsDirty => _undo.Count != 0;
     public bool CanUndo => _undo.Count > 0;
@@ -22,6 +22,7 @@ public sealed class DefDocument
     private abstract record Change;
     private sealed record Edit(XElement Element, string OldValue, string NewValue) : Change;
     private sealed record Insert(XElement Element) : Change;
+    private sealed record ReplaceDocument(XDocument Before, XDocument After) : Change;
 
     private DefDocument(XDocument xml, string raw, string sourceName)
     {
@@ -68,7 +69,7 @@ public sealed class DefDocument
     public IReadOnlyList<DefField> Fields(DefEntry definition)
     {
         return definition.Element.DescendantsAndSelf()
-            .Where(e => !e.HasElements)
+            .Where(e => !e.HasElements && e.Nodes().All(n => n is XText or XCData))
             .Select(e => new DefField(e, GetPath(e)))
             .ToList();
     }
@@ -105,8 +106,8 @@ public sealed class DefDocument
 
     public void SetField(DefField field, string value)
     {
-        if (field.Element.HasElements)
-            throw new InvalidOperationException("Only leaf XML fields may be edited directly.");
+        if (field.Element.HasElements || !field.Element.Nodes().All(n => n is XText or XCData))
+            throw new InvalidOperationException("Only text-only leaf XML fields may be edited directly.");
         if (field.Element.Document != Xml)
             throw new InvalidOperationException("The field is not part of the current document.");
         var before = field.Element.Value;
@@ -128,6 +129,9 @@ public sealed class DefDocument
             case Insert addition:
                 addition.Element.Remove();
                 break;
+            case ReplaceDocument replacement:
+                Xml = replacement.Before;
+                break;
         }
         _redo.Push(change);
         return true;
@@ -145,9 +149,21 @@ public sealed class DefDocument
             case Insert addition:
                 Xml.Root!.Add(addition.Element);
                 break;
+            case ReplaceDocument replacement:
+                Xml = replacement.After;
+                break;
         }
         _undo.Push(change);
         return true;
+    }
+
+    /// <summary>Replace the whole XML tree as one undoable edit, preserving raw and unknown fields.</summary>
+    public void ReplaceSource(string source)
+    {
+        var newDocument = Parse(source, SourceName).Xml; // validates XML and rejects DTD first
+        _undo.Push(new ReplaceDocument(Xml, newDocument));
+        Xml = newDocument;
+        _redo.Clear();
     }
 
     public void MarkSaved()

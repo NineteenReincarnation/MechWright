@@ -23,6 +23,7 @@
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Spacing="7" VerticalAlignment="Center">
           <Button Content="新建 XML" Click="NewFile_Click"/>
           <Button Content="打开 XML" Click="OpenFile_Click"/>
+          <Button Content="编辑源码" Click="EditRaw_Click"/>
           <Button Content="导入目录" Click="ScanCatalog_Click"/>
           <Button Content="撤销" Click="Undo_Click"/>
           <Button Content="重做" Click="Redo_Click"/>
