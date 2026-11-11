@@ -39,34 +39,34 @@
                   HorizontalScrollBarVisibility="Disabled">
       <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
         <StackPanel Grid.Column="0" Spacing="9">
-          <TextBlock Text="IDENTITY / 定义与分类" Foreground="#8DBCB4" FontSize="12"/>
+          <TextBlock Text="名称与定位" Foreground="#8DBCB4" FontSize="12"/>
           <TextBlock Text="机械体标识（自动生成）" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding DefName}" IsReadOnly="True" FontFamily="Consolas"/>
-          <TextBlock Text="标签 / Label" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="机械体名称" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding Label,Mode=TwoWay}"/>
-          <TextBlock Text="重量等级 / mechWeightClass" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="机体重量类别" FontSize="11" Foreground="#A3B1B4"/>
           <ComboBox ItemsSource="{Binding WeightClasses}"
                     SelectedItem="{Binding WeightClass,Mode=TwoWay}"/>
-          <TextBlock Text="战斗点数 / combatPower" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="战斗强度（CP）" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding CP,Mode=TwoWay}"/>
-          <TextBlock Text="身体大小 / baseBodySize" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="身体大小" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding BodySize,Mode=TwoWay}"/>
-          <TextBlock Text="生命倍率 / baseHealthScale" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="身体耐久倍率" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding HealthScale,Mode=TwoWay}"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Spacing="9">
-          <TextBlock Text="STATS / 常规属性" Foreground="#8DBCB4" FontSize="12"/>
-          <TextBlock Text="移动速度 / MoveSpeed" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="性能与防护" Foreground="#8DBCB4" FontSize="12"/>
+          <TextBlock Text="移动速度（格/秒）" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding MoveSpeed,Mode=TwoWay}"/>
-          <TextBlock Text="质量 / Mass (kg)" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="机体质量（kg）" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding Mass,Mode=TwoWay}"/>
-          <TextBlock Text="锐器护甲 / ArmorRating_Sharp" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="锐器护甲" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding SharpArmor,Mode=TwoWay}"/>
-          <TextBlock Text="钝器护甲 / ArmorRating_Blunt" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="钝器护甲" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding BluntArmor,Mode=TwoWay}"/>
-          <TextBlock Text="热能护甲 / ArmorRating_Heat" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="热能护甲" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding HeatArmor,Mode=TwoWay}"/>
-          <TextBlock Text="控制带宽 / BandwidthCost" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBlock Text="机械控制带宽" FontSize="11" Foreground="#A3B1B4"/>
           <TextBox Text="{Binding BandwidthCost,Mode=TwoWay}"/>
         </StackPanel>
       </Grid>
@@ -74,7 +74,7 @@
     <Border Grid.Row="2" Background="#111A20" BorderBrush="#33454C"
             BorderThickness="1" CornerRadius="6" Padding="10">
       <Grid RowDefinitions="Auto,*" RowSpacing="8">
-        <TextBlock Grid.Row="0" Text="XML OUTPUT PREVIEW / 生成前预览"
+        <TextBlock Grid.Row="0" Text="设计摘要 / 创建前确认"
                    FontSize="12" FontWeight="Bold" Foreground="#8DBCB4"/>
         <TextBlock Grid.Row="1" Text="{Binding Preview}" TextWrapping="Wrap"
                    FontSize="12" Foreground="#C8DEDA" VerticalAlignment="Center"/>

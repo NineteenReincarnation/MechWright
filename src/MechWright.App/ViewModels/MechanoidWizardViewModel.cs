@@ -103,10 +103,10 @@ public sealed class MechanoidWizardViewModel : INotifyPropertyChanged
         try
         {
             var p = Build();
-            Preview = $"机体：{p.Label}    类型：{p.WeightClass}    战斗点数：{p.CombatPower:0}\\n" +
-                $"身体大小：{p.BodySize:0.##}    生命倍率：{p.HealthScale:0.##}    速度：{p.MoveSpeed:0.##}\\n" +
-                $"质量：{p.Mass:0} kg    锐器护甲：{p.SharpArmor:0.##}    钝器护甲：{p.BluntArmor:0.##}\\n" +
-                $"热能护甲：{p.HeatArmor:0.##}    控制带宽：{p.BandwidthCost}\\n" +
+            Preview = $"机体：{p.Label}    类型：{p.WeightClass}    战斗点数：{p.CombatPower:0}\n" +
+                $"身体大小：{p.BodySize:0.##}    生命倍率：{p.HealthScale:0.##}    速度：{p.MoveSpeed:0.##}\n" +
+                $"质量：{p.Mass:0} kg    锐器护甲：{p.SharpArmor:0.##}    钝器护甲：{p.BluntArmor:0.##}\n" +
+                $"热能护甲：{p.HeatArmor:0.##}    控制带宽：{p.BandwidthCost}\n" +
                 "确认后自动生成机体、生成规则与身体结构三个关联定义。";
             Error = "";
             return true;

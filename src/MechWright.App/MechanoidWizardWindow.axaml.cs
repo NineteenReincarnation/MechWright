@@ -11,9 +11,9 @@ public sealed partial class MechanoidWizardWindow : Window
     public MechanoidWizardWindow(string? suggestedDefName = null)
     {
         InitializeComponent();
-        DataContext = _vm;
         if (!string.IsNullOrWhiteSpace(suggestedDefName))
             _vm.DefName = suggestedDefName;
+        DataContext = _vm;
     }
 
     private void Preview_Click(object? sender, RoutedEventArgs e) => _vm.TryPreview();
