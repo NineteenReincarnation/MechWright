@@ -54,6 +54,26 @@ public static class TextureAssetLocator
         return candidates;
     }
 
+    /// <summary>Resolve registered user assets before probing an imported Mod's
+    /// source directory, including newly attached images not exported yet.</summary>
+    public static IReadOnlyList<Candidate> ResolveWorkspace(
+        MechWorkspace? workspace, GraphicReferences.GraphicDescriptor descriptor)
+    {
+        var baseCandidates = Resolve(workspace?.SourceRoot, descriptor);
+        if (workspace == null || workspace.Assets.Count == 0) return baseCandidates;
+        return baseCandidates.Select(candidate =>
+        {
+            var match = workspace.Assets.FirstOrDefault(asset =>
+                asset.RelativePath.Equals(candidate.RelativePath, StringComparison.OrdinalIgnoreCase) ||
+                asset.RelativePath.Equals("1.7/" + candidate.RelativePath, StringComparison.OrdinalIgnoreCase) ||
+                asset.RelativePath.Equals("Common/" + candidate.RelativePath, StringComparison.OrdinalIgnoreCase));
+            if (match == null) return candidate;
+            var exists = File.Exists(match.SourcePath);
+            return new Candidate(candidate.Direction, candidate.RelativePath,
+                exists ? match.SourcePath : null, exists);
+        }).ToArray();
+    }
+
     private static bool TryNormalizeTexturePath(string path, out string normalized)
     {
         normalized = path.Replace('\\', '/').Trim();

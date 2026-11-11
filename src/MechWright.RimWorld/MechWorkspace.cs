@@ -282,7 +282,7 @@ public sealed record WorkspaceAsset(string RelativePath, string SourcePath, long
             !Extensions.TryGetValue(segments[offset], out var allowed))
             throw new ArgumentException("Resources must be in Textures, Sounds, Assemblies or About.");
         var fileName = segments[^1];
-        if (segments[offset] == "About" &&
+        if (segments[offset].Equals("About", StringComparison.OrdinalIgnoreCase) &&
             (segments.Length != offset + 2 ||
             !fileName.Equals("Preview.png", StringComparison.OrdinalIgnoreCase)))
             throw new ArgumentException("Only About/Preview.png can be included as an asset.");

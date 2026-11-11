@@ -32,6 +32,28 @@ public sealed class TextureAssetTests
     }
 
     [Fact]
+    public void NewlyRegisteredTextureShowsUpBeforeProjectExport()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "MechWrightGraphicTests",
+            Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            var local = Path.Combine(root, "Unit_east.png");
+            File.WriteAllBytes(local, [137, 80, 78, 71]);
+            var workspace = new MechWorkspace("New", "");
+            workspace.AddAsset("Textures/Things/Pawn/Unit_east.png", local, 4);
+            var descriptor = new GraphicReferences.GraphicDescriptor("",
+                "Things/Pawn/Unit", "Graphic_Multi", "1.5", true);
+            var candidates = TextureAssetLocator.ResolveWorkspace(workspace, descriptor);
+            Assert.Single(candidates.Where(x => x.Exists));
+            Assert.Equal(local, candidates.Single(x => x.Direction == "east").LocalPath);
+            Assert.False(candidates.Single(x => x.Direction == "north").Exists);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public void RejectsTexturePathTraversal()
     {
         var descriptor = new GraphicReferences.GraphicDescriptor("/", "../out/file",

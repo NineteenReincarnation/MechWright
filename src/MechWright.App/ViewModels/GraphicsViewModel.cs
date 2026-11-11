@@ -88,8 +88,7 @@ public sealed partial class MainWindowViewModel
         }
 
         var descriptor = _selectedGraphic.Descriptor;
-        var path = _workspace?.SourceRoot;
-        var assets = TextureAssetLocator.Resolve(path, descriptor);
+        var assets = TextureAssetLocator.ResolveWorkspace(_workspace, descriptor);
         foreach (var candidate in assets) TextureCandidates.Add(new TextureRow(candidate));
         GraphicInfo = $"{descriptor.GraphicClass} · drawSize: {descriptor.DrawSize} · " +
             $"{assets.Count(x => x.Exists)}/{assets.Count} 本机素材（仅预览）";
