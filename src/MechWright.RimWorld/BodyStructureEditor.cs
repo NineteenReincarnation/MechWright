@@ -100,6 +100,9 @@ public static class BodyStructureEditor
         string path = "";
         document.Transform(_ =>
         {
+            // LINQ to XML clones attached nodes added elsewhere. Detach first
+            // so the original subtree is MOVED, never duplicated.
+            part.Xml.Remove();
             if (direction < 0) sibling.AddBeforeSelf(part.Xml);
             else sibling.AddAfterSelf(part.Xml);
             path = DefDocument.GetPath(part.Xml);
