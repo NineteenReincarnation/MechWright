@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MechWright.App.ViewModels"
+        x:Class="MechWright.App.MechanoidWizardWindow"
+        x:DataType="vm:MechanoidWizardViewModel"
+        Title="MECHWRIGHT · 新机械体装配向导"
+        Width="980" Height="795" MinWidth="760" MinHeight="585"
+        WindowStartupLocation="CenterOwner"
+        Background="#0B1014" Foreground="#E6ECEB">
+  <Grid RowDefinitions="Auto,*,230,Auto" Margin="19" RowSpacing="12">
+    <StackPanel Grid.Row="0" Spacing="5">
+      <TextBlock Text="NEW MECHANOID / 标准机械体装配" FontSize="20"
+                 FontWeight="Bold" Foreground="#8DBCB4"/>
+      <TextBlock Text="从已确认数据生成 ThingDef + PawnKindDef + BodyDef；仅普通原生结构，武器、培育和特殊机制可在生成后继续编辑。"
+                 FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+      <TextBlock Text="下方数值是可修改的起始建议，不代表原版的继承默认值；确认前不会修改工程。"
+                 FontSize="11" Foreground="#CFB482" TextWrapping="Wrap"/>
+    </StackPanel>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+        <StackPanel Grid.Column="0" Spacing="9">
+          <TextBlock Text="IDENTITY / 定义与分类" Foreground="#8DBCB4" FontSize="12"/>
+          <TextBlock Text="DefName" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding DefName,Mode=TwoWay}" FontFamily="Consolas"/>
+          <TextBlock Text="标签 / Label" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding Label,Mode=TwoWay}"/>
+          <TextBlock Text="重量等级 / mechWeightClass" FontSize="11" Foreground="#A3B1B4"/>
+          <ComboBox ItemsSource="{Binding WeightClasses}"
+                    SelectedItem="{Binding WeightClass,Mode=TwoWay}"/>
+          <TextBlock Text="战斗点数 / combatPower" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding CP,Mode=TwoWay}"/>
+          <TextBlock Text="身体大小 / baseBodySize" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding BodySize,Mode=TwoWay}"/>
+          <TextBlock Text="生命倍率 / baseHealthScale" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding HealthScale,Mode=TwoWay}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="9">
+          <TextBlock Text="STATS / 常规属性" Foreground="#8DBCB4" FontSize="12"/>
+          <TextBlock Text="移动速度 / MoveSpeed" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding MoveSpeed,Mode=TwoWay}"/>
+          <TextBlock Text="质量 / Mass (kg)" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding Mass,Mode=TwoWay}"/>
+          <TextBlock Text="锐器护甲 / ArmorRating_Sharp" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding SharpArmor,Mode=TwoWay}"/>
+          <TextBlock Text="钝器护甲 / ArmorRating_Blunt" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding BluntArmor,Mode=TwoWay}"/>
+          <TextBlock Text="热能护甲 / ArmorRating_Heat" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding HeatArmor,Mode=TwoWay}"/>
+          <TextBlock Text="控制带宽 / BandwidthCost" FontSize="11" Foreground="#A3B1B4"/>
+          <TextBox Text="{Binding BandwidthCost,Mode=TwoWay}"/>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+    <Border Grid.Row="2" Background="#111A20" BorderBrush="#33454C"
+            BorderThickness="1" CornerRadius="6" Padding="10">
+      <Grid RowDefinitions="Auto,*" RowSpacing="8">
+        <TextBlock Grid.Row="0" Text="XML OUTPUT PREVIEW / 生成前预览"
+                   FontSize="12" FontWeight="Bold" Foreground="#8DBCB4"/>
+        <TextBox Grid.Row="1" Text="{Binding Preview}" IsReadOnly="True"
+                 AcceptsReturn="True" TextWrapping="NoWrap" FontFamily="Consolas"
+                 FontSize="11" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+      </Grid>
+    </Border>
+    <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+      <TextBlock Grid.Column="0" Text="{Binding Error}" Foreground="#D87C76"
+                 TextWrapping="Wrap" VerticalAlignment="Center"/>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+        <Button Content="预览三个 XML" Click="Preview_Click"/>
+        <Button Content="取消" Click="Cancel_Click"/>
+        <Button Content="确认并创建" Click="Confirm_Click" Background="#31575A"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

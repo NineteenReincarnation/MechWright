@@ -22,6 +22,8 @@
                       VerticalScrollBarVisibility="Disabled">
           <StackPanel Orientation="Horizontal" Spacing="7">
             <Button Content="新建工程" Click="NewWorkspace_Click"/>
+            <Button Content="新机械体装配" Click="NewMechanoidWizard_Click"
+                    IsEnabled="{Binding HasWorkspace}" Background="#31575A"/>
             <Button Content="导入 Mod 工程" Click="ImportWorkspace_Click"/>
             <Button Content="导出工程 XML" Click="ExportWorkspace_Click" Background="#32585C"/>
             <Border Width="1" Background="#384B54" Margin="5,5"/>

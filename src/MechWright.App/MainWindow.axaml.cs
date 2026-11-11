@@ -69,6 +69,18 @@ public sealed partial class MainWindow : Window
         _vm.CreateWorkspace();
     }
 
+    private async void NewMechanoidWizard_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!_vm.HasWorkspace) return;
+        try
+        {
+            var blueprint = await new MechanoidWizardWindow()
+                .ShowDialog<MechWright.RimWorld.MechanoidBlueprint?>(this);
+            if (blueprint != null) _vm.GenerateMechanoid(blueprint);
+        }
+        catch (Exception ex) { _vm.ReportError(ex); }
+    }
+
     private async void ImportWorkspace_Click(object? sender, RoutedEventArgs e)
     {
         if (!await ConfirmDiscardAsync()) return;

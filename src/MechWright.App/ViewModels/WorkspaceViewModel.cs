@@ -66,6 +66,29 @@ public sealed partial class MainWindowViewModel
         Status = $"已打开工程 · {workspace.Name} · {workspace.DefinitionCount} 个定义";
     }
 
+    public void GenerateMechanoid(MechanoidBlueprint blueprint)
+    {
+        if (_workspace == null)
+        {
+            Status = "请先新建或导入一个工程。";
+            return;
+        }
+        try
+        {
+            var files = blueprint.CreateIn(_workspace);
+            foreach (var file in files)
+                ProjectFiles.Add(new ProjectFileRow(file));
+            SearchQuery = "";
+            var thing = files.First(x => x.Document.Definitions().Any(d => d.Type == "ThingDef"));
+            SelectedProjectFile = ProjectFiles.First(x => ReferenceEquals(x.File, thing));
+            SelectedDefinition = Definitions.FirstOrDefault(x => x.Entry.Type == "ThingDef" &&
+                x.Entry.DefName == blueprint.DefName);
+            RefreshProjectAssets();
+            Status = $"已创建 {blueprint.DefName} · ThingDef / PawnKindDef / BodyDef 三个相互关联的 XML，可继续补充 Body、武器与培育配置。";
+        }
+        catch (Exception ex) { ReportError(ex); }
+    }
+
     public void AddProjectXml()
     {
         if (_workspace == null) { Status = "请先新建或导入多文件工程"; return; }
