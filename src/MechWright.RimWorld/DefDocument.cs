@@ -75,6 +75,42 @@ public sealed class DefDocument
             .ToList();
     }
 
+    public IReadOnlyList<DefAttribute> Attributes(DefEntry definition)
+    {
+        if (definition.Element.Document != Xml)
+            throw new InvalidOperationException("Definition is not from the active XML document.");
+        return definition.Element.DescendantsAndSelf()
+            .SelectMany(e => e.Attributes().Where(a => !a.IsNamespaceDeclaration)
+                .Select(a => new DefAttribute(a, GetPath(e))))
+            .ToList();
+    }
+
+    public void SetAttribute(DefAttribute attribute, string value)
+    {
+        if (attribute.Attribute.Parent?.Document != Xml)
+            throw new InvalidOperationException("Attribute is from an old document snapshot.");
+        Transform(_ => attribute.Attribute.Value = value);
+    }
+
+    public void RemoveAttribute(DefAttribute attribute)
+    {
+        if (attribute.Attribute.Parent?.Document != Xml)
+            throw new InvalidOperationException("Attribute is from an old document snapshot.");
+        Transform(_ => attribute.Attribute.Remove());
+    }
+
+    public void AddDefinitionAttribute(DefEntry definition, string name, string value)
+    {
+        if (definition.Element.Document != Xml)
+            throw new InvalidOperationException("Definition is not from the active XML document.");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Attribute name is required.");
+        XmlConvert.VerifyNCName(name);
+        if (definition.Element.Attribute(name) != null)
+            throw new InvalidOperationException("Attribute already exists on this definition.");
+        Transform(_ => definition.Element.SetAttributeValue(name, value));
+    }
+
     public IReadOnlyList<BodyPartEntry> BodyParts(DefEntry definition)
     {
         if (definition.Type != "BodyDef") return Array.Empty<BodyPartEntry>();
@@ -284,4 +320,14 @@ public sealed record BodyPartEntry(int Depth, string Name, double Coverage,
     public string IndentedName => new string(' ', Depth * 3) + (Depth == 0 ? "◆ " : "└ ") + Name;
     public string CoverageText => double.IsNaN(Coverage) ? "?" : $"{Coverage:P1}";
     public string EffectiveText => double.IsNaN(CumulativeCoverage) ? "?" : $"{CumulativeCoverage:P2}";
+}
+
+public sealed class DefAttribute(System.Xml.Linq.XAttribute attribute, string ownerPath)
+{
+    internal System.Xml.Linq.XAttribute Attribute { get; } = attribute;
+    public string OwnerPath { get; } = ownerPath;
+    public string Name => Attribute.Name.LocalName;
+    public string Value => Attribute.Value;
+    public string Path => OwnerPath + "/@" + Name;
+    public string DisplayName => Path + " = " + Value;
 }
