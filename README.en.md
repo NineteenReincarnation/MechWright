@@ -31,7 +31,7 @@ Designing RimWorld mechanoids often involves several XML files for body structur
 
 ## Download and Run
 
-On Windows x64, open the [app](./app/) folder and launch [MechWright.App.exe](./app/MechWright.App.exe).
+On Windows x64, download or clone the repository, open [app](./app/), and run [MechWright.App.exe](./app/MechWright.App.exe). Keep the other runtime files in the same folder.
 
 The build is self-contained and requires no separate .NET installation. To browse vanilla mechanoids, select your local RimWorld installation.
 

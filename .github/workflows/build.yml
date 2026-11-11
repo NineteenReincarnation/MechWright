@@ -18,11 +18,11 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           persist-credentials: true
           fetch-depth: 0
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: Restore
@@ -40,12 +40,25 @@ jobs:
           dotnet publish $project -c Release -r win-x64 --self-contained true `
             -p:PublishSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
             -p:DebugType=none `
             -o $output
           if ($LASTEXITCODE -ne 0) { throw 'Single-file publish failed.' }
           $oversized = @(Get-ChildItem $output -File -Recurse | Where-Object { $_.Length -ge 95MB })
           if ($oversized.Count -gt 0) {
-            Write-Host 'Bundle exceeds Git blob size budget. Switching to multi-file output.'
+            Write-Host 'Compressed all-in-one bundle too large for Git. Try native sidecars.'
+            Remove-Item $output -Recurse -Force
+            dotnet publish $project -c Release -r win-x64 --self-contained true `
+              -p:PublishSingleFile=true `
+              -p:IncludeNativeLibrariesForSelfExtract=false `
+              -p:EnableCompressionInSingleFile=true `
+              -p:DebugType=none `
+              -o $output
+            if ($LASTEXITCODE -ne 0) { throw 'Hybrid publish failed.' }
+          }
+          $oversized = @(Get-ChildItem $output -File -Recurse | Where-Object { $_.Length -ge 95MB })
+          if ($oversized.Count -gt 0) {
+            Write-Host 'Hybrid bundle still too large. Use self-contained multi-file output.'
             Remove-Item $output -Recurse -Force
             dotnet publish $project -c Release -r win-x64 --self-contained true `
               -p:PublishSingleFile=false `
@@ -53,6 +66,8 @@ jobs:
               -o $output
             if ($LASTEXITCODE -ne 0) { throw 'Multi-file publish failed.' }
           }
+          # Runtime SDK packages occasionally include native debug symbols.
+          Get-ChildItem $output -Recurse -File -Filter '*.pdb' | Remove-Item -Force
       - name: Verify app bundle
         shell: pwsh
         run: |

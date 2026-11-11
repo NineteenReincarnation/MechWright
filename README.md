@@ -31,7 +31,7 @@
 
 ## 下载与运行
 
-Windows x64：进入 [app](./app/) 文件夹，运行 [MechWright.App.exe](./app/MechWright.App.exe)。
+Windows x64：下载或克隆仓库，进入 [app](./app/) 文件夹，运行 [MechWright.App.exe](./app/MechWright.App.exe)。请保留该文件夹内的全部运行文件。
 
 程序采用自包含构建，无需另外安装 .NET。查阅原版机械体资料时，需要选择本机 RimWorld 安装目录。
 
