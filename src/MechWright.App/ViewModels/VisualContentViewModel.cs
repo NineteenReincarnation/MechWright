@@ -174,10 +174,11 @@ public sealed partial class MainWindowViewModel
             return existing == null ? "未单独设置 · 游戏可能继承基础值" : "当前已设置：" + existing;
         }
     }
-    public string ContentSelectedHelp => SelectedContentField is { } field
-        ? field.Spec.Help + (field.Spec.Verified
-            ? " · 原生常见配置" : " · 仅从本机 XML 样本观察到，类型未完整验证")
-        : "选择左侧的内容，右侧会显示输入控件和详细说明。";
+    public string ContentSelectedHelp => SelectedContentField == null
+        ? "选择左侧的内容，右侧会显示输入控件和详细说明。"
+        : SelectedContentField.Spec.Help +
+            (SelectedContentField.Spec.Verified ? " · 原生常见配置" :
+                " · 仅从本机 XML 样本观察到，类型未完整验证");
 
     public string ContentText { get=>_contentText; set { _contentText=value??"";Notify(); } }
     public decimal ContentNumber { get=>_contentNumber;set { _contentNumber=value;Notify(); } }
