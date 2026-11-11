@@ -313,20 +313,6 @@
               <TabControl x:Name="CombatTabs" IsVisible="{Binding IsWeaponStage}">
                 <TabItem Header="战斗分析">
               <Grid RowDefinitions="Auto,*" Margin="9" RowSpacing="8">
-                <Border Grid.Row="1" IsVisible="{Binding ShowCombatEmpty}" Panel.ZIndex="2"
-                        Background="#111D24" BorderBrush="#2D444C" BorderThickness="1"
-                        Padding="20" CornerRadius="7">
-                  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
-                              Spacing="12" MaxWidth="390">
-                    <TextBlock Text="当前机体还没有可解析的武器配置" FontSize="16"
-                               FontWeight="SemiBold" TextAlignment="Center"/>
-                    <TextBlock Text="在“原生列表结构”中添加武器攻击所需的 verbs / tools。完成后可查看连发时间、伤害与理论 DPS。"
-                               FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
-                               Foreground="#94AAB1"/>
-                    <Button Content="编辑武器列表" Classes="primary"
-                            Click="OpenCombatLists_Click" HorizontalAlignment="Center"/>
-                  </StackPanel>
-                </Border>
                 <TextBlock Grid.Row="0" Text="普通装备武器时序 · 仅计算明确配置的数值，未解析继承属性不推定 DPS" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap" Margin="0,7"/>
                 <ScrollViewer Grid.Row="1">
                   <ItemsControl ItemsSource="{Binding WeaponProfiles}">
@@ -359,6 +345,20 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </ScrollViewer>
+                <Border Grid.Row="1" IsVisible="{Binding ShowCombatEmpty}"
+                        Background="#111D24" BorderBrush="#2D444C" BorderThickness="1"
+                        Padding="20" CornerRadius="7">
+                  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                              Spacing="12" MaxWidth="390">
+                    <TextBlock Text="当前机体还没有可解析的武器配置" FontSize="16"
+                               FontWeight="SemiBold" TextAlignment="Center"/>
+                    <TextBlock Text="在“原生列表结构”中添加武器攻击所需的 verbs / tools。完成后可查看连发时间、伤害与理论 DPS。"
+                               FontSize="12" TextWrapping="Wrap" TextAlignment="Center"
+                               Foreground="#94AAB1"/>
+                    <Button Content="编辑武器列表" Classes="primary"
+                            Click="OpenCombatLists_Click" HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </Border>
               </Grid>
             </TabItem>
 <TabItem Header="原生列表结构">
@@ -592,7 +592,7 @@
             </TabItem>
                 </TabControl>
               </Grid>
-              <Border IsVisible="{Binding NeedsFirstMechanoid}" Panel.ZIndex="3"
+              <Border IsVisible="{Binding NeedsFirstMechanoid}"
                       Background="#101A21" BorderBrush="#314B51" BorderThickness="1"
                       CornerRadius="8" Padding="28">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
