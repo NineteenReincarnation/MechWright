@@ -253,10 +253,20 @@ public sealed partial class MainWindow : Window
         catch (Exception ex) { _vm.ReportError(ex); }
     }
 
+    private VanillaLibraryWindow? _vanillaLibraryWindow;
+
     private void OpenVanillaLibrary_Click(object? sender, RoutedEventArgs e)
     {
-        WorkspaceTabs.SelectedIndex = 0;
-        _vm.StatusMessage("原版机械体图鉴只读；请先从“原版 / DLC 目录”扫描本地 RimWorld。");
+        if (_vanillaLibraryWindow != null)
+        {
+            _vanillaLibraryWindow.Activate();
+            return;
+        }
+        var viewer = new VanillaLibraryWindow { DataContext = _vm };
+        _vanillaLibraryWindow = viewer;
+        viewer.Closed += (_, _) => _vanillaLibraryWindow = null;
+        viewer.Show(this);
+        _vm.StatusMessage("原版机械体图鉴已打开，可与主设计工作台并排使用。");
     }
 
     private async void ScanCatalog_Click(object? sender, RoutedEventArgs e)
@@ -269,11 +279,7 @@ public sealed partial class MainWindow : Window
                 AllowMultiple = false
             });
             var path = folders.FirstOrDefault()?.TryGetLocalPath();
-            if (path != null)
-            {
-                await _vm.LoadCatalogAsync(path);
-                WorkspaceTabs.SelectedIndex = 0;
-            }
+            if (path != null) await _vm.LoadCatalogAsync(path);
         }
         catch (Exception ex) { _vm.ReportError(ex); }
     }

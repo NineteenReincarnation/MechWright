@@ -1,0 +1,232 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VanillaLibraryView"
+             x:DataType="vm:MainWindowViewModel"
+             Background="#101A21" Foreground="#E6ECEB">
+<Grid RowDefinitions="Auto,Auto,*" Margin="7" RowSpacing="7">
+                <TextBlock Grid.Row="0" Text="{Binding VanillaStatus}"
+                           FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap" Margin="0,5"/>
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled">
+                  <ItemsControl ItemsSource="{Binding VanillaPackages}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="6"/>
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:VanillaPackageRow">
+                        <Border Background="#26333C" BorderBrush="#354850" BorderThickness="1"
+                                CornerRadius="4" Padding="6,4">
+                          <TextBlock Text="{Binding Display}" FontSize="10" FontFamily="Consolas"/>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+                <Grid Grid.Row="2" ColumnDefinitions="218,*" ColumnSpacing="9">
+                  <Border Grid.Column="0" Background="#101A21" BorderBrush="#34454D"
+                          BorderThickness="1" CornerRadius="5">
+                    <Grid Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="6">
+                      <TextBlock Grid.Row="0" Text="{Binding VanillaCount}" FontSize="12"
+                                 Foreground="#8DBCB4" FontWeight="SemiBold"/>
+                      <TextBox Grid.Row="1" Text="{Binding VanillaSearch,Mode=TwoWay}"
+                               PlaceholderText="名称 / DefName / 描述"/>
+                      <ComboBox Grid.Row="2" ItemsSource="{Binding VanillaPackageFilters}"
+                                SelectedItem="{Binding VanillaPackage,Mode=TwoWay}"/>
+                      <ComboBox Grid.Row="3" ItemsSource="{Binding VanillaWeightFilters}"
+                                SelectedItem="{Binding VanillaWeight,Mode=TwoWay}"/>
+                      <ListBox Grid.Row="4" ItemsSource="{Binding VisibleVanillaMechs}"
+                               SelectedItem="{Binding SelectedVanillaMech,Mode=TwoWay}"
+                               ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemTemplate>
+                          <DataTemplate x:DataType="vm:VanillaMechSummaryRow">
+                            <StackPanel Spacing="3" Margin="4,6">
+                              <TextBlock Text="{Binding Display}" FontSize="12" TextWrapping="Wrap"/>
+                              <TextBlock Text="{Binding Meta}" Foreground="#8DBCB4"
+                                         FontSize="10" FontFamily="Consolas"/>
+                            </StackPanel>
+                          </DataTemplate>
+                        </ListBox.ItemTemplate>
+                      </ListBox>
+                    </Grid>
+                  </Border>
+                  <Border Grid.Column="1" Background="#101A21" BorderBrush="#34454D"
+                          BorderThickness="1" CornerRadius="5">
+                    <Grid RowDefinitions="Auto,Auto,*" Margin="10" RowSpacing="7">
+                      <StackPanel Grid.Row="0" Spacing="5">
+                        <TextBlock Text="{Binding VanillaTitle}" FontSize="16" FontWeight="Bold"
+                                   Foreground="#E6ECEB" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding VanillaSource}" FontSize="10"
+                                   Foreground="#8DBCB4" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding VanillaDescription}" FontSize="11"
+                                   Foreground="#A3B1B4" TextWrapping="Wrap" MaxHeight="58"/>
+                      </StackPanel>
+                      <Border Grid.Row="1" Height="1" Background="#34454D"/>
+                      <TabControl Grid.Row="2">
+                        <TabItem Header="基础属性">
+                          <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding VanillaFacts}">
+                              <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:VanillaFactRow">
+                                  <Border BorderBrush="#273942" BorderThickness="0,0,0,1"
+                                          Padding="7,8">
+                                    <Grid ColumnDefinitions="120,*,130" ColumnSpacing="6">
+                                      <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="11"
+                                                 TextWrapping="Wrap" Foreground="#A3B1B4"/>
+                                      <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12"
+                                                 TextWrapping="Wrap" FontFamily="Consolas"/>
+                                      <TextBlock Grid.Column="2" Text="{Binding Origin}" FontSize="10"
+                                                 Foreground="#8DBCB4" TextWrapping="Wrap"
+                                                 ToolTip.Tip="{Binding XmlPath}"/>
+                                    </Grid>
+                                  </Border>
+                                </DataTemplate>
+                              </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                          </ScrollViewer>
+                        </TabItem>
+                        <TabItem Header="身体部件">
+                          <Grid RowDefinitions="Auto,*" Margin="6" RowSpacing="8">
+                            <TextBlock Grid.Row="0" Text="{Binding VanillaBodyName}"
+                                       Foreground="#8DBCB4" FontSize="12"/>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                              <ItemsControl ItemsSource="{Binding VanillaBodyParts}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaBodyPartRow">
+                                    <StackPanel Spacing="3" Margin="4,7">
+                                      <TextBlock Text="{Binding Name}" FontFamily="Consolas"
+                                                 FontSize="12" TextWrapping="Wrap"/>
+                                      <TextBlock Text="{Binding Details}" FontSize="11"
+                                                 Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </ScrollViewer>
+                          </Grid>
+                        </TabItem>
+                        <TabItem Header="装备与培育">
+                          <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="7" Margin="8">
+                              <TextBlock Text="PAWN KIND · 关联生成定义" Foreground="#CFB482" FontSize="11"/>
+                              <ItemsControl ItemsSource="{Binding VanillaKinds}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaRelatedRow">
+                                    <StackPanel Spacing="2" Margin="0,4">
+                                      <TextBlock Text="{Binding Display}" FontSize="12" TextWrapping="Wrap"/>
+                                      <TextBlock Text="{Binding Info}" FontSize="10" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                              <Border Height="1" Background="#30414A"/>
+                              <TextBlock Text="WEAPONS · 匹配武器标签的候选定义" Foreground="#CFB482" FontSize="11"/>
+                              <ItemsControl ItemsSource="{Binding VanillaWeapons}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaRelatedRow">
+                                    <StackPanel Spacing="2" Margin="0,4">
+                                      <TextBlock Text="{Binding Display}" FontSize="12" TextWrapping="Wrap"/>
+                                      <TextBlock Text="{Binding Info}" FontSize="10" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                              <Border Height="1" Background="#30414A"/>
+                              <TextBlock Text="RECIPE · 机械培育 / 制造配方" Foreground="#CFB482" FontSize="11"/>
+                              <ItemsControl ItemsSource="{Binding VanillaRecipes}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaRelatedRow">
+                                    <StackPanel Spacing="2" Margin="0,4">
+                                      <TextBlock Text="{Binding Display}" FontSize="12" TextWrapping="Wrap"/>
+                                      <TextBlock Text="{Binding Info}" FontSize="10" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </StackPanel>
+                          </ScrollViewer>
+                        </TabItem>
+                        <TabItem Header="贴图定义">
+                          <Grid Margin="7" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                            <ComboBox Grid.Row="0" ItemsSource="{Binding VanillaGraphics}"
+                                      SelectedItem="{Binding SelectedVanillaGraphic,Mode=TwoWay}">
+                              <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="vm:VanillaGraphicRow">
+                                  <TextBlock Text="{Binding Display}" FontSize="11"
+                                             TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                              </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Grid.Row="1" Text="{Binding VanillaGraphicStatus}" FontSize="11"
+                                       Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                            <Grid Grid.Row="2" ColumnDefinitions="155,*" ColumnSpacing="9">
+                              <ListBox Grid.Column="0" ItemsSource="{Binding VanillaTextures}"
+                                       SelectedItem="{Binding SelectedVanillaTexture,Mode=TwoWay}">
+                                <ListBox.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaTextureRow">
+                                    <TextBlock Text="{Binding Display}" FontSize="10"
+                                               TextWrapping="Wrap" Margin="4,7"/>
+                                  </DataTemplate>
+                                </ListBox.ItemTemplate>
+                              </ListBox>
+                              <Border Grid.Column="1" Background="#0A1116" BorderBrush="#30434B"
+                                      BorderThickness="1" CornerRadius="5" Padding="10">
+                                <Image Source="{Binding VanillaTextureImage}" Stretch="Uniform"
+                                       MaxWidth="500" MaxHeight="430"/>
+                              </Border>
+                            </Grid>
+                            <TextBlock Grid.Row="3" Text="此处仅按原版 XML 路径查找本地 PNG；不提取、复制或修改游戏资源包。"
+                                       FontSize="10" Foreground="#8DBCB4" TextWrapping="Wrap"/>
+                          </Grid>
+                        </TabItem>
+                        <TabItem Header="设计对照">
+                          <Grid Margin="7" RowDefinitions="Auto,Auto,*" RowSpacing="8">
+                            <Button Grid.Row="0" Content="与当前编辑的 ThingDef 对照"
+                                    Click="CompareVanilla_Click" Background="#31535B"
+                                    HorizontalAlignment="Stretch"/>
+                            <TextBlock Grid.Row="1" Text="{Binding VanillaComparisonStatus}"
+                                       FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                              <ItemsControl ItemsSource="{Binding VanillaComparisons}">
+                                <ItemsControl.ItemTemplate>
+                                  <DataTemplate x:DataType="vm:VanillaComparisonRow">
+                                    <Border BorderBrush="#34454D" BorderThickness="0,0,0,1" Padding="5,9">
+                                      <Grid ColumnDefinitions="90,*,*,55" ColumnSpacing="6">
+                                        <TextBlock Grid.Column="0" Text="{Binding Label}" FontSize="11"
+                                                   Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding VanillaValue}" FontSize="11"
+                                                   FontFamily="Consolas" TextWrapping="Wrap"
+                                                   ToolTip.Tip="{Binding Provenance}"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding UserValue}" FontSize="11"
+                                                   FontFamily="Consolas" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding Delta}" FontSize="11"
+                                                   FontFamily="Consolas" Foreground="#8DBCB4"/>
+                                      </Grid>
+                                    </Border>
+                                  </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                              </ItemsControl>
+                            </ScrollViewer>
+                          </Grid>
+                        </TabItem>
+                        <TabItem Header="源码 / 限制">
+                          <Grid RowDefinitions="Auto,Auto,*" Margin="7" RowSpacing="7">
+                            <TextBlock Grid.Row="0" Text="{Binding VanillaParentTemplate}"
+                                       FontSize="11" Foreground="#8DBCB4" TextWrapping="Wrap"/>
+                            <TextBlock Grid.Row="1" Text="{Binding VanillaNotes}"
+                                       FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                            <TextBox Grid.Row="2" Text="{Binding VanillaOriginalXml}"
+                                     IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+                                     FontFamily="Consolas" FontSize="11"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                          </Grid>
+                        </TabItem>
+                      </TabControl>
+                    </Grid>
+                  </Border>
+                </Grid>
+              </Grid>
+</UserControl>
