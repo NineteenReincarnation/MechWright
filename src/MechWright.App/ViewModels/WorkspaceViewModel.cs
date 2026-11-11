@@ -62,6 +62,7 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(HasWorkspace));
         Notify(nameof(WorkspaceTitle));
         SelectedProjectFile = ProjectFiles.FirstOrDefault();
+        RefreshProjectAssets();
         Status = $"已打开工程 · {workspace.Name} · {workspace.DefinitionCount} 个定义";
     }
 
@@ -93,12 +94,15 @@ public sealed partial class MainWindowViewModel
 
     public void StatusMessage(string message) => Status = message;
 
-    public void WorkspaceExported(string path)
+    public void WorkspaceExported(string path, bool includedAssets)
     {
         if (_workspace == null) return;
-        _workspace.MarkAllSaved();
+        _workspace.MarkAllSaved(includeAssets: includedAssets);
         RefreshAll(SelectedDefinition?.Entry.Index, SelectedField?.Field.Path);
-        Status = $"已导出整个 XML 工程至 {path}（源 Mod 与贴图未改动）";
+        RefreshProjectAssets();
+        Status = includedAssets
+            ? $"已导出 XML 和项目自有资源至 {path}（源文件未修改）"
+            : $"已导出 XML 至 {path}（项目资源未复制）";
     }
 }
 

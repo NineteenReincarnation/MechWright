@@ -90,8 +90,37 @@ public sealed partial class MainWindow : Window
 
     private void AddProjectXml_Click(object? sender, RoutedEventArgs e) =>
         _vm.AddProjectXml();
+    private async void ChooseProjectAsset_Click(object? sender, RoutedEventArgs e)
+    {
+        if (!_vm.HasWorkspace) return;
+        try
+        {
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "登记本机 PNG / OGG / WAV / DLL 资源（不修改原始文件）",
+                AllowMultiple = false,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("Mod resources")
+                    {
+                        Patterns = ["*.png", "*.jpg", "*.jpeg", "*.ogg", "*.wav", "*.dll"]
+                    }
+                ]
+            });
+            var path = files.FirstOrDefault()?.TryGetLocalPath();
+            if (path != null) _vm.ChooseAssetSource(path);
+        }
+        catch (Exception ex) { _vm.ReportError(ex); }
+    }
 
-    private sealed record ProjectExportOptions(string Name, string PackageId, string FolderName);
+    private void RegisterProjectAsset_Click(object? sender, RoutedEventArgs e) =>
+        _vm.RegisterProjectAsset();
+    private void RemoveProjectAsset_Click(object? sender, RoutedEventArgs e) =>
+        _vm.RemoveProjectAsset();
+
+
+    private sealed record ProjectExportOptions(string Name, string PackageId,
+        string FolderName, bool IncludeAssets);
 
     private async Task<ProjectExportOptions?> GetProjectExportOptionsAsync(string name)
     {
@@ -109,9 +138,14 @@ public sealed partial class MainWindow : Window
         if (suggested.Length == 0) suggested = "newmod";
         var packageBox = new TextBox { Text = $"local.mechwright.{suggested}" };
         var folderBox = new TextBox { Text = "MechWright-" + suggested };
+        var includeAssets = new CheckBox
+        {
+            Content = $"包含此工程自有资源（{_vm.Workspace?.Assets.Count ?? 0} 项）",
+            IsChecked = false
+        };
         var warning = new TextBlock
         {
-            Text = "仅导出工程 XML 与 About 元数据。不会自动复制贴图、声音或游戏 DLC 资源；不会覆盖已有文件夹。",
+            Text = "仅在勾选时复制当前工程清单中的本地素材；不会复制原版/DLC 文件，也不会覆盖已有目标文件夹。",
             Foreground = Brushes.LightGray,
             TextWrapping = TextWrapping.Wrap
         };
@@ -136,7 +170,7 @@ public sealed partial class MainWindow : Window
                 return;
             }
             dialog.Close(new ProjectExportOptions(nameBox.Text.Trim(),
-                packageBox.Text?.Trim() ?? "", folder));
+                packageBox.Text?.Trim() ?? "", folder, includeAssets.IsChecked == true));
         };
         cancel.Click += (_, _) => dialog.Close(null);
         var panel = new StackPanel { Margin = new Avalonia.Thickness(16), Spacing = 10 };
@@ -146,6 +180,7 @@ public sealed partial class MainWindow : Window
         panel.Children.Add(packageBox);
         panel.Children.Add(new TextBlock { Text = "OUTPUT FOLDER · 新目录名称", Foreground = Brushes.LightGray });
         panel.Children.Add(folderBox);
+        panel.Children.Add(includeAssets);
         panel.Children.Add(warning);
         panel.Children.Add(issue);
         var buttons = new StackPanel
@@ -181,8 +216,8 @@ public sealed partial class MainWindow : Window
             var destination = Path.Combine(parent, options.FolderName);
             _vm.StatusMessage("正在安全导出完整 XML 工程…");
             await WorkspaceDiskService.ExportAsync(project, destination,
-                options.Name, options.PackageId);
-            _vm.WorkspaceExported(destination);
+                options.Name, options.PackageId, includeAssets: options.IncludeAssets);
+            _vm.WorkspaceExported(destination, options.IncludeAssets);
         }
         catch (Exception ex) { _vm.ReportError(ex); }
     }
