@@ -20,6 +20,61 @@ public sealed partial class MainWindowViewModel
     public ObservableCollection<VisualBodyTemplateRow> BodyTemplateCards { get; } = new();
     public ObservableCollection<VisualToolRow> InstalledMelee { get; } = new();
     public ObservableCollection<VisualRangedRow> RangedCards { get; } = new();
+    public ObservableCollection<VisualPartPresetRow> PartPresetCards { get; } = new();
+    private VisualPartPresetRow? _selectedPartPreset;
+    private decimal _visualPartCoverage = .10m;
+    public VisualPartPresetRow? SelectedPartPreset
+    {
+        get => _selectedPartPreset;
+        set { _selectedPartPreset = value; Notify(); }
+    }
+    public bool HasPartPresets => PartPresetCards.Count != 0;
+    public decimal VisualPartCoverage
+    {
+        get => _visualPartCoverage;
+        set { _visualPartCoverage = value; Notify(); }
+    }
+
+    private void RefreshVisualPartPresets()
+    {
+        PartPresetCards.Clear();
+        foreach (var def in _catalog.Where(x => x.Identity.Type == "BodyPartDef" &&
+                     (x.Identity.DefName.Contains("Mech", StringComparison.OrdinalIgnoreCase) ||
+                      x.Identity.DefName.Contains("Sensor", StringComparison.OrdinalIgnoreCase) ||
+                      x.Identity.DefName.Contains("Artificial", StringComparison.OrdinalIgnoreCase)))
+                     .DistinctBy(x => x.Identity.DefName).Take(150))
+            PartPresetCards.Add(new VisualPartPresetRow(
+                def.Identity.DefName, def.Label, def.SourcePackage));
+        SelectedPartPreset = PartPresetCards.FirstOrDefault();
+        Notify(nameof(HasPartPresets));
+    }
+
+    public void AddVisualBodyPart()
+    {
+        if (_document == null || SelectedBodyPart == null || SelectedPartPreset == null)
+        {
+            VisualEditorInfo = "先在机体结构图中选择父部件，并选择要安装的子部件。";
+            return;
+        }
+        if (SelectedDefinition?.Entry.Type != "BodyDef") return;
+        try
+        {
+            var index = SelectedDefinition.Entry.Index;
+            var path = BodyStructureEditor.AddChild(_document, SelectedBodyPart.Part,
+                SelectedPartPreset.DefName, VisualPartCoverage.ToString(CultureInfo.InvariantCulture));
+            RefreshAll(index, bodyPath: path);
+            VisualEditorInfo = "已安装“" + SelectedPartPreset.Display + "”，撤销可恢复。";
+            Status = VisualEditorInfo;
+        }
+        catch (Exception e) { VisualEditorInfo = e.Message; ReportError(e); }
+    }
+
+    public void ApplyVisualPartCoverage()
+    {
+        PartCoverage = VisualPartCoverage.ToString(CultureInfo.InvariantCulture);
+        ApplyBodyPart();
+    }
+
     private VisualRangedRow? _selectedRangedCard;
     public VisualRangedRow? SelectedRangedCard
     {
@@ -420,6 +475,11 @@ public sealed record VisualBodyTemplateRow(
 {
     public string Display => $"{Label} · {Parts} 部件";
     public string Detail => Package + " · " + BodyDef;
+}
+public sealed record VisualPartPresetRow(string DefName, string Label, string Source)
+{
+    public string Display => Label == DefName ? DefName : Label + " · " + DefName;
+    public string Detail => Source;
 }
 public sealed record VisualRangedRow(
     string Label, string Package, IReadOnlyList<string> Tags, int MatchingWeapons)

@@ -33,6 +33,8 @@ public sealed partial class MainWindowViewModel
             PartDefName = value?.Part.PartDef ?? "";
             PartCoverage = value == null ? "1" :
                 value.Part.Coverage.ToString("0.########", CultureInfo.InvariantCulture);
+            VisualPartCoverage = value == null ? .10m :
+                (decimal)Math.Clamp(value.Part.Coverage, .01, 1);
             PartHeight = value?.Part.Height ?? "Middle";
             PartDepth = value?.Part.DepthLayer ?? "Outside";
             PartCustomLabel = value?.Part.Xml.Element("customLabel")?.Value ?? "";
