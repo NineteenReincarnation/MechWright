@@ -41,7 +41,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     private IReadOnlyList<CatalogEntry> _catalog = Array.Empty<CatalogEntry>();
 
     public bool HasDocument => _document != null;
-    public bool IsDirty => _document?.IsDirty ?? false;
+    public bool IsDirty => _workspace?.IsDirty ?? (_document?.IsDirty ?? false);
     public bool CanUndo => _document?.CanUndo ?? false;
     public bool CanRedo => _document?.CanRedo ?? false;
     public string SourceName { get => _sourceName; private set { _sourceName = value; Notify(); } }
@@ -177,9 +177,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
 
     public void JumpToReference()
     {
-        if (SelectedReference is not { } item || !item.Reference.CanNavigateLocally)
+        if (SelectedReference is not { } item) return;
+        if (item.Reference.Location == ReferenceLocation.ProjectFile && _workspace != null)
         {
-            Status = "引用未在当前文件中定义 · 可先加载本机游戏 / DLC 定义目录";
+            var file = ProjectFiles.FirstOrDefault(x =>
+                string.Equals(x.File.RelativePath, item.Reference.OriginPackage,
+                    StringComparison.OrdinalIgnoreCase));
+            if (file != null) SelectedProjectFile = file;
+        }
+        else if (!item.Reference.CanNavigateLocally)
+        {
+            Status = "引用位于外部 / 未加载目录 · 请先导入相关 Def";
             return;
         }
         var match = Definitions.FirstOrDefault(x => x.Entry.Type == item.Reference.TargetType
@@ -208,6 +216,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
 
     private void SetDocument(DefDocument document, string name)
     {
+        // Opening one standalone XML exits project mode only after the
+        // caller's unsaved-changes confirmation.
+        _workspace = null;
+        ProjectFiles.Clear();
+        _selectedProjectFile = null;
+        Notify(nameof(HasWorkspace));
+        Notify(nameof(WorkspaceTitle));
+        Notify(nameof(SelectedProjectFile));
         _document = document;
         SourceName = name;
         RefreshAll();
@@ -231,8 +247,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
 
         XmlPreview = _document?.Export() ?? "";
         Diagnostics.Clear();
-        if (_document != null)
+        if (_workspace != null)
+        {
+            foreach (var item in _workspace.Validate())
+                Diagnostics.Add(new DiagnosticRow(new Diagnostic(item.Issue.Code,
+                    item.Issue.Severity, $"[{item.FilePath}] {item.Issue.Message}", item.Issue.Location)));
+        }
+        else if (_document != null)
             foreach (var d in _document.Validate()) Diagnostics.Add(new DiagnosticRow(d));
+        RefreshWorkspaceIndicators();
         RefreshReferences();
         Notify(nameof(DiagnosticCount));
         Notify(nameof(DirtyFlag));
@@ -268,8 +291,16 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     {
         References.Clear();
         if (_document == null) return;
-        foreach (var reference in DefinitionReferences.Collect(_document, _catalog))
-            References.Add(new ReferenceRow(reference));
+        if (_workspace != null && SelectedProjectFile != null)
+        {
+            foreach (var reference in _workspace.GetReferences(SelectedProjectFile.File, _catalog))
+                References.Add(new ReferenceRow(reference.Reference));
+        }
+        else
+        {
+            foreach (var reference in DefinitionReferences.Collect(_document, _catalog))
+                References.Add(new ReferenceRow(reference));
+        }
         SelectedReference = References.FirstOrDefault();
     }
 
@@ -364,6 +395,11 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     public void Saved(string path, string exported)
     {
         if (_document == null) return;
+        if (_workspace != null)
+        {
+            Status = $"已导出当前 XML 副本 · {path}（工程内其他修改未清除）";
+            return;
+        }
         var index = SelectedDefinition?.Entry.Index;
         var fieldPath = SelectedField?.Field.Path;
         _document.MarkSaved();
@@ -433,6 +469,7 @@ public sealed class ReferenceRow(DefinitionReference reference)
     {
         ReferenceLocation.CurrentDocument => "当前文件 ✓",
         ReferenceLocation.GameCatalog => $"本地目录 · {Reference.OriginPackage}",
+        ReferenceLocation.ProjectFile => $"工程文件 · {Reference.OriginPackage}",
         _ => "待解析 / 外部 Mod"
     };
     public string Path => Reference.FieldPath;
