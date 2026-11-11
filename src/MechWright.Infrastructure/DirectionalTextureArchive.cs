@@ -45,7 +45,7 @@ public static class DirectionalTextureArchive
             var name = stem[..^(direction.Length + 1)].Trim();
             // Never turn an archive-supplied name into an arbitrary disk path.
             if (name.Length is < 1 or > 100 ||
-                name.Any(x => !(char.IsLetterOrDigit(x) || x is '_' or '-'))) continue;
+                name.Any(x => !(char.IsLetterOrDigit(x) || x is '_' or '-' or ' '))) continue;
             if (!grouped.TryGetValue(name, out var entries))
                 grouped[name] = entries = new(StringComparer.OrdinalIgnoreCase);
             // A duplicate direction is ambiguous; reject that group instead of
