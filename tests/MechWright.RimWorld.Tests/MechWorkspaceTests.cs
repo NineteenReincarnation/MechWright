@@ -106,6 +106,36 @@ public class MechWorkspaceTests
     }
 
     [Fact]
+    public void LocalAssetsHaveExplicitPathsAndDirtyState()
+    {
+        var project = new MechWorkspace("New", "");
+        var asset = project.AddAsset("Textures/Mechs/MP_Manta_south.png", "localfile.png", 123);
+        Assert.True(asset.IsNew);
+        Assert.True(project.IsDirty);
+        Assert.Throws<InvalidOperationException>(() =>
+            project.AddAsset("textures/MECHS/mp_manta_south.png", "another.png", 123));
+        project.MarkAllSaved(includeAssets: false);
+        Assert.True(project.IsDirty);
+        project.MarkAllSaved();
+        Assert.False(project.IsDirty);
+        project.RemoveAsset(asset.RelativePath);
+        Assert.True(project.IsDirty);
+    }
+
+    [Theory]
+    [InlineData("../Textures/a.png")]
+    [InlineData("Textures/../outside.png")]
+    [InlineData("Textures/CON.png")]
+    [InlineData("Patches/evil.xml")]
+    [InlineData("Assemblies/unsafe.exe")]
+    [InlineData("About/LICENSE")]
+    [InlineData("Textures/a.png:other")]
+    public void UnsafeAssetsAreRejected(string path)
+    {
+        Assert.Throws<ArgumentException>(() => WorkspaceAsset.ValidatePath(path));
+    }
+
+    [Fact]
     public void RoundTripDoesNotDropUnknownXml()
     {
         var project = new MechWorkspace("Custom", ".");

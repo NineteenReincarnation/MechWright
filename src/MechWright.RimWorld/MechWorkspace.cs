@@ -14,6 +14,10 @@ public sealed class MechWorkspace
     private readonly Dictionary<string, WorkspaceFile> _byPath =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<(string Kind, string Name), List<WorkspaceDefinition>> _index = [];
+    private readonly List<WorkspaceAsset> _assets = [];
+    private readonly Dictionary<string, WorkspaceAsset> _assetByPath =
+        new(StringComparer.OrdinalIgnoreCase);
+    private bool _assetListModified;
     private readonly Dictionary<string, long> _indexedRevisions =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, (long Revision, IReadOnlyList<Diagnostic> Issues)> _validationCache =
@@ -22,7 +26,9 @@ public sealed class MechWorkspace
     public string Name { get; }
     public string SourceRoot { get; }
     public IReadOnlyList<WorkspaceFile> Files => _files.AsReadOnly();
-    public bool IsDirty => _files.Any(x => x.IsNew || x.Document.IsDirty);
+    public IReadOnlyList<WorkspaceAsset> Assets => _assets.AsReadOnly();
+    public bool IsDirty => _files.Any(x => x.IsNew || x.Document.IsDirty) ||
+        _assetListModified || _assets.Any(x => x.IsNew);
     public string? OriginalAboutXml { get; set; }
     public int DefinitionCount => _files.Sum(x => x.Document.Definitions().Count);
 
@@ -112,12 +118,44 @@ public sealed class MechWorkspace
         }).ToList();
     }
 
-    public void MarkAllSaved()
+    public WorkspaceAsset AddAsset(string relativePath, string localSourcePath,
+        long size, bool fromDisk = false)
+    {
+        relativePath = WorkspaceAsset.ValidatePath(relativePath);
+        if (_assetByPath.ContainsKey(relativePath))
+            throw new InvalidOperationException("An asset already exists at " + relativePath);
+        if (_assets.Count >= 5000) throw new InvalidOperationException("Too many project assets.");
+        if (string.IsNullOrWhiteSpace(localSourcePath) || size < 0)
+            throw new ArgumentException("Invalid local resource file.");
+        var asset = new WorkspaceAsset(relativePath, localSourcePath, size)
+        {
+            IsNew = !fromDisk
+        };
+        _assets.Add(asset);
+        _assetByPath.Add(relativePath, asset);
+        return asset;
+    }
+
+    public void RemoveAsset(string relativePath)
+    {
+        var path = WorkspaceAsset.ValidatePath(relativePath);
+        if (!_assetByPath.Remove(path, out var asset))
+            throw new InvalidOperationException("The project resource no longer exists.");
+        _assets.Remove(asset);
+        _assetListModified = true;
+    }
+
+    public void MarkAllSaved(bool includeAssets = true)
     {
         foreach (var file in _files)
         {
             file.Document.MarkSaved();
             file.IsNew = false;
+        }
+        if (includeAssets)
+        {
+            foreach (var asset in _assets) asset.IsNew = false;
+            _assetListModified = false;
         }
     }
 
@@ -181,3 +219,46 @@ public sealed record WorkspaceDefinition(
 public sealed record WorkspaceDiagnostic(string FilePath, Diagnostic Issue);
 
 public sealed record WorkspaceReference(DefinitionReference Reference, string TargetFile);
+
+public sealed record WorkspaceAsset(string RelativePath, string SourcePath, long Length)
+{
+    public bool IsNew { get; internal set; }
+
+    private static readonly IReadOnlyDictionary<string, string[]> Extensions =
+        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Textures"] = [".png", ".jpg", ".jpeg"],
+            ["Sounds"] = [".wav", ".ogg"],
+            ["Assemblies"] = [".dll"],
+            ["About"] = [".png"]
+        };
+
+    public static string ValidatePath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || Path.IsPathRooted(path) ||
+            path.Contains(':') || path.Contains('\0'))
+            throw new ArgumentException("Asset path must be relative to a Mod.");
+        var segments = path.Replace('\\', '/').Split('/');
+        if (segments.Length < 2 || segments.Any(x => x is "" or "." or ".." ||
+            x.EndsWith(' ') || x.EndsWith('.') ||
+            x.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0))
+            throw new ArgumentException("Unsafe asset filename.");
+        var offset = segments[0] is "1.7" or "Common" ? 1 : 0;
+        if (segments.Length <= offset + 1 ||
+            !Extensions.TryGetValue(segments[offset], out var allowed))
+            throw new ArgumentException("Resources must be in Textures, Sounds, Assemblies or About.");
+        var fileName = segments[^1];
+        if (segments[offset] == "About" &&
+            (segments.Length != offset + 2 ||
+            !fileName.Equals("Preview.png", StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException("Only About/Preview.png can be included as an asset.");
+        if (!allowed.Contains(Path.GetExtension(fileName), StringComparer.OrdinalIgnoreCase))
+            throw new ArgumentException("File extension is not permitted in this Mod resource folder.");
+        var reserved = new[] { "CON", "PRN", "AUX", "NUL", "COM1", "COM2",
+            "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+        if (segments.Any(x => reserved.Contains(x.Split('.')[0], StringComparer.OrdinalIgnoreCase)))
+            throw new ArgumentException("Reserved Windows filename in resource path.");
+        return string.Join('/', segments);
+    }
+}
