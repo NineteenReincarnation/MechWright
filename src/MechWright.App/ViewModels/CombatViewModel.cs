@@ -7,13 +7,15 @@ namespace MechWright.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     public ObservableCollection<WeaponProfileRow> WeaponProfiles { get; } = new();
+    public bool ShowCombatEmpty => WeaponProfiles.Count == 0;
 
     private void RefreshCombat()
     {
         WeaponProfiles.Clear();
-        if (_document == null || SelectedDefinition == null) return;
-        foreach (var profile in WeaponAnalysis.Inspect(_document, SelectedDefinition.Entry))
-            WeaponProfiles.Add(new WeaponProfileRow(profile));
+        if (_document != null && SelectedDefinition != null)
+            foreach (var profile in WeaponAnalysis.Inspect(_document, SelectedDefinition.Entry))
+                WeaponProfiles.Add(new WeaponProfileRow(profile));
+        Notify(nameof(ShowCombatEmpty));
     }
 }
 

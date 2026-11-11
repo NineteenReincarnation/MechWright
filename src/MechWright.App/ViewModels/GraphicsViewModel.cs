@@ -16,6 +16,8 @@ public sealed partial class MainWindowViewModel
     private string _graphicInfo = "选择带有 graphicData / bodyGraphicData 的定义以预览 PNG";
     private long _textureLoadRevision;
 
+    public bool ShowTexturePlaceholder => _texturePreview == null;
+
     public string GraphicInfo
     {
         get => _graphicInfo;
@@ -30,6 +32,7 @@ public sealed partial class MainWindowViewModel
             var old = _texturePreview;
             _texturePreview = value;
             Notify();
+            Notify(nameof(ShowTexturePlaceholder));
             if (old != null && !ReferenceEquals(old, value)) old.Dispose();
         }
     }
