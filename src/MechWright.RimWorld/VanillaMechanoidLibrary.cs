@@ -156,21 +156,81 @@ public sealed class VanillaMechanoidLibrary
             return accumulated.ToArray();
         }
 
-        var kinds = sources.Where(s => s.Type == "PawnKindDef" && !s.IsAbstract &&
-            !string.IsNullOrWhiteSpace(s.Name)).ToList();
+        var kinds = defs.Values.Where(s => s.Type == "PawnKindDef").ToList();
+        var kindsByRace = kinds
+            .Select(k => (Kind: k, Race: Read(k, "race", "race").Value))
+            .Where(x => !string.IsNullOrWhiteSpace(x.Race))
+            .GroupBy(x => x.Race!, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Kind).ToArray(),
+                StringComparer.Ordinal);
+        var recipesByProduct = new Dictionary<string, List<SourceDef>>(StringComparer.Ordinal);
+        foreach (var recipe in defs.Values.Where(s => s.Type == "RecipeDef"))
+        {
+            token.ThrowIfCancellationRequested();
+            foreach (var product in recipe.Xml.Element("products")?.Elements() ?? [])
+            {
+                var name = product.Name.LocalName;
+                if (!recipesByProduct.TryGetValue(name, out var productRecipes))
+                    recipesByProduct[name] = productRecipes = [];
+                productRecipes.Add(recipe);
+            }
+        }
+
         var actualThings = defs.Values.Where(s => s.Type == "ThingDef").ToList();
         var weaponTags = new Dictionary<string, List<SourceDef>>(StringComparer.Ordinal);
         foreach (var thing in actualThings)
         {
             token.ThrowIfCancellationRequested();
-            var tags = thing.Xml.Element("weaponTags")?.Elements("li")
-                .Select(x => x.Value.Trim()).Where(x => x.Length != 0) ?? [];
-            foreach (var tag in tags.Distinct())
+            foreach (var tag in Tags(thing))
             {
                 if (!weaponTags.TryGetValue(tag, out var matches))
                     weaponTags[tag] = matches = [];
                 matches.Add(thing);
             }
+        }
+
+        string RecipeDescription(SourceDef recipe)
+        {
+            var ingredients = recipe.Xml.Element("ingredients")?.Elements("li")
+                .Select(e =>
+                {
+                    var count = e.Element("count")?.Value.Trim() ?? "?";
+                    var types = e.Element("filter")?.Element("thingDefs")?.Elements("li")
+                        .Select(x => x.Value.Trim()).Where(x => x.Length != 0).ToArray() ?? [];
+                    return (types.Length > 0 ? string.Join("/", types) : "混合材料") + " ×" + count;
+                }).ToArray() ?? [];
+            var cycles = Read(recipe, "", "gestationCycles").Value;
+            var tech = Read(recipe, "", "researchPrerequisite").Value;
+            return string.Join(" · ", new[]
+            {
+                cycles == null ? null : "培育周期 " + cycles,
+                tech == null ? null : "科技 " + tech,
+                ingredients.Length == 0 ? null : string.Join(" + ", ingredients)
+            }.Where(x => x != null));
+        }
+
+        string WeaponDescription(SourceDef weapon, string matchingTag)
+        {
+            var verb = Parents(weapon)
+                .Select(x => x.Xml.Element("verbs")?.Elements("li").FirstOrDefault())
+                .FirstOrDefault(x => x != null);
+            var info = new List<string> { "标签 " + matchingTag };
+            if (verb?.Element("range")?.Value is { Length: > 0 } range)
+                info.Add("射程 " + range);
+            if (verb?.Element("burstShotCount")?.Value is { Length: > 0 } burst)
+                info.Add("连发 " + burst);
+            if (verb?.Element("defaultProjectile")?.Value is { Length: > 0 } projectile)
+            {
+                info.Add("弹丸 " + projectile);
+                if (defs.TryGetValue(("ThingDef", projectile), out var bullet))
+                {
+                    var damage = Read(bullet, "", "projectile/damageAmountBase").Value;
+                    var ap = Read(bullet, "", "projectile/armorPenetrationBase").Value;
+                    if (damage != null) info.Add("基础伤害 " + damage);
+                    if (ap != null) info.Add("穿甲 " + ap);
+                }
+            }
+            return string.Join(" · ", info);
         }
 
         RelatedDef Related(SourceDef source, string? description = null) =>
@@ -188,9 +248,8 @@ public sealed class VanillaMechanoidLibrary
             var isMech = ancestors.Any(x =>
                 x.TemplateName?.Contains("Mechanoid", StringComparison.OrdinalIgnoreCase) == true)
                 || Read(thing, "", "race/thinkTreeMain").Value == "Mechanoid";
-            var linkedKinds = kinds.Where(k =>
-                string.Equals(Read(k, "race", "race").Value, thing.Name,
-                    StringComparison.Ordinal)).ToArray();
+            var linkedKinds = kindsByRace.GetValueOrDefault(thing.Name)
+                ?? Array.Empty<SourceDef>();
             if (!isMech)
                 isMech = linkedKinds.Any(k => Parents(k).Any(a =>
                     a.TemplateName?.Contains("MechanoidKind", StringComparison.OrdinalIgnoreCase) == true));
@@ -203,9 +262,8 @@ public sealed class VanillaMechanoidLibrary
             var body = collected.First(f => f.XmlPath == "race/body").Value ?? "";
             var weight = collected.First(f => f.XmlPath == "race/mechWeightClass").Value ?? "未在 XML 中定义";
 
-            var recipes = sources.Where(s => s.Type == "RecipeDef" && !s.IsAbstract &&
-                s.Xml.Element("products")?.Elements().Any(p => p.Name.LocalName == thing.Name) == true)
-                .Select(s => Related(s)).ToList();
+            var recipes = (recipesByProduct.GetValueOrDefault(thing.Name) ?? [])
+                .Select(s => Related(s, RecipeDescription(s))).ToList();
             var weapons = new Dictionary<string, RelatedDef>(StringComparer.Ordinal);
             foreach (var kind in linkedKinds)
             foreach (var tag in Tags(kind))
@@ -214,7 +272,7 @@ public sealed class VanillaMechanoidLibrary
                 foreach (var weapon in matches)
                 {
                     if (weapon.Name is not { } weaponName) continue;
-                    weapons.TryAdd(weaponName, Related(weapon, "候选武器 · 匹配标签 " + tag));
+                    weapons.TryAdd(weaponName, Related(weapon, WeaponDescription(weapon, tag)));
                 }
             }
 

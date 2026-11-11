@@ -29,8 +29,11 @@ public sealed class VanillaMechanoidLibraryTests
                     <depth>Inside</depth></li></parts></corePart></BodyDef>
                   <ThingDef><defName>Mech_Gun</defName><label>charged gun</label>
                     <weaponTags><li>TestMechGun</li></weaponTags>
-                    <verbs><li><defaultProjectile>Mech_Bullet</defaultProjectile></li></verbs>
+                    <verbs><li><defaultProjectile>Mech_Bullet</defaultProjectile><range>24</range></li></verbs>
                   </ThingDef>
+                  <ThingDef><defName>Mech_Bullet</defName><projectile>
+                    <damageAmountBase>12</damageAmountBase><armorPenetrationBase>0.25</armorPenetrationBase>
+                  </projectile></ThingDef>
                 </Defs>
                 """);
             File.WriteAllText(Path.Combine(biotech, "Units.xml"), """
@@ -62,7 +65,10 @@ public sealed class VanillaMechanoidLibraryTests
             Assert.Equal("BaseMechanoid", inherited.SourceTemplate);
             Assert.Equal("400", mech.Fields.Single(f => f.XmlPath == "combatPower").Value);
             Assert.Equal(2, mech.BodyParts.Count);
-            Assert.Single(mech.WeaponCandidates);
+            var weapon = Assert.Single(mech.WeaponCandidates);
+            Assert.Contains("射程 24", weapon.Description);
+            Assert.Contains("基础伤害 12", weapon.Description);
+            Assert.Contains("穿甲 0.25", weapon.Description);
             Assert.Single(mech.Recipes);
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
