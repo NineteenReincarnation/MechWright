@@ -25,6 +25,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     private DefinitionRow? _selectedDefinition;
     private FieldRow? _selectedField;
     private CatalogRow? _selectedCatalog;
+    private ReferenceRow? _selectedReference;
 
     public ObservableCollection<DefinitionRow> Definitions { get; } = new();
     public ObservableCollection<DefinitionRow> VisibleDefinitions { get; } = new();
@@ -32,6 +33,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     public ObservableCollection<BodyRow> BodyParts { get; } = new();
     public ObservableCollection<DiagnosticRow> Diagnostics { get; } = new();
     public ObservableCollection<CatalogRow> VisibleCatalog { get; } = new();
+    public ObservableCollection<ReferenceRow> References { get; } = new();
     public string[] SupportedKinds { get; } = ["ThingDef", "PawnKindDef", "BodyDef", "BodyPartDef", "RecipeDef"];
     private IReadOnlyList<CatalogEntry> _catalog = Array.Empty<CatalogEntry>();
 
@@ -115,6 +117,27 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         set { _selectedCatalog = value; Notify(); }
     }
 
+    public ReferenceRow? SelectedReference
+    {
+        get => _selectedReference;
+        set { _selectedReference = value; Notify(); }
+    }
+
+    public void JumpToReference()
+    {
+        if (SelectedReference is not { } item || !item.Reference.CanNavigateLocally)
+        {
+            Status = "引用未在当前文件中定义 · 可先加载本机游戏 / DLC 定义目录";
+            return;
+        }
+        var match = Definitions.FirstOrDefault(x => x.Entry.Type == item.Reference.TargetType
+                         && x.Entry.DefName == item.Reference.TargetDefName);
+        if (match == null) { Status = "本地引用目标已变化，请刷新诊断"; return; }
+        SearchQuery = "";
+        SelectedDefinition = match;
+        Status = $"已定位引用 · {item.Reference.TargetType}/{item.Reference.TargetDefName}";
+    }
+
     public void NewFile()
     {
         SetDocument(DefDocument.CreateEmpty(), "未命名 · Defs.xml");
@@ -158,6 +181,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         Diagnostics.Clear();
         if (_document != null)
             foreach (var d in _document.Validate()) Diagnostics.Add(new DiagnosticRow(d));
+        RefreshReferences();
         Notify(nameof(DiagnosticCount));
         Notify(nameof(DirtyFlag));
         Notify(nameof(IsDirty));
@@ -181,6 +205,15 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         SelectedBodyPart = bodyPath == null ? BodyParts.FirstOrDefault()
             : BodyParts.FirstOrDefault(x => DefDocument.GetPath(x.Part.Xml) == bodyPath)
                   ?? BodyParts.FirstOrDefault();
+    }
+
+    private void RefreshReferences()
+    {
+        References.Clear();
+        if (_document == null) return;
+        foreach (var reference in DefinitionReferences.Collect(_document, _catalog))
+            References.Add(new ReferenceRow(reference));
+        SelectedReference = References.FirstOrDefault();
     }
 
     private void FilterDefinitions()
@@ -290,6 +323,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         {
             _catalog = await DefCatalog.ScanAsync(folder);
             FilterCatalog();
+            RefreshReferences();
             Status = $"本地定义索引完成 · {_catalog.Count} 项 · 只读";
         }
         catch (Exception ex) { ReportError(ex); }
@@ -332,4 +366,17 @@ public sealed class CatalogRow(CatalogEntry entry)
 {
     public CatalogEntry Entry { get; } = entry;
     public string Display => $"[{entry.SourcePackage}] {entry.Identity.Type}  ·  {entry.Identity.DefName}";
+}
+
+public sealed class ReferenceRow(DefinitionReference reference)
+{
+    public DefinitionReference Reference { get; } = reference;
+    public string Display => $"{reference.FromDefName}  →  {reference.TargetType}/{reference.TargetDefName}";
+    public string Location => reference.Location switch
+    {
+        ReferenceLocation.CurrentDocument => "当前文件 ✓",
+        ReferenceLocation.GameCatalog => $"本地目录 · {reference.OriginPackage}",
+        _ => "待解析 / 外部 Mod"
+    };
+    public string Path => reference.FieldPath;
 }

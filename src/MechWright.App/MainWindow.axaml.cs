@@ -199,6 +199,7 @@ public sealed partial class MainWindow : Window
     private void Redo_Click(object? sender, RoutedEventArgs e) => _vm.Redo();
     private void AddDefinition_Click(object? sender, RoutedEventArgs e) => _vm.AddDefinition();
     private void ApplyBody_Click(object? sender, RoutedEventArgs e) => _vm.ApplyBodyPart();
+    private void JumpReference_Click(object? sender, RoutedEventArgs e) => _vm.JumpToReference();
     private void AddBody_Click(object? sender, RoutedEventArgs e) => _vm.AddBodyPart();
     private void RemoveBody_Click(object? sender, RoutedEventArgs e) => _vm.RemoveBodyPart();
     private void MoveBodyUp_Click(object? sender, RoutedEventArgs e) => _vm.MoveBodyPart(-1);

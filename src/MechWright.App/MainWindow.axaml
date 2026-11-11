@@ -143,6 +143,23 @@
                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
                        ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="8"/>
             </TabItem>
+            <TabItem Header="引用关系">
+              <Grid RowDefinitions="Auto,*,Auto" Margin="8" RowSpacing="8">
+                <TextBlock Grid.Row="0" Text="本文件与本机已索引 Def 的引用关系。待解析不等于游戏加载错误。" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                <ListBox Grid.Row="1" ItemsSource="{Binding References}" SelectedItem="{Binding SelectedReference,Mode=TwoWay}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ReferenceRow">
+                      <StackPanel Spacing="3" Margin="6">
+                        <TextBlock Text="{Binding Display}" FontSize="12" FontFamily="Consolas" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Location}" Foreground="#8DBCB4" FontSize="11"/>
+                        <TextBlock Text="{Binding Path}" Foreground="#87969B" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Grid.Row="2" Content="跳转当前文件引用目标" Click="JumpReference_Click"/>
+              </Grid>
+            </TabItem>
             <TabItem Header="设计提示">
               <ScrollViewer Margin="15">
                 <StackPanel Spacing="12">
