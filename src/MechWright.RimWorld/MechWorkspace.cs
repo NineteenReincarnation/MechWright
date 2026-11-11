@@ -52,6 +52,40 @@ public sealed class MechWorkspace
         return file; // Lazy: avoid O(N²) reindexing during large imports.
     }
 
+    /// <summary>Pre-parse and verify all XML files before adding any of them.
+    /// This prevents partially generated three-file mechanoids.</summary>
+    public IReadOnlyList<WorkspaceFile> AddXmlBatch(
+        IReadOnlyDictionary<string, string> documents)
+    {
+        ArgumentNullException.ThrowIfNull(documents);
+        if (_files.Count + documents.Count > 5000)
+            throw new InvalidOperationException("Project XML file limit exceeded.");
+        var parsed = documents.Select(x =>
+        {
+            var path = ValidateRelativePath(x.Key);
+            return new WorkspaceFile(path, DefDocument.Parse(x.Value, path))
+                { IsNew = true };
+        }).ToList();
+        if (parsed.Select(x => x.RelativePath)
+                .Distinct(StringComparer.OrdinalIgnoreCase).Count() != parsed.Count ||
+            parsed.Any(x => _byPath.ContainsKey(x.RelativePath)))
+            throw new InvalidOperationException("One or more XML paths already exist. Nothing was inserted.");
+
+        var newDefs = parsed.SelectMany(x => x.Document.Definitions())
+            .Where(x => x.DefName != "(unnamed)")
+            .Select(x => (x.Type, x.DefName)).ToArray();
+        if (newDefs.Distinct().Count() != newDefs.Length ||
+            newDefs.Any(x => FindDefinitions(x.Type, x.DefName).Count != 0))
+            throw new InvalidOperationException("Generated XML contains a duplicate DefName. Nothing was inserted.");
+
+        foreach (var file in parsed)
+        {
+            _files.Add(file);
+            _byPath.Add(file.RelativePath, file);
+        }
+        return parsed;
+    }
+
     public WorkspaceFile? FindFile(string relativePath) =>
         _byPath.GetValueOrDefault(relativePath.Replace('\\', '/'));
 
