@@ -32,6 +32,13 @@ public static class DefValidation
                 diagnostics.Add(new Diagnostic("MW003", Severity.Warning,
                     $"Missing defName in {entry.Type}.", location));
 
+            foreach (var field in document.Fields(entry))
+            {
+                var issue = StandardFieldRules.Validate(field.Name, field.Value);
+                if (issue != null)
+                    diagnostics.Add(new Diagnostic("MW010", Severity.Error, issue, field.Path));
+            }
+
             if (entry.Type != "BodyDef") continue;
             var core = entry.Element.Element("corePart");
             if (core == null)

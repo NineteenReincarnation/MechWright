@@ -78,6 +78,10 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     public string DirtyFlag => IsDirty ? "● 未保存修改" : "○ 无未保存修改";
     public string SelectedDefName => SelectedDefinition?.Entry.DefName ?? "未选择定义";
     public string SelectedPath => SelectedField?.Field.Path ?? "选择一个字段来编辑";
+    public string SelectedFieldHint => SelectedField is null
+        ? "选择字段以查看类型和允许值"
+        : StandardFieldRules.Describe(SelectedField.Field.Name)?.Hint
+          ?? "未收录的原生或扩展字段 · 按 XML 字符串保留，不臆造类型";
 
     public DefinitionRow? SelectedDefinition
     {
@@ -100,6 +104,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             _selectedField = value;
             Notify();
             Notify(nameof(SelectedPath));
+            Notify(nameof(SelectedFieldHint));
             EditingValue = value?.Field.Value ?? "";
         }
     }
@@ -205,6 +210,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         var path = SelectedField.Field.Path;
         try
         {
+            var validation = StandardFieldRules.Validate(SelectedField.Field.Name, EditingValue);
+            if (validation != null) throw new ArgumentException(validation);
             _document.SetField(SelectedField.Field, EditingValue);
             RefreshAll(index, path);
             Status = "字段已写入当前文档 · 未保存到磁盘";

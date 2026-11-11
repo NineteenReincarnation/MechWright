@@ -160,7 +160,7 @@
 
       <!-- Inspector and precise edit/save intention. -->
       <Border Grid.Column="2" Background="#151E24" CornerRadius="7" BorderBrush="#293C44" BorderThickness="1">
-        <Grid RowDefinitions="Auto,Auto,Auto,2*,Auto,Auto,Auto,Auto,Auto" Margin="14">
+        <Grid RowDefinitions="Auto,Auto,Auto,2*,Auto,Auto,Auto,Auto,Auto,Auto" Margin="14">
           <TextBlock Grid.Row="0" Text="03   属性检查器 / INSPECTOR" FontSize="12" FontWeight="Bold" Foreground="#8DBCB4" Margin="0,3,0,12"/>
           <TextBlock Grid.Row="1" Text="所有叶子字段 · 修改在点击应用后提交" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap" Margin="0,0,0,8"/>
           <Border Grid.Row="2" Background="#30424A" Height="1" Margin="0,0,0,5"/>
@@ -171,7 +171,10 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <TextBlock Grid.Row="4" Text="{Binding SelectedPath}" FontSize="11" FontFamily="Consolas" Foreground="#CFB482" TextWrapping="Wrap" Margin="0,12,0,8"/>
+          <StackPanel Grid.Row="4" Spacing="3" Margin="0,9,0,8">
+            <TextBlock Text="{Binding SelectedPath}" FontSize="11" FontFamily="Consolas" Foreground="#CFB482" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding SelectedFieldHint}" FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+          </StackPanel>
           <TextBox Grid.Row="5" Text="{Binding EditingValue,Mode=TwoWay}" AcceptsReturn="True" Height="68" TextWrapping="Wrap"/>
           <Button Grid.Row="6" Content="应用字段更改" Click="ApplyEdit_Click" Margin="0,8,0,12" Background="#32585C"/>
           <TextBlock Grid.Row="7" Text="新建定义 / INSERT DEF" FontSize="12" Foreground="#8DBCB4" FontWeight="Bold" Margin="0,0,0,8"/>
