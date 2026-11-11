@@ -182,7 +182,7 @@ public static class VisualContentEditor
         ArgumentNullException.ThrowIfNull(field);
         if (field.DefType is not ("ThingDef" or "PawnKindDef") ||
             Reserved.Contains(field.Path) ||
-            field.Path.Contains("li", StringComparison.Ordinal) ||
+            field.Path.Split('/').Contains("li",StringComparer.Ordinal) ||
             field.Path.Split('/').Any(x => !Regex.IsMatch(x,
                 @"^[a-zA-Z_][a-zA-Z0-9_]*$",RegexOptions.CultureInvariant)))
             throw new ArgumentException("该字段不能通过简单属性编辑器修改。");

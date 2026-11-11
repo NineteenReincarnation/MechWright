@@ -26,6 +26,77 @@ public sealed partial class MainWindowViewModel
             new("其他原生属性","⋯")
         ]);
     public ObservableCollection<ContentFieldRow> ContentFields { get; } = new();
+    public ObservableCollection<WorksheetFieldRow> ContentAvailableRows { get; } = new();
+    public IReadOnlyList<string> ContentCustomKinds { get; } =
+        ["Text","Number","Integer","Boolean"];
+    public IReadOnlyList<string> ContentCustomParents { get; } =
+        ["根目录","statBases","race","graphicData","race/thinkTreeMain"];
+    private FreeformTargetRow? _selectedContentCustomTarget;
+    private string _contentCustomParent = "statBases";
+    private string _contentCustomName = "";
+    private string _contentCustomValue = "";
+    private string _contentCustomKind = "Number";
+    public FreeformTargetRow? SelectedContentCustomTarget
+    {
+        get=>_selectedContentCustomTarget;
+        set{_selectedContentCustomTarget=value;Notify();}
+    }
+    public string ContentCustomParent
+    {
+        get=>_contentCustomParent;
+        set{_contentCustomParent=value??"根目录";Notify();}
+    }
+    public string ContentCustomName
+    {
+        get=>_contentCustomName;
+        set{_contentCustomName=value??"";Notify();}
+    }
+    public string ContentCustomValue
+    {
+        get=>_contentCustomValue;
+        set{_contentCustomValue=value??"";Notify();}
+    }
+    public string ContentCustomKind
+    {
+        get=>_contentCustomKind;
+        set{_contentCustomKind=value??"Text";Notify();}
+    }
+
+    public void SaveContentFieldRow(WorksheetFieldRow row)
+    {
+        SaveWorksheetField(row);
+        FilterContent();
+    }
+    public void ResetContentFieldRow(WorksheetFieldRow row)
+    {
+        RemoveWorksheetField(row);
+        FilterContent();
+    }
+    public void ApplyCustomContentField()
+    {
+        if(_workspace==null || CurrentMechName==null)return;
+        try
+        {
+            var target=SelectedContentCustomTarget?.DefType??"ThingDef";
+            var parent=ContentCustomParent.Trim();
+            if(parent=="根目录")parent="";
+            var name=ContentCustomName.Trim();
+            var path=parent.Length==0?name:parent+"/"+name;
+            var kind=ContentCustomKind;
+            var option=new VisualContentEditor.Option(target,path,name,
+                VisualContentEditor.CategoryOf(target,path),kind,ContentCustomValue,
+                "用户自行添加的原生字段；仅确认 XML 结构，游戏效果需要自行验证。",
+                "用户自定义",false);
+            VisualContentEditor.Apply(_workspace,CurrentMechName,option,ContentCustomValue);
+            RefreshAll(SelectedDefinition?.Entry.Index);
+            RefreshWorksheet();
+            FilterContent();
+            ContentStatus="已添加字段“"+name+"”，并保留在纵向配置列表中。";
+            Status=ContentStatus;
+        }
+        catch(Exception ex){ContentStatus=ex.Message;ReportError(ex);}
+    }
+
     public ObservableCollection<ContentTemplateRow> ContentTemplates { get; } = new();
     public ObservableCollection<ContentModuleRow> InstalledContentModules { get; } = new();
     public ObservableCollection<ContentParameterRow> ContentParameters { get; } = new();
@@ -37,7 +108,7 @@ public sealed partial class MainWindowViewModel
     private ContentModuleRow? _selectedContentModule;
     private ContentParameterRow? _selectedContentParameter;
     private string _contentSearch = "";
-    private bool _showObservedContent;
+    private bool _showObservedContent = true;
     private string _contentText = "";
     private decimal _contentNumber;
     private bool _contentBoolean;
@@ -191,6 +262,9 @@ public sealed partial class MainWindowViewModel
     public void OpenContentEditor(string? category=null)
     {
         ContentIsOpen = true;
+        if(SelectedContentCustomTarget==null)
+            SelectedContentCustomTarget=FreeformTargets[0];
+        InitializeFreeformEditor();
         _contentOptions = VisualContentEditor.All(_nativeFields);
         SelectedContentCategory = ContentCategories.FirstOrDefault(x => x.Title ==
             (category ?? WorkflowStep switch
@@ -231,6 +305,7 @@ public sealed partial class MainWindowViewModel
         var oldField=SelectedContentField?.Spec;
         var oldTemplate=SelectedContentTemplate?.Template;
         ContentFields.Clear();
+        ContentAvailableRows.Clear();
         ContentTemplates.Clear();
         foreach (var field in _contentOptions)
         {
@@ -241,7 +316,10 @@ public sealed partial class MainWindowViewModel
                 !field.Path.Contains(match,StringComparison.OrdinalIgnoreCase) &&
                 !field.Help.Contains(match,StringComparison.OrdinalIgnoreCase)) continue;
             ContentFields.Add(new ContentFieldRow(field));
-            if (ContentFields.Count >= 500) break;
+            var current=CurrentMechName!=null && _workspace!=null
+                ? VisualContentEditor.Read(_workspace,CurrentMechName,field) : null;
+            ContentAvailableRows.Add(new WorksheetFieldRow(field,current,false));
+            if (ContentFields.Count >= 300) break;
         }
         foreach (var item in _contentTemplates.All)
         {
@@ -399,7 +477,9 @@ public sealed partial class MainWindowViewModel
         RefreshAll(index);
         RefreshVisualDesigner();
         RefreshWorksheet();
+        FilterContent();
         RefreshInstalledContent();
+        ReloadFreeformModules();
         Notify(nameof(ContentCurrentValue));
         RefreshVisualReview();
         ContentStatus=message;
