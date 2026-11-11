@@ -405,12 +405,12 @@ public sealed class FieldRow(DefField field)
 public sealed class BodyRow(BodyPartEntry part)
 {
     public BodyPartEntry Part { get; } = part;
-    public double EffectivePercent => double.IsFinite(part.CumulativeCoverage)
-        ? Math.Clamp(part.CumulativeCoverage * 100, 0, 100) : 0;
-    public string Name => part.IndentedName;
-    public string Coverage => part.CoverageText;
-    public string Effective => part.EffectiveText;
-    public string Layers => $"{part.Height} / {part.DepthLayer}";
+    public double EffectivePercent => double.IsFinite(Part.CumulativeCoverage)
+        ? Math.Clamp(Part.CumulativeCoverage * 100, 0, 100) : 0;
+    public string Name => Part.IndentedName;
+    public string Coverage => Part.CoverageText;
+    public string Effective => Part.EffectiveText;
+    public string Layers => $"{Part.Height} / {Part.DepthLayer}";
 }
 
 public sealed class DiagnosticRow(Diagnostic diagnostic)
@@ -421,28 +421,28 @@ public sealed class DiagnosticRow(Diagnostic diagnostic)
 public sealed class CatalogRow(CatalogEntry entry)
 {
     public CatalogEntry Entry { get; } = entry;
-    public string Display => $"[{entry.SourcePackage}] {entry.Identity.Type}  ·  {entry.Identity.DefName}";
+    public string Display => $"[{Entry.SourcePackage}] {Entry.Identity.Type}  ·  {Entry.Identity.DefName}";
 }
 
 public sealed class ReferenceRow(DefinitionReference reference)
 {
     public DefinitionReference Reference { get; } = reference;
-    public string Display => $"{reference.FromDefName}  →  {reference.TargetType}/{reference.TargetDefName}";
-    public string Location => reference.Location switch
+    public string Display => $"{Reference.FromDefName}  →  {Reference.TargetType}/{Reference.TargetDefName}";
+    public string Location => Reference.Location switch
     {
         ReferenceLocation.CurrentDocument => "当前文件 ✓",
-        ReferenceLocation.GameCatalog => $"本地目录 · {reference.OriginPackage}",
+        ReferenceLocation.GameCatalog => $"本地目录 · {Reference.OriginPackage}",
         _ => "待解析 / 外部 Mod"
     };
-    public string Path => reference.FieldPath;
+    public string Path => Reference.FieldPath;
 }
 
 public sealed class MechPropertyRow(MechanoidProperties.Spec spec, string? value)
 {
     public MechanoidProperties.Spec Spec { get; } = spec;
     public string? Value { get; } = value;
-    public string Label => spec.Label;
-    public string DisplayValue => value == null
-        ? $"未显式配置  /  建议 {spec.Suggestion}"
-        : $"显式值  {value}";
+    public string Label => Spec.Label;
+    public string DisplayValue => Value == null
+        ? $"未显式配置  /  建议 {Spec.Suggestion}"
+        : $"显式值  {Value}";
 }
