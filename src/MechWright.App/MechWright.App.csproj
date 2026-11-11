@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <AssemblyName>MechWright.App</AssemblyName>
+    <ApplicationIcon>../../assets/branding/mechwright.ico</ApplicationIcon>
     <RootNamespace>MechWright.App</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
