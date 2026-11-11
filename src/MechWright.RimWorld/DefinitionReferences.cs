@@ -3,7 +3,7 @@ using MechWright.Core;
 
 namespace MechWright.RimWorld;
 
-public enum ReferenceLocation { CurrentDocument, GameCatalog, ExternalUnknown }
+public enum ReferenceLocation { CurrentDocument, ProjectFile, GameCatalog, ExternalUnknown }
 
 public sealed record DefinitionReference(
     string FromType, string FromDefName, string TargetType, string TargetDefName,
