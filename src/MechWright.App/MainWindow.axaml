@@ -72,24 +72,68 @@
           <Border Grid.Row="1" Height="1" Background="#30424A" Margin="0,0,0,8"/>
           <TabControl Grid.Row="2">
             <TabItem Header="部件与覆盖率">
-              <Grid RowDefinitions="Auto,*" Margin="8">
-                <TextBlock Grid.Row="0" Text="BodyDef 子部件覆盖份额 · 相对权重并非实际命中概率" Foreground="#A3B1B4" FontSize="12" Margin="0,8"/>
-                <ScrollViewer Grid.Row="1">
-                  <ItemsControl ItemsSource="{Binding BodyParts}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:BodyRow">
-                        <Border BorderBrush="#2C3C45" BorderThickness="0,0,0,1" Padding="8">
-                          <Grid ColumnDefinitions="*,70,80,110">
-                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontFamily="Consolas" TextWrapping="Wrap" FontSize="12"/>
-                            <TextBlock Grid.Column="1" Text="{Binding Coverage}" Foreground="#8DBCB4" FontFamily="Consolas"/>
-                            <TextBlock Grid.Column="2" Text="{Binding Effective}" Foreground="#CFB482" FontFamily="Consolas"/>
-                            <TextBlock Grid.Column="3" Text="{Binding Layers}" FontSize="11" Foreground="#A3B1B4"/>
-                          </Grid>
-                        </Border>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </ScrollViewer>
+              <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8" Margin="8">
+                <TextBlock Grid.Row="0" Text="BodyDef 装配树 · coverage 为相对权重，不代表实际命中率" Foreground="#A3B1B4" FontSize="12" Margin="0,8"/>
+                <ListBox Grid.Row="1" ItemsSource="{Binding BodyParts}" SelectedItem="{Binding SelectedBodyPart,Mode=TwoWay}"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto" BorderBrush="#33434B" BorderThickness="1" CornerRadius="5">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BodyRow">
+                      <Border BorderBrush="#2C3C45" BorderThickness="0,0,0,1" Padding="7">
+                        <Grid ColumnDefinitions="*,68,74,102" ColumnSpacing="4">
+                          <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="{Binding Name}" FontFamily="Consolas" TextWrapping="Wrap" FontSize="12"/>
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding EffectivePercent}" Height="4"
+                                         Foreground="#8DBCB4" Background="#26363D"/>
+                          </StackPanel>
+                          <TextBlock Grid.Column="1" Text="{Binding Coverage}" Foreground="#8DBCB4" FontFamily="Consolas" FontSize="11"/>
+                          <TextBlock Grid.Column="2" Text="{Binding Effective}" Foreground="#CFB482" FontFamily="Consolas" FontSize="11"/>
+                          <TextBlock Grid.Column="3" Text="{Binding Layers}" FontSize="10" Foreground="#A3B1B4"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Grid.Row="2" BorderBrush="#35474F" BorderThickness="1" Background="#101920" CornerRadius="5" Padding="10">
+                  <ScrollViewer MaxHeight="232" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="8">
+                      <TextBlock Text="选中部件 / PART INSPECTOR" Foreground="#8DBCB4" FontWeight="SemiBold" FontSize="12"/>
+                      <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <StackPanel Grid.Column="0" Spacing="3">
+                          <TextBlock Text="BodyPartDef 引用" Foreground="#A3B1B4" FontSize="11"/>
+                          <TextBox Text="{Binding PartDefName,Mode=TwoWay}" Watermark="MechanicalHead"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <TextBlock Text="相对覆盖率（核心为 1）" Foreground="#A3B1B4" FontSize="11"/>
+                          <TextBox Text="{Binding PartCoverage,Mode=TwoWay}" Watermark="0.10"/>
+                        </StackPanel>
+                      </Grid>
+                      <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <StackPanel Grid.Column="0" Spacing="3">
+                          <TextBlock Text="高度 Height" Foreground="#A3B1B4" FontSize="11"/>
+                          <ComboBox ItemsSource="{Binding Heights}" SelectedItem="{Binding PartHeight,Mode=TwoWay}"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <TextBlock Text="深度 Depth" Foreground="#A3B1B4" FontSize="11"/>
+                          <ComboBox ItemsSource="{Binding Depths}" SelectedItem="{Binding PartDepth,Mode=TwoWay}"/>
+                        </StackPanel>
+                      </Grid>
+                      <TextBox Text="{Binding PartCustomLabel,Mode=TwoWay}" Watermark="可选显示名称（customLabel）"/>
+                      <WrapPanel Orientation="Horizontal" ItemHeight="36" ItemWidth="105">
+                        <Button Content="应用部件属性" Click="ApplyBody_Click" IsEnabled="{Binding HasBodyPart}"/>
+                        <Button Content="上移" Click="MoveBodyUp_Click" IsEnabled="{Binding CanRemoveBodyPart}"/>
+                        <Button Content="下移" Click="MoveBodyDown_Click" IsEnabled="{Binding CanRemoveBodyPart}"/>
+                        <Button Content="删除子树" Click="RemoveBody_Click" IsEnabled="{Binding CanRemoveBodyPart}"/>
+                      </WrapPanel>
+                      <Border Height="1" Background="#2C3C45" Margin="0,2"/>
+                      <TextBlock Text="添加子部件 / APPEND CHILD" FontSize="11" Foreground="#CFB482"/>
+                      <Grid ColumnDefinitions="*,104,108" ColumnSpacing="7">
+                        <TextBox Grid.Column="0" Text="{Binding NewPartDefName,Mode=TwoWay}" Watermark="部件 DefName"/>
+                        <TextBox Grid.Column="1" Text="{Binding NewPartCoverage,Mode=TwoWay}" Watermark="coverage"/>
+                        <Button Grid.Column="2" Content="添加子部件" Click="AddBody_Click" IsEnabled="{Binding HasBodyPart}"/>
+                      </Grid>
+                    </StackPanel>
+                  </ScrollViewer>
+                </Border>
               </Grid>
             </TabItem>
             <TabItem Header="XML 预览">

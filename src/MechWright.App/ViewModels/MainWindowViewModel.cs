@@ -6,7 +6,7 @@ using MechWright.RimWorld;
 
 namespace MechWright.App.ViewModels;
 
-public sealed class MainWindowViewModel : INotifyPropertyChanged
+public sealed partial class MainWindowViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
     private void Notify([CallerMemberName] string? name = null) =>
@@ -133,7 +133,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         RefreshAll();
     }
 
-    private void RefreshAll(int? preferredIndex = null, string? fieldPath = null)
+    private void RefreshAll(int? preferredIndex = null, string? fieldPath = null, string? bodyPath = null)
     {
         Definitions.Clear();
         if (_document != null)
@@ -147,7 +147,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             Definitions.FirstOrDefault(x => x.Entry.Index == preferredIndex.Value);
         Notify(nameof(SelectedDefinition));
         Notify(nameof(SelectedDefName));
-        RefreshFields(fieldPath);
+        RefreshFields(fieldPath, bodyPath);
 
         XmlPreview = _document?.Export() ?? "";
         Diagnostics.Clear();
@@ -161,7 +161,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Notify(nameof(HasDocument));
     }
 
-    private void RefreshFields(string? preferredPath = null)
+    private void RefreshFields(string? preferredPath = null, string? bodyPath = null)
     {
         Fields.Clear();
         BodyParts.Clear();
@@ -173,6 +173,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
         SelectedField = preferredPath == null ? Fields.FirstOrDefault()
             : Fields.FirstOrDefault(x => x.Field.Path == preferredPath);
+        SelectedBodyPart = bodyPath == null ? BodyParts.FirstOrDefault()
+            : BodyParts.FirstOrDefault(x => DefDocument.GetPath(x.Part.Xml) == bodyPath)
+                  ?? BodyParts.FirstOrDefault();
     }
 
     private void FilterDefinitions()
@@ -304,6 +307,9 @@ public sealed class FieldRow(DefField field)
 
 public sealed class BodyRow(BodyPartEntry part)
 {
+    public BodyPartEntry Part { get; } = part;
+    public double EffectivePercent => double.IsFinite(part.CumulativeCoverage)
+        ? Math.Clamp(part.CumulativeCoverage * 100, 0, 100) : 0;
     public string Name => part.IndentedName;
     public string Coverage => part.CoverageText;
     public string Effective => part.EffectiveText;

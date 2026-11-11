@@ -198,6 +198,11 @@ public sealed partial class MainWindow : Window
     private void Undo_Click(object? sender, RoutedEventArgs e) => _vm.Undo();
     private void Redo_Click(object? sender, RoutedEventArgs e) => _vm.Redo();
     private void AddDefinition_Click(object? sender, RoutedEventArgs e) => _vm.AddDefinition();
+    private void ApplyBody_Click(object? sender, RoutedEventArgs e) => _vm.ApplyBodyPart();
+    private void AddBody_Click(object? sender, RoutedEventArgs e) => _vm.AddBodyPart();
+    private void RemoveBody_Click(object? sender, RoutedEventArgs e) => _vm.RemoveBodyPart();
+    private void MoveBodyUp_Click(object? sender, RoutedEventArgs e) => _vm.MoveBodyPart(-1);
+    private void MoveBodyDown_Click(object? sender, RoutedEventArgs e) => _vm.MoveBodyPart(1);
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
