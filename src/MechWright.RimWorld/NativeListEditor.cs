@@ -135,7 +135,8 @@ public static class NativeListEditor
                 @"^[A-Za-z_][A-Za-z0-9_]*$", System.Text.RegularExpressions.RegexOptions.CultureInvariant))
             throw new ArgumentException("Invalid XML list container.");
         var element = def.Element.Element(container);
-        if (element != null && element.Elements().Any(x => x.Name.LocalName != "li"))
+        if (element != null && (element.Elements().Any(x => x.Name.LocalName != "li") ||
+            element.Nodes().OfType<XText>().Any(x => !string.IsNullOrWhiteSpace(x.Value))))
             throw new InvalidOperationException("Container has non-li XML children; use the raw XML editor.");
         return element;
     }
