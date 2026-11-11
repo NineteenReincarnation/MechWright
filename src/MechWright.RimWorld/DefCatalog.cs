@@ -26,6 +26,7 @@ public static class DefCatalog
     {
         public NativeListTemplateCatalog ListTemplates { get; init; } =
             NativeListTemplateCatalog.Empty;
+        public IReadOnlyList<string> GestationRecipeParents { get; init; } = [];
     }
 
     public static async Task<IReadOnlyList<CatalogEntry>> ScanAsync(
@@ -120,7 +121,9 @@ public static class DefCatalog
             isGameInstallation, warnings)
         {
             ListTemplates = isGameInstallation
-                ? NativeListTemplateCatalog.Build(sources) : NativeListTemplateCatalog.Empty
+                ? NativeListTemplateCatalog.Build(sources) : NativeListTemplateCatalog.Empty,
+            GestationRecipeParents = isGameInstallation
+                ? VisualGestationEditor.DiscoverRecipeParents(sources) : []
         };
     }
 }
