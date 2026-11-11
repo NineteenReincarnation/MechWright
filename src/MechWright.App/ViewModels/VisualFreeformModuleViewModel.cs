@@ -166,8 +166,10 @@ public sealed partial class MainWindowViewModel
             var path=FreeformModuleEditor.AddChild(link.Value.Doc,link.Value.Def,
                 FreeformContainer, SelectedFreeformModule.Path,node,
                 FreeformName.Trim(),FreeformValue,FreeformMakeGroup);
+            // Keep the parent selected for consecutive sibling additions.
+            // Enter a newly created container automatically when requested.
             AfterFreeformEdit("已增加字段“"+FreeformName+"”，其他字段不变。",
-                SelectedFreeformModule.Path,path);
+                SelectedFreeformModule.Path,FreeformMakeGroup?path:node);
         }
         catch(Exception ex){FreeformStatus=ex.Message;ReportError(ex);}
     }

@@ -146,12 +146,13 @@ public sealed partial class MainWindowViewModel
         if(link==null)return;
         try
         {
+            var parentPath=SelectedFreeformDefinitionNode?.Node.Path ??
+                FreeformDefinitionEditor.Read(link.Value.Doc,link.Value.Def)[0].Path;
             var path=FreeformDefinitionEditor.AddChild(link.Value.Doc,link.Value.Def,
-                SelectedFreeformDefinitionNode?.Node.Path ??
-                    FreeformDefinitionEditor.Read(link.Value.Doc,link.Value.Def)[0].Path,
-                NewDefinitionFieldName.Trim(),NewDefinitionFieldValue,
+                parentPath,NewDefinitionFieldName.Trim(),NewDefinitionFieldValue,
                 NewDefinitionFieldIsGroup);
-            AfterDefinitionEdit("已添加字段“"+NewDefinitionFieldName+"”。",path);
+            AfterDefinitionEdit("已添加字段“"+NewDefinitionFieldName+"”。",
+                NewDefinitionFieldIsGroup?path:parentPath);
         }
         catch(Exception ex){DefinitionBuilderStatus=ex.Message;ReportError(ex);}
     }
