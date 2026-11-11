@@ -80,7 +80,10 @@ public sealed partial class MainWindow : Window
         if (!_vm.HasWorkspace && !await ConfirmDiscardAsync()) return;
         try
         {
-            var blueprint = await new MechanoidWizardWindow()
+            var sequence = 1;
+            while (_vm.Workspace?.FindDefinitionFile("ThingDef",
+                       $"MP_Mech_{sequence:000}") != null) sequence++;
+            var blueprint = await new MechanoidWizardWindow($"MP_Mech_{sequence:000}")
                 .ShowDialog<MechWright.RimWorld.MechanoidBlueprint?>(this);
             if (blueprint == null) return;
             if (!_vm.HasWorkspace) _vm.CreateWorkspace();

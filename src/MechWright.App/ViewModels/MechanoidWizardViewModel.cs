@@ -29,8 +29,40 @@ public sealed class MechanoidWizardViewModel : INotifyPropertyChanged
     public string BandwidthCost { get; set; } = "2";
     public IReadOnlyList<string> WeightClasses { get; } =
         ["Light", "Medium", "Heavy", "UltraHeavy"];
+    public IReadOnlyList<VisualChassisRow> WizardPresetCards { get; } =
+        VisualMechDesigner.Chassis.Select(x => new VisualChassisRow(x)).ToArray();
+    private VisualChassisRow? _selectedWizardPreset;
+    public VisualChassisRow? SelectedWizardPreset
+    {
+        get => _selectedWizardPreset;
+        set
+        {
+            if (ReferenceEquals(_selectedWizardPreset, value)) return;
+            _selectedWizardPreset = value;
+            Changed();
+            if (value == null) return;
+            var p = value.Preset;
+            WeightClass = p.WeightClass;
+            CP = p.CombatPower.ToString(CultureInfo.InvariantCulture);
+            BodySize = p.BodySize.ToString(CultureInfo.InvariantCulture);
+            HealthScale = p.HealthScale.ToString(CultureInfo.InvariantCulture);
+            MoveSpeed = p.MoveSpeed.ToString(CultureInfo.InvariantCulture);
+            Mass = p.Mass.ToString(CultureInfo.InvariantCulture);
+            SharpArmor = p.SharpArmor.ToString(CultureInfo.InvariantCulture);
+            BluntArmor = p.BluntArmor.ToString(CultureInfo.InvariantCulture);
+            HeatArmor = p.HeatArmor.ToString(CultureInfo.InvariantCulture);
+            BandwidthCost = p.BandwidthCost.ToString(CultureInfo.InvariantCulture);
+            foreach (var name in new[] { nameof(WeightClass), nameof(CP),
+                nameof(BodySize), nameof(HealthScale), nameof(MoveSpeed),
+                nameof(Mass), nameof(SharpArmor), nameof(BluntArmor),
+                nameof(HeatArmor), nameof(BandwidthCost) }) Changed(name);
+        }
+    }
+    public MechanoidWizardViewModel() =>
+        SelectedWizardPreset = WizardPresetCards.FirstOrDefault(x => x.Preset.Key == "general");
 
-    private string _preview = "点击“预览三个 XML”查看将要创建的完整文件。";
+
+    private string _preview = "选一个机体预设，调整参数后点“预览设计”查看配置摘要。";
     private string _error = "";
     public string Preview
     {
@@ -70,9 +102,12 @@ public sealed class MechanoidWizardViewModel : INotifyPropertyChanged
     {
         try
         {
-            var documents = Build().GenerateFiles();
-            Preview = string.Join("\n\n", documents.Select(pair =>
-                "───────── " + pair.Key + " ─────────\n" + pair.Value));
+            var p = Build();
+            Preview = $"机体：{p.Label}    类型：{p.WeightClass}    战斗点数：{p.CombatPower:0}\\n" +
+                $"身体大小：{p.BodySize:0.##}    生命倍率：{p.HealthScale:0.##}    速度：{p.MoveSpeed:0.##}\\n" +
+                $"质量：{p.Mass:0} kg    锐器护甲：{p.SharpArmor:0.##}    钝器护甲：{p.BluntArmor:0.##}\\n" +
+                $"热能护甲：{p.HeatArmor:0.##}    控制带宽：{p.BandwidthCost}\\n" +
+                "确认后自动生成机体、生成规则与身体结构三个关联定义。";
             Error = "";
             return true;
         }
