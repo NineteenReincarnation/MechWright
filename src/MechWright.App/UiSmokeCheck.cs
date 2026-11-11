@@ -36,15 +36,28 @@ internal static class UiSmokeCheck
                 vm.WorkflowStep = 0;
                 Require(vm.SelectedDefinition?.Entry.Type == "ThingDef",
                     "Basic stage did not select ThingDef.");
+                vm.SelectedChassisCard = vm.ChassisCards.Single(x => x.Preset.Key == "assault");
+                vm.ApplyVisualBasic();
+                var project = vm.Workspace ??
+                    throw new InvalidOperationException("Workspace disappeared.");
+                Require(VisualMechDesigner.CurrentString(project, "PawnKindDef",
+                    "MP_UiSmoke", "combatPower") == "420",
+                    "Visual chassis preset did not update the native PawnKindDef.");
                 vm.WorkflowStep = 1;
                 Require(vm.SelectedDefinition?.Entry.Type == "BodyDef" &&
                     vm.BodyParts.Count > 0, "Body stage did not select the linked BodyDef.");
                 vm.WorkflowStep = 2;
                 Require(vm.SelectedDefinition?.Entry.Type == "ThingDef",
                     "Weapon stage did not restore the current mechanoid ThingDef.");
+                vm.SelectedMeleeCard = vm.MeleeCards.First();
+                vm.AddVisualMelee();
+                Require(vm.InstalledMelee.Count == 1,
+                    "Clicking a melee preset did not create native tool configuration.");
                 vm.WorkflowStep = 3;
                 vm.WorkflowStep = 4;
                 Require(vm.IsReviewStage, "Review stage is inaccessible.");
+                Require(vm.VisualReviewChecks.Count == 5,
+                    "Novice review did not display the five visual checks.");
                 vm.WorkflowStep = 5;
                 Require(vm.IsAdvancedStage, "Advanced editing remains inaccessible.");
 
