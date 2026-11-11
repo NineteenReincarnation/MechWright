@@ -338,6 +338,12 @@ public sealed partial class MainWindow : Window
     private void ApplyMechProperty_Click(object? sender, RoutedEventArgs e) => _vm.ApplyMechProperty();
     private void CompareVanilla_Click(object? sender, RoutedEventArgs e) => _vm.CompareVanillaWithCurrent();
     private void ApplyNativeField_Click(object? sender, RoutedEventArgs e) => _vm.ApplyNativeField();
+    private void AddNativeList_Click(object? sender, RoutedEventArgs e) => _vm.AddNativeListEntry();
+    private void ReplaceNativeList_Click(object? sender, RoutedEventArgs e) => _vm.ReplaceNativeListEntry();
+    private void DuplicateNativeList_Click(object? sender, RoutedEventArgs e) => _vm.DuplicateNativeListEntry();
+    private void MoveNativeListUp_Click(object? sender, RoutedEventArgs e) => _vm.MoveNativeListEntry(-1);
+    private void MoveNativeListDown_Click(object? sender, RoutedEventArgs e) => _vm.MoveNativeListEntry(1);
+    private void RemoveNativeList_Click(object? sender, RoutedEventArgs e) => _vm.RemoveNativeListEntry();
     private void ApplyXmlAttribute_Click(object? sender, RoutedEventArgs e) => _vm.ApplyXmlAttribute();
     private void RemoveXmlAttribute_Click(object? sender, RoutedEventArgs e) => _vm.RemoveXmlAttribute();
     private void AddXmlAttribute_Click(object? sender, RoutedEventArgs e) => _vm.AddXmlAttribute();

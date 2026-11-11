@@ -276,6 +276,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         RefreshGraphics();
         RefreshXmlAttributes();
         RefreshNativeFields();
+        RefreshNativeListEditor();
         if (_document != null && _selectedDefinition != null)
         {
             foreach (var f in _document.Fields(_selectedDefinition.Entry)) Fields.Add(new FieldRow(f));

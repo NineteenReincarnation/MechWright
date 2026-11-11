@@ -156,44 +156,7 @@
                       </StackPanel>
                       <Border Grid.Row="1" Height="1" Background="#34454D"/>
                       <TabControl Grid.Row="2">
-                        <TabItem Header="原版字段库">
-              <Grid Margin="9" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
-                <TextBlock Grid.Row="0" Text="{Binding NativeFieldStatus}" FontSize="11"
-                           Foreground="#A3B1B4" TextWrapping="Wrap"/>
-                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="9">
-                  <TextBox Grid.Column="0" Text="{Binding NativeFieldSearch,Mode=TwoWay}"
-                           PlaceholderText="搜索已安装原版 XML 字段路径或示例"/>
-                  <CheckBox Grid.Column="1" Content="只看可插入字段"
-                            IsChecked="{Binding NativeOnlySimple,Mode=TwoWay}"
-                            VerticalAlignment="Center"/>
-                </Grid>
-                <ListBox Grid.Row="2" ItemsSource="{Binding VisibleNativeFields}"
-                         SelectedItem="{Binding SelectedNativeField,Mode=TwoWay}">
-                  <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:NativeFieldRow">
-                      <StackPanel Margin="5,6" Spacing="3">
-                        <TextBlock Text="{Binding Label}" FontFamily="Consolas"
-                                   FontSize="12" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding Meta}" Foreground="#8DBCB4"
-                                   FontSize="10" TextWrapping="Wrap"/>
-                      </StackPanel>
-                    </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
-                <Border Grid.Row="3" Background="#101920" BorderBrush="#35474F"
-                        BorderThickness="1" CornerRadius="5" Padding="10">
-                  <StackPanel Spacing="8">
-                    <TextBlock Text="{Binding NativeFieldTip}" FontSize="11"
-                               Foreground="#A3B1B4" TextWrapping="Wrap"/>
-                    <TextBox Text="{Binding NativeFieldValue,Mode=TwoWay}"
-                             PlaceholderText="明确输入写入值，示例可修改"/>
-                    <Button Content="将字段写入当前编辑的 Def" Click="ApplyNativeField_Click"
-                            IsEnabled="{Binding CanInsertNativeField}" Background="#31565C"/>
-                  </StackPanel>
-                </Border>
-              </Grid>
-            </TabItem>
-            <TabItem Header="基础属性">
+                        <TabItem Header="基础属性">
                           <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <ItemsControl ItemsSource="{Binding VanillaFacts}">
                               <ItemsControl.ItemTemplate>
@@ -535,6 +498,94 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </ScrollViewer>
+              </Grid>
+            </TabItem>
+            <TabItem Header="原生列表结构">
+              <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="9" Margin="8">
+                <TextBlock Grid.Row="0" Text="NATIVE LIST STRUCTURES · 工具 / 武器 / Comp / 标签"
+                           Foreground="#8DBCB4" FontSize="12" Margin="0,4"/>
+                <ComboBox Grid.Row="1" ItemsSource="{Binding NativeListGroups}"
+                          SelectedItem="{Binding SelectedListGroup,Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NativeListGroupRow">
+                      <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Grid Grid.Row="2" ColumnDefinitions="*" RowDefinitions="*">
+                  <ListBox ItemsSource="{Binding NativeListEntries}"
+                           SelectedItem="{Binding SelectedListEntry,Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:NativeListItemRow">
+                        <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11"
+                                   TextWrapping="Wrap" Margin="4,6"/>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </Grid>
+                <Border Grid.Row="3" Background="#101920" BorderBrush="#34454D"
+                        BorderThickness="1" Padding="10" CornerRadius="5">
+                  <StackPanel Spacing="7">
+                    <TextBlock Text="{Binding ListHelp}" Foreground="#A3B1B4" FontSize="11"
+                               TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding ListXml,Mode=TwoWay}" AcceptsReturn="True"
+                             AcceptsTab="True" TextWrapping="NoWrap" Height="127"
+                             FontFamily="Consolas" FontSize="11"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                    <WrapPanel Orientation="Horizontal" ItemHeight="34" ItemWidth="93">
+                      <Button Content="新增项" Click="AddNativeList_Click"
+                              IsEnabled="{Binding HasListGroup}"/>
+                      <Button Content="应用修改" Click="ReplaceNativeList_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="复制项" Click="DuplicateNativeList_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="上移" Click="MoveNativeListUp_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="下移" Click="MoveNativeListDown_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                      <Button Content="删除项" Click="RemoveNativeList_Click"
+                              IsEnabled="{Binding HasSelectedListEntry}"/>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+              </Grid>
+            </TabItem>
+            <TabItem Header="原版字段库">
+              <Grid Margin="9" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                <TextBlock Grid.Row="0" Text="{Binding NativeFieldStatus}" FontSize="11"
+                           Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="9">
+                  <TextBox Grid.Column="0" Text="{Binding NativeFieldSearch,Mode=TwoWay}"
+                           PlaceholderText="搜索已安装原版 XML 字段路径或示例"/>
+                  <CheckBox Grid.Column="1" Content="只看可插入字段"
+                            IsChecked="{Binding NativeOnlySimple,Mode=TwoWay}"
+                            VerticalAlignment="Center"/>
+                </Grid>
+                <ListBox Grid.Row="2" ItemsSource="{Binding VisibleNativeFields}"
+                         SelectedItem="{Binding SelectedNativeField,Mode=TwoWay}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NativeFieldRow">
+                      <StackPanel Margin="5,6" Spacing="3">
+                        <TextBlock Text="{Binding Label}" FontFamily="Consolas"
+                                   FontSize="12" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Meta}" Foreground="#8DBCB4"
+                                   FontSize="10" TextWrapping="Wrap"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Border Grid.Row="3" Background="#101920" BorderBrush="#35474F"
+                        BorderThickness="1" CornerRadius="5" Padding="10">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding NativeFieldTip}" FontSize="11"
+                               Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                    <TextBox Text="{Binding NativeFieldValue,Mode=TwoWay}"
+                             PlaceholderText="明确输入写入值，示例可修改"/>
+                    <Button Content="将字段写入当前编辑的 Def" Click="ApplyNativeField_Click"
+                            IsEnabled="{Binding CanInsertNativeField}" Background="#31565C"/>
+                  </StackPanel>
+                </Border>
               </Grid>
             </TabItem>
             <TabItem Header="基础属性">
