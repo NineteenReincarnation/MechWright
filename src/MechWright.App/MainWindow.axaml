@@ -181,49 +181,8 @@
               </TabControl>
               <views:VisualCombatView IsVisible="{Binding IsWeaponStage}"/>
               <TabControl IsVisible="{Binding IsAssetStage}">
-                <TabItem Header="工程资源">
-              <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="9" Margin="8">
-                <TextBlock Grid.Row="0" Text="{Binding AssetSummary}" Foreground="#8DBCB4"
-                           FontSize="12" Margin="0,5"/>
-                <TextBlock Grid.Row="1" Text="只登记本 Mod 的贴图、音频和程序集；不会提取或复制原版 DLC 资源。"
-                           FontSize="11" Foreground="#A3B1B4" TextWrapping="Wrap"/>
-                <ListBox Grid.Row="2" ItemsSource="{Binding ProjectAssets}"
-                         SelectedItem="{Binding SelectedProjectAsset,Mode=TwoWay}"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                  <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ProjectAssetRow">
-                      <StackPanel Spacing="4" Margin="4,6">
-                        <TextBlock Text="{Binding Display}" FontFamily="Consolas"
-                                   FontSize="11" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding Size}" FontSize="10"
-                                   Foreground="#8DBCB4"/>
-                        <TextBlock Text="{Binding Source}" FontSize="10"
-                                   Foreground="#A3B1B4" TextTrimming="CharacterEllipsis"/>
-                      </StackPanel>
-                    </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
-                <Border Grid.Row="3" Background="#101920" BorderBrush="#34454D"
-                        BorderThickness="1" CornerRadius="5" Padding="10">
-                  <StackPanel Spacing="8">
-                    <TextBlock Text="{Binding AssetMessage}" FontSize="11"
-                               Foreground="#A3B1B4" TextWrapping="Wrap"/>
-                    <Button Content="选择本机资源" Click="ChooseProjectAsset_Click"
-                            IsEnabled="{Binding HasWorkspace}"/>
-                    <TextBlock Text="{Binding AssetInputFile}" FontSize="10"
-                               FontFamily="Consolas" TextTrimming="CharacterEllipsis"/>
-                    <TextBox Text="{Binding AssetOutputPath,Mode=TwoWay}"
-                             PlaceholderText="Textures/Things/Mechanoids/Unit_south.png"/>
-                    <WrapPanel Orientation="Horizontal" ItemWidth="150" ItemHeight="35">
-                      <Button Content="登记项目资源" Click="RegisterProjectAsset_Click"
-                              IsEnabled="{Binding HasWorkspace}"/>
-                      <Button Content="从清单移除" Click="RemoveProjectAsset_Click"
-                              IsEnabled="{Binding HasProjectAsset}"/>
-                    </WrapPanel>
-                  </StackPanel>
-                </Border>
-              </Grid>
-            </TabItem>
+                <TabItem Header="方向贴图"><views:VisualGraphicView/></TabItem>
+                <TabItem Header="其他项目资源"><views:VisualAssetsView/></TabItem>
               </TabControl>
               <TabControl IsVisible="{Binding IsReviewStage}">
                 <TabItem Header="诊断检查">

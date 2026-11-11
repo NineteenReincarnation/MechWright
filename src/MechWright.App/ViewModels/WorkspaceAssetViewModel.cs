@@ -7,6 +7,7 @@ namespace MechWright.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     public ObservableCollection<ProjectAssetRow> ProjectAssets { get; } = new();
+    public bool HasProjectResources => ProjectAssets.Count != 0;
     private ProjectAssetRow? _selectedProjectAsset;
     private string _assetInputFile = "";
     private string _assetOutputPath = "";
@@ -46,6 +47,7 @@ public sealed partial class MainWindowViewModel
                 ProjectAssets.Add(new ProjectAssetRow(asset));
         SelectedProjectAsset = ProjectAssets.FirstOrDefault();
         Notify(nameof(AssetSummary));
+        Notify(nameof(HasProjectResources));
         RefreshWorkspaceIndicators();
     }
 
@@ -110,6 +112,21 @@ public sealed partial class MainWindowViewModel
 
 public sealed record ProjectAssetRow(WorkspaceAsset Asset)
 {
+    public string FileName => Path.GetFileName(Asset.RelativePath);
+    public string ResourceType => Path.GetExtension(FileName).ToLowerInvariant() switch
+    {
+        ".png" or ".jpg" or ".jpeg" => "图像 · 贴图素材",
+        ".ogg" or ".wav" => "声音 · 音效素材",
+        ".dll" => "程序集 · 游戏扩展",
+        _ => "项目资源"
+    };
+    public string Symbol => Path.GetExtension(FileName).ToLowerInvariant() switch
+    {
+        ".png" or ".jpg" or ".jpeg" => "▧",
+        ".ogg" or ".wav" => "♫",
+        ".dll" => "⬡",
+        _ => "◈"
+    };
     public string Display => (Asset.IsNew ? "● " : "○ ") + Asset.RelativePath;
     public string Size => (Asset.Length / 1024d / 1024d).ToString("0.0") + " MiB";
     public string Source => Asset.SourcePath;

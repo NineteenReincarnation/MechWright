@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualAssetsView"
+             x:DataType="vm:MainWindowViewModel">
+  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15" Margin="16">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+      <StackPanel Grid.Column="0" Spacing="7">
+        <TextBlock Text="项目资源" FontSize="19" FontWeight="SemiBold"/>
+        <TextBlock Text="加入自己的音效、贴图和组件。软件自动安排文件夹，导出时统一打包。"
+                   Foreground="#9FB4B9" FontSize="12" TextWrapping="Wrap"/>
+        <TextBlock Text="{Binding AssetSummary}" Foreground="#83C1B8" FontSize="12"/>
+      </StackPanel>
+      <Button Grid.Column="1" Classes="primary" Content="添加文件"
+              Click="ChooseResources_Click" VerticalAlignment="Center"/>
+    </Grid>
+    <Border Grid.Row="1" Background="#122027" BorderBrush="#30464E" BorderThickness="1"
+            CornerRadius="9" Padding="10">
+      <Grid>
+        <ListBox ItemsSource="{Binding ProjectAssets}"
+                 SelectedItem="{Binding SelectedProjectAsset,Mode=TwoWay}"
+                 IsVisible="{Binding HasProjectResources}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ProjectAssetRow">
+              <Border Margin="4" Background="#182B31" BorderBrush="#32505A"
+                      BorderThickness="1" CornerRadius="7" Padding="13">
+                <Grid ColumnDefinitions="48,*,Auto" ColumnSpacing="14">
+                  <Border Width="44" Height="44" Background="#27444D" CornerRadius="9">
+                    <TextBlock Text="{Binding Symbol}" FontSize="24"
+                               Foreground="#9BCAC2" VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                  </Border>
+                  <StackPanel Grid.Column="1" Spacing="5">
+                    <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding ResourceType}" FontSize="11" Foreground="#92B8B3"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="2" Text="{Binding Size}" VerticalAlignment="Center"
+                             Foreground="#9EAEB5" FontSize="11"/>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel IsVisible="{Binding !HasProjectResources}" VerticalAlignment="Center"
+                    HorizontalAlignment="Center" Spacing="14">
+          <Border Width="85" Height="85" CornerRadius="22" Background="#224048">
+            <PathIcon Data="M3 5H11L14 8H21V19H3Z" Width="44" Height="44"
+                      Foreground="#9ACEC3" VerticalAlignment="Center"
+                      HorizontalAlignment="Center"/>
+          </Border>
+          <TextBlock Text="这个项目还没有附带资源" FontSize="17"
+                     HorizontalAlignment="Center"/>
+          <TextBlock Text="可以添加 PNG、WAV、OGG、DLL 文件，或在“方向贴图”页直接导入三视图。"
+                     FontSize="12" Foreground="#9EB3B9" MaxWidth="340"
+                     TextAlignment="Center" TextWrapping="Wrap"/>
+          <Button Classes="primary" Content="选择本机文件" Click="ChooseResources_Click"
+                  HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="15">
+      <TextBlock Grid.Column="0" Text="{Binding AssetMessage}" Foreground="#99B3B3"
+                 TextWrapping="Wrap" VerticalAlignment="Center"/>
+      <Button Grid.Column="1" Content="从工程移除" Click="RemoveResource_Click"
+              IsEnabled="{Binding HasProjectAsset}"/>
+    </Grid>
+  </Grid>
+</UserControl>
