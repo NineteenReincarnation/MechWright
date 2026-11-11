@@ -219,49 +219,7 @@
                 <TabItem Header="方向贴图"><views:VisualGraphicView/></TabItem>
                 <TabItem Header="其他项目资源"><views:VisualAssetsView/></TabItem>
               </TabControl>
-              <TabControl IsVisible="{Binding IsReviewStage}">
-                <TabItem Header="诊断检查">
-  <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="12">
-    <TextBlock Grid.Row="0" Text="检查当前工程 XML 结构与本地可解析引用" FontSize="14" FontWeight="SemiBold"/>
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="18">
-      <TextBlock Text="{Binding DiagnosticCount}" Foreground="#E0C58A"/>
-      <TextBlock Text="{Binding DefinitionCount}" Foreground="#8DBCB4"/>
-      <TextBlock Text="{Binding CatalogCount}" Foreground="#91A7B1"/>
-    </StackPanel>
-    <ListBox Grid.Row="2" ItemsSource="{Binding Diagnostics}" ScrollViewer.VerticalScrollBarVisibility="Auto">
-      <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:DiagnosticRow">
-          <TextBlock Text="{Binding Display}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" Margin="6,7"/>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-  </Grid>
-</TabItem>
-                <TabItem Header="引用关系">
-              <Grid RowDefinitions="Auto,*,Auto" Margin="8" RowSpacing="8">
-                <TextBlock Grid.Row="0" Text="本文件与本机已索引 Def 的引用关系。待解析不等于游戏加载错误。" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap"/>
-                <ListBox Grid.Row="1" ItemsSource="{Binding References}" SelectedItem="{Binding SelectedReference,Mode=TwoWay}">
-                  <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ReferenceRow">
-                      <StackPanel Spacing="3" Margin="6">
-                        <TextBlock Text="{Binding Display}" FontSize="12" FontFamily="Consolas" TextWrapping="Wrap"/>
-                        <TextBlock Text="{Binding Location}" Foreground="#8DBCB4" FontSize="11"/>
-                        <TextBlock Text="{Binding Path}" Foreground="#87969B" FontSize="10" TextTrimming="CharacterEllipsis"/>
-                      </StackPanel>
-                    </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
-                <Button Grid.Row="2" Content="跳转当前文件引用目标" Click="JumpReference_Click"/>
-              </Grid>
-            </TabItem>
-<TabItem Header="XML 预览">
-              <TextBox Text="{Binding XmlPreview}" IsReadOnly="True" FontFamily="Consolas"
-                       FontSize="12" TextWrapping="NoWrap" AcceptsReturn="True"
-                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                       ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="8"/>
-            </TabItem>
-              </TabControl>
+              <views:VisualReviewView IsVisible="{Binding IsReviewStage}"/>
               <Grid IsVisible="{Binding IsAdvancedStage}" RowDefinitions="Auto,*" RowSpacing="10">
                 <Border Grid.Row="0" Background="#15272C" CornerRadius="5" Padding="12">
                   <WrapPanel Orientation="Horizontal" ItemHeight="34">
@@ -278,6 +236,31 @@
                   </WrapPanel>
                 </Border>
                 <TabControl Grid.Row="1">
+                  <TabItem Header="引用关系">
+              <Grid RowDefinitions="Auto,*,Auto" Margin="8" RowSpacing="8">
+                <TextBlock Grid.Row="0" Text="本文件与本机已索引 Def 的引用关系。待解析不等于游戏加载错误。" FontSize="12" Foreground="#A3B1B4" TextWrapping="Wrap"/>
+                <ListBox Grid.Row="1" ItemsSource="{Binding References}" SelectedItem="{Binding SelectedReference,Mode=TwoWay}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ReferenceRow">
+                      <StackPanel Spacing="3" Margin="6">
+                        <TextBlock Text="{Binding Display}" FontSize="12" FontFamily="Consolas" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Location}" Foreground="#8DBCB4" FontSize="11"/>
+                        <TextBlock Text="{Binding Path}" Foreground="#87969B" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Grid.Row="2" Content="跳转当前文件引用目标" Click="JumpReference_Click"/>
+              </Grid>
+            </TabItem>
+                  <TabItem Header="XML 预览">
+              <TextBox Text="{Binding XmlPreview}" IsReadOnly="True" FontFamily="Consolas"
+                       FontSize="12" TextWrapping="NoWrap" AcceptsReturn="True"
+                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                       ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="8"/>
+            </TabItem>
+                  
 <TabItem Header="原生列表结构">
               <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="9" Margin="8">
                 <TextBlock Grid.Row="0" Text="NATIVE LIST STRUCTURES · 工具 / 武器 / Comp / 标签"

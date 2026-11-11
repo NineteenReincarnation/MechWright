@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.VisualReviewView"
+             x:DataType="vm:MainWindowViewModel">
+  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15" Margin="18">
+    <StackPanel Grid.Row="0" Spacing="7">
+      <TextBlock Text="设计检查" FontSize="21" FontWeight="SemiBold"/>
+      <TextBlock Text="{Binding VisualReviewSummary}" FontSize="12" Foreground="#9BC9BD"
+                 TextWrapping="Wrap"/>
+      <TextBlock Text="软件检查当前设计文件；通过检查不代表已在游戏内加载成功。"
+                 FontSize="11" Foreground="#8FA5AC" TextWrapping="Wrap"/>
+    </StackPanel>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <ItemsControl ItemsSource="{Binding VisualReviewChecks}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" ItemWidth="325" ItemHeight="137"/></ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:VisualReviewRow">
+            <Border Classes="feature-card" Margin="6" Padding="15">
+              <Grid ColumnDefinitions="40,*" ColumnSpacing="11">
+                <Border Width="35" Height="35" Background="#223A3E" CornerRadius="17">
+                  <TextBlock Text="{Binding Symbol}" FontSize="20"
+                             Foreground="{Binding Accent}" FontWeight="Bold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="{Binding Title}" FontWeight="SemiBold"
+                               FontSize="14"/>
+                    <TextBlock Grid.Column="1" Text="{Binding State}"
+                               Foreground="{Binding Accent}" FontSize="11"/>
+                  </Grid>
+                  <TextBlock Text="{Binding Description}" FontSize="11"
+                             Foreground="#A5B9BA" TextWrapping="Wrap"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+    <Border Grid.Row="2" Background="#172D2D" CornerRadius="7" Padding="13">
+      <StackPanel Spacing="5">
+        <TextBlock Text="导出前提醒" FontSize="13" FontWeight="SemiBold"/>
+        <TextBlock Text="导出会生成 Mod 文件夹。请勾选包含图片和音效等项目资源，然后在游戏中验证加载与表现。"
+                   FontSize="12" Foreground="#A7C2BD" TextWrapping="Wrap"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

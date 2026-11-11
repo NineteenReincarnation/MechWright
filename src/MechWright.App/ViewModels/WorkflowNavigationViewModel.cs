@@ -36,6 +36,7 @@ public sealed partial class MainWindowViewModel
             Notify(nameof(CanGoForwardStage));
             Notify(nameof(NeedsFirstMechanoid));
             SelectStageDocument();
+            if (step == 4) RefreshVisualReview();
         }
     }
 
