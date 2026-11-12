@@ -250,6 +250,7 @@ public sealed partial class MainWindow : Window
 
     private async void ExportWorkspace_Click(object? sender, RoutedEventArgs e)
     {
+        if (_vm.IsDocumentMode && !_vm.CommitDocumentInputs()) return;
         var project = _vm.Workspace;
         if (project == null)
         {
@@ -402,6 +403,7 @@ public sealed partial class MainWindow : Window
     private async void EditRaw_Click(object? sender, RoutedEventArgs e)
     {
         if (!_vm.HasDocument) { _vm.NewFile(); }
+        if (_vm.IsDocumentMode && !_vm.CommitDocumentInputs()) return;
         var dialog = new Window
         {
             Title = "XML SOURCE · 精确编辑",
