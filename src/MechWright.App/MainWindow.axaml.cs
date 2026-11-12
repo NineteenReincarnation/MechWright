@@ -371,6 +371,14 @@ public sealed partial class MainWindow : Window
         catch (Exception ex) { _vm.ReportError(ex); }
     }
 
+    private void SaveWorkbench_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_vm.HasWorkspace)
+            ExportWorkspace_Click(sender, e);
+        else
+            Export_Click(sender, e);
+    }
+
     private async void Export_Click(object? sender, RoutedEventArgs e) =>
         await SaveXmlAsync(saveAs: false);
 
@@ -505,7 +513,9 @@ public sealed partial class MainWindow : Window
         // Global save must also work while a value field has keyboard focus.
         if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.S)
         {
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            if (_vm.HasWorkspace)
+                ExportWorkspace_Click(this, new RoutedEventArgs());
+            else if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
                 _ = SaveXmlAsync(saveAs: true);
             else Export_Click(this, new RoutedEventArgs());
             e.Handled = true;
@@ -523,7 +533,6 @@ public sealed partial class MainWindow : Window
             else if (e.Key == Key.Y) { _vm.Redo(); e.Handled = true; }
             else if (e.Key == Key.N) { NewFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
             else if (e.Key == Key.O) { OpenFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
-            else if (e.Key == Key.S) { Export_Click(this, new RoutedEventArgs()); e.Handled = true; }
             else if (e.Key == Key.Right && _vm.IsGuidedMode)
             {
                 _vm.NextStage();
