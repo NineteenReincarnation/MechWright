@@ -154,7 +154,7 @@ public static class InspectorFieldCatalog
 
     private static int CategoryOrder(string category)
     {
-        var i = Categories.IndexOf(category);
+        var i = Array.IndexOf(Categories.ToArray(), category);
         return i < 0 ? 100 : i;
     }
 }
