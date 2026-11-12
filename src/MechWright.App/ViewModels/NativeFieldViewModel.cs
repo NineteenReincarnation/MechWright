@@ -10,6 +10,7 @@ namespace MechWright.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     private NativeFieldCatalog _nativeFields = NativeFieldCatalog.Empty;
+    private GameAssemblyFieldCatalog _gameFields = GameAssemblyFieldCatalog.Empty;
     private NativeFieldRow? _selectedNativeField;
     private string _nativeFieldSearch = "";
     private string _nativeFieldValue = "";
@@ -71,8 +72,9 @@ public sealed partial class MainWindowViewModel
     private void UseNativeFieldCatalog(DefCatalog.CatalogScan scan)
     {
         _nativeFields = scan.NativeFields;
+        _gameFields = scan.GameFields;
         NativeFieldStatus = scan.IsGameInstallation
-            ? $"共观察到 {_nativeFields.All.Count} 种 XML 字段路径 · 来源：本机 Core / DLC · 非 C# 完整字段规范"
+            ? $"原版 XML 字段 {_nativeFields.All.Count} 项 · CLR 程序集字段候选 {_gameFields.Count} 项 · 均为本机只读"
             : "选择 RimWorld 安装目录才能读取原版字段。Mod 文件夹不会被冒充为原版来源。";
         FilterNativeFields();
         // The same verified/discovered catalog backs the inline Inspector.
