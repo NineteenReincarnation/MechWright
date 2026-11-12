@@ -79,6 +79,11 @@ jobs:
             throw 'The GUI smoke test did not finish within 45 seconds.'
           }
           if ($process.ExitCode -ne 0) {
+            $diagnostic = Join-Path (Resolve-Path 'artifacts/windows') 'ui-smoke-error.txt'
+            if (Test-Path $diagnostic) {
+              Write-Output 'UI smoke failure details:'
+              Get-Content $diagnostic | Write-Output
+            }
             throw "GUI smoke test failed with exit code $($process.ExitCode)."
           }
       - name: Verify app bundle
