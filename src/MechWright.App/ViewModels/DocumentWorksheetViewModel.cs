@@ -368,9 +368,11 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
         "li" => "列表项",
         _ => StandardFieldRules.Describe(Node.Name)?.Description ?? Node.Name
     };
-    public string StructureHint => Node.IsRoot ? "定义根节点" :
-        Node.IsIdentity ? "唯一标识 · 只读" : Node.IsGroup ? "分组 · 选择后可添加子项" :
-        Node.Attributes.Length > 0 ? Node.Attributes : "已写入当前 XML";
+    public string StructureHint => IsGroup ? "包含子项目" :
+        Node.Attributes.Length > 0 ? Node.Attributes : "";
+    public bool HasStructureHint => StructureHint.Length > 0;
+    public Avalonia.Thickness RowIndent => new(
+        Math.Clamp(Node.Depth - 1, 0, 5) * 13, 0, 0, 0);
     public string Indent => new string(' ', Math.Min(12, Node.Depth) * 2);
     public string? SavedValue => Node.Value;
     public bool IsEdited { get; private set; }
