@@ -17,7 +17,9 @@ public static class InspectorFieldCatalog
         IReadOnlyList<string> Choices, bool IsStarter)
     {
         public string Name => Path.Split('/')[^1];
-        public bool IsObserved => !IsStarter;
+        public bool IsAssemblyCandidate =>
+            Source.StartsWith("程序集 · ", StringComparison.Ordinal);
+        public bool IsObserved => !IsStarter && !IsAssemblyCandidate;
         public string SourceLabel => IsStarter ? "已整理字段" :
             Source.StartsWith("程序集 · ", StringComparison.Ordinal)
                 ? Source + " · 候选"
