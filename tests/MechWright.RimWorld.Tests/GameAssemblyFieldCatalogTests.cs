@@ -1,7 +1,8 @@
 using MechWright.RimWorld;
 using Xunit;
 
-namespace MechWright.RimWorld.Tests;
+namespace MechWright.RimWorld.Tests
+{
 
 public sealed class GameAssemblyFieldCatalogTests
 {
@@ -51,6 +52,7 @@ public sealed class GameAssemblyFieldCatalogTests
             x.Kind == "Enum" && x.Choices.Contains("Heavy"));
         Assert.DoesNotContain(fields, x => x.Path == "combatPower");
     }
+}
 }
 
 namespace MechWright.RimWorld.Tests.FixtureModels
