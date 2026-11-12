@@ -314,6 +314,7 @@ public sealed partial class MainWindowViewModel
     /// written to disk until the top-level Save XML action.
     /// </summary>
     public bool HasUncommittedDocumentInputs =>
+        HasInlinePendingEdits ||
         DocumentNodes.Any(x => x.CanEdit && x.IsEdited) ||
         (_document != null && SelectedDefinition != null &&
             DocumentLabelDraft != (_document.Xml.Root?.Elements()
@@ -323,6 +324,7 @@ public sealed partial class MainWindowViewModel
     public bool CommitDocumentInputs()
     {
         if (_document == null || SelectedDefinition == null) return true;
+        if (!CommitInlineInspector()) return false;
         try
         {
             var changes = DocumentNodes.Where(x => x.CanEdit && x.IsEdited &&
