@@ -8,6 +8,55 @@ public sealed partial class DocumentWorksheetView : UserControl
 {
     public DocumentWorksheetView() => InitializeComponent();
 
+    private void QuickThing_Click(object? sender, RoutedEventArgs e) =>
+        QuickCreate("ThingDef");
+    private void QuickKind_Click(object? sender, RoutedEventArgs e) =>
+        QuickCreate("PawnKindDef");
+    private void QuickBody_Click(object? sender, RoutedEventArgs e) =>
+        QuickCreate("BodyDef");
+    private void QuickPart_Click(object? sender, RoutedEventArgs e) =>
+        QuickCreate("BodyPartDef");
+
+    private void QuickCreate(string type)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.CreateQuickDefinition(type);
+    }
+
+    private void ToggleCreatePanel_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentCreatePanel();
+    }
+
+    private void SaveLabel_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.SaveDocumentDisplayName();
+    }
+
+    private void ToggleQuickPanel_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentQuickPanel();
+    }
+
+    private void ConfirmQuickField_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.ApplyDocumentQuickOption();
+    }
+
+    private void ToggleStructurePanel_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentStructurePanel();
+    }
+
+    private void AddIntoRow_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm &&
+            sender is Button { DataContext: DocumentNodeRow row })
+        {
+            vm.ToggleDocumentStructurePanel(row);
+            MainScroll.Offset = new Avalonia.Vector(0, 0);
+        }
+    }
+
     private void AppendDefinition_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm) vm.AppendDocumentDefinition();
