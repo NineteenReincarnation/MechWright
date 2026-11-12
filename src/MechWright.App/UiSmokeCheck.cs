@@ -27,54 +27,52 @@ internal static class UiSmokeCheck
                     throw new InvalidOperationException("MainWindow has no editor ViewModel.");
                 Require(vm.ShowStartPage, "New project page should be the initial view.");
 
-                // Main entry: blank XML opens a usable list without a mech wizard.
+                // No creation wizard, field picker, or mandatory presets.
+                // One XML immediately opens a continuous list of empty inputs.
                 vm.NewFile();
                 Require(vm.WorkbenchArea == 0 && vm.PrimarySaveLabel == "保存 XML",
-                    "Standalone file should use the global XML workbench and save label.");
-                Require(vm.IsDocumentMode && vm.HasDocument &&
-                    !vm.HasWorkspace && vm.Definitions.Count == 0,
-                    "New XML must open an empty file-first workspace.");
-                Require(vm.DocumentIsEmpty && vm.DocumentVisibleNodes.Count == 0,
-                    "A blank XML should show the first-content empty state.");
-                vm.BeginDocumentConfiguration();
-                Require(vm.DocumentHasDefinition && vm.DocumentQuickPanelOpen &&
-                    vm.DocumentQuickOptions.Count > 0,
-                    "New XML cannot enter a usable field list in one action.");
-                vm.ToggleDocumentQuickPanel();
-                Require(vm.DocumentHasNoFields,
-                    "Starting the editor must not silently write values.");
-                Require(vm.DocumentHasDefinition &&
-                    vm.SelectedDefinition?.Entry.DefName.StartsWith("MP_", StringComparison.Ordinal) == true,
-                    "One-click content should create only a minimal native definition.");
+                    "New XML must open the single editable workbench.");
+                Require(vm.IsDocumentMode && vm.HasDocument && !vm.HasWorkspace &&
+                    vm.Definitions.Count == 1 && vm.DocumentHasDefinition,
+                    "New XML should open a minimal editable definition immediately.");
+                Require(vm.SelectedDefinition?.Entry.DefName == "MP_Thing001" &&
+                    vm.InlineInspectorRows.Count >= 12 && !vm.DocumentQuickPanelOpen,
+                    "The first screen must be a full list, not another add-field panel.");
+                Require(vm.InlineInspectorRows.Any(x => x.Path == "statBases/MoveSpeed") &&
+                    !vm.XmlPreview.Contains("<MoveSpeed>"),
+                    "Optional inputs must be visible without polluting the XML.");
                 vm.DocumentLabelDraft = "测试机体";
-                vm.SaveDocumentDisplayName();
-                Require(vm.SelectedDefinition?.Entry.Label == "测试机体",
-                    "Friendly name was not written to the XML.");
-                vm.ToggleDocumentQuickPanel();
-                Require(vm.DocumentQuickOptions.Any(x => x.Path == "statBases/MoveSpeed"),
-                    "The novice add menu did not expose a basic field.");
-                vm.SelectedDocumentQuickOption = vm.DocumentQuickOptions.First(x =>
+                Require(vm.CommitDocumentInputs() &&
+                    vm.SelectedDefinition?.Entry.Label == "测试机体",
+                    "Editing the display name should commit without a separate wizard.");
+                var firstMove = vm.InlineInspectorRows.Single(x =>
                     x.Path == "statBases/MoveSpeed");
-                Require(!vm.DocumentCanAddQuickOption,
-                    "Numeric values cannot be written before explicit user input.");
-                vm.DocumentQuickNumber = 4.8m;
-                Require(vm.DocumentCanAddQuickOption, "Explicit numeric input was not accepted.");
-                vm.ApplyDocumentQuickOption();
-                Require(vm.DocumentQuickPanelOpen,
-                    "Add picker closed after first field.");
-                Require(vm.XmlPreview.Contains("<MoveSpeed>4.8</MoveSpeed>") &&
-                    vm.DocumentVisibleNodes.Any(x => x.Name == "MoveSpeed"),
-                    "Inline novice add did not create a visible, real XML field.");
+                firstMove.Number = 4.8m;
+                Require(vm.HasUncommittedDocumentInputs &&
+                    !vm.XmlPreview.Contains("<MoveSpeed>"),
+                    "Typing a number should not write XML before the cell is committed.");
+                Require(vm.CommitInlineInspector(firstMove) &&
+                    vm.XmlPreview.Contains("<MoveSpeed>4.8</MoveSpeed>"),
+                    "A list cell must write the correct XML path directly.");
+                Require(vm.InlineInspectorRows.Any(x =>
+                    x.Path == "statBases/Mass" && !x.IsSet),
+                    "Editing one cell must leave other optional inputs blank.");
+                vm.InlineSearch = "ArmorRating_Sharp";
+                Require(vm.InlineInspectorRows.Count == 1 &&
+                    vm.InlineInspectorRows[0].Path == "statBases/ArmorRating_Sharp",
+                    "Typing a path should filter the same inline list, not open a picker.");
+                vm.InlineSearch = "";
                 vm.Undo();
                 Require(!vm.XmlPreview.Contains("<MoveSpeed>4.8</MoveSpeed>"),
-                    "Quick-add undo did not roll back the entire field.");
+                    "Inline field addition must be undoable.");
                 vm.NewFile();
-                Require(!vm.DocumentQuickPanelOpen,
-                    "New XML must reset the previous file editing panel.");
+                Require(vm.InlineInspectorRows.Count >= 12 &&
+                    !vm.DocumentQuickPanelOpen && vm.InlineSearch == "",
+                    "A second XML must again open directly in its field list.");
                 vm.DocumentDefName = "MP_UiFile";
                 vm.DocumentDefLabel = "Simple part";
                 vm.AppendDocumentDefinition();
-                Require(vm.Definitions.Count == 1 &&
+                Require(vm.Definitions.Count == 2 &&
                     vm.SelectedDefinition?.Entry.DefName == "MP_UiFile",
                     "Inline definition row did not create the selected XML Def.");
                 var selectedBeforeFilter = vm.SelectedDefinition;
