@@ -14,9 +14,9 @@ public sealed class DocumentWorksheetEditorTests
             document, "ThingDef", "MP_NewPart", "");
         Assert.Equal("MP_NewPart", entry.DefName);
         Assert.Null(document.Xml.Root!.Element("ThingDef")!.Element("statBases"));
-        Assert.Null(entry.Element.Element("race"));
+        Assert.Null(document.Xml.Root!.Element("ThingDef")!.Element("race"));
         Assert.Null(document.Xml.Root!.Element("ThingDef")!.Attribute("ParentName"));
-        Assert.Null(entry.Element.Element("label"));
+        Assert.Null(document.Xml.Root!.Element("ThingDef")!.Element("label"));
         Assert.Single(document.Definitions());
         Assert.True(document.Undo());
         Assert.Empty(document.Definitions());
@@ -46,17 +46,17 @@ public sealed class DocumentWorksheetEditorTests
         var move = DocumentWorksheetEditor.AddField(document, entry,
             statPath, "MoveSpeed", "4.7", false);
         DocumentWorksheetEditor.UpdateValue(document, entry, move, "5.3");
-        Assert.Equal("5.3", entry.Element.Element("statBases")?.Element("MoveSpeed")?.Value);
+        Assert.Equal("5.3", document.Xml.Root!.Element("ThingDef")!.Element("statBases")?.Element("MoveSpeed")?.Value);
 
         var list = DocumentWorksheetEditor.AddField(document, entry, root,
             "tools", "", true);
         DocumentWorksheetEditor.AddField(document, entry, list, "li", "", true);
         DocumentWorksheetEditor.AddField(document, entry, list, "li", "", true);
-        Assert.Equal(2, entry.Element.Element("tools")?.Elements("li").Count());
+        Assert.Equal(2, document.Xml.Root!.Element("ThingDef")!.Element("tools")?.Elements("li").Count());
 
         Assert.Contains("Preserve my comment", document.Export());
         Assert.Contains("Flag=\"keep\"", document.Export());
-        Assert.Equal("original", entry.Element.Element("strangeField")?.Value);
+        Assert.Equal("original", document.Xml.Root!.Element("ThingDef")!.Element("strangeField")?.Value);
         Assert.Throws<InvalidOperationException>(() =>
             DocumentWorksheetEditor.AddField(document, entry, statPath,
                 "MoveSpeed", "1", false));
