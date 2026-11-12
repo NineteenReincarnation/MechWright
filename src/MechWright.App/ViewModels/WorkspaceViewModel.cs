@@ -32,6 +32,10 @@ public sealed partial class MainWindowViewModel
         set
         {
             if (ReferenceEquals(_selectedProjectFile, value)) return;
+            if (_isDocumentMode && _selectedProjectFile != null &&
+                !ReferenceEquals(_selectedProjectFile.File.Document, value?.File.Document) &&
+                HasUncommittedDocumentInputs && !CommitDocumentInputs())
+                return;
             _selectedProjectFile = value;
             Notify();
             if (_workspace != null && value != null)
