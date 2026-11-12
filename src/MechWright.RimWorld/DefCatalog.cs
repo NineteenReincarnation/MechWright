@@ -24,6 +24,8 @@ public static class DefCatalog
         bool IsGameInstallation,
         IReadOnlyList<string> Warnings)
     {
+        public GameAssemblyFieldCatalog GameFields { get; init; } =
+            GameAssemblyFieldCatalog.Empty;
         public NativeListTemplateCatalog ListTemplates { get; init; } =
             NativeListTemplateCatalog.Empty;
         public IReadOnlyList<string> GestationRecipeParents { get; init; } = [];
@@ -117,13 +119,46 @@ public static class DefCatalog
         var nativeFields = isGameInstallation
             ? NativeFieldCatalog.Build(sources, token)
             : NativeFieldCatalog.Empty;
+        var assemblyFields = GameAssemblyFieldCatalog.Empty;
+        if (isGameInstallation)
+        {
+            var assembly = FindGameAssembly(data);
+            if (assembly != null)
+            {
+                try { assemblyFields = GameAssemblyFieldCatalog.Read(assembly, token); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or
+                    BadImageFormatException or InvalidDataException)
+                {
+                    if (warnings.Count < 20)
+                        warnings.Add("游戏程序集元数据读取失败：" + ex.Message);
+                }
+            }
+            else if (warnings.Count < 20)
+                warnings.Add("没有找到本机 Assembly-CSharp.dll；可继续使用原版 XML 字段目录。");
+        }
         return new CatalogScan(entries, packages, library, nativeFields,
             isGameInstallation, warnings)
         {
+            GameFields = assemblyFields,
             ListTemplates = isGameInstallation
                 ? NativeListTemplateCatalog.Build(sources) : NativeListTemplateCatalog.Empty,
             GestationRecipeParents = isGameInstallation
                 ? VisualGestationEditor.DiscoverRecipeParents(sources) : []
         };
+    private static string? FindGameAssembly(string data)
+    {
+        var gameRoot = Path.GetFileName(data).Equals("Data", StringComparison.OrdinalIgnoreCase)
+            ? Directory.GetParent(data)?.FullName ?? data : data;
+        var managed = new[]
+        {
+            Path.Combine(gameRoot, "RimWorldWin64_Data", "Managed"),
+            Path.Combine(gameRoot, "RimWorldLinux_Data", "Managed"),
+            Path.Combine(gameRoot, "RimWorldMac.app", "Contents", "Resources",
+                "Data", "Managed")
+        };
+        return managed.Select(x => Path.Combine(x, "Assembly-CSharp.dll"))
+            .FirstOrDefault(File.Exists);
+    }
+
     }
 }
