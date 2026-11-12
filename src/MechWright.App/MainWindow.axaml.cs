@@ -114,6 +114,19 @@ public sealed partial class MainWindow : Window
         catch (Exception ex) { _vm.ReportError(ex); }
     }
 
+    private void DefinitionList_PointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        // A user-selected Def should open its editable Inspector, regardless
+        // of which visual tool was active. Internal stage navigation never
+        // raises this pointer event.
+        if (_vm.SelectedDefinition != null) _vm.OpenWorkbenchArea(0);
+    }
+
+    private void ProjectFileList_PointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_vm.SelectedProjectFile != null) _vm.OpenWorkbenchArea(0);
+    }
+
     private void SwitchToDocument_Click(object? sender, RoutedEventArgs e) =>
         _vm.UseDocumentMode();
 
