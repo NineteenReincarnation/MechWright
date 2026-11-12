@@ -95,6 +95,17 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         set
         {
             if (ReferenceEquals(_selectedDefinition, value)) return;
+            // Switching the selected Def is a navigation action. Apply the
+            // current list inputs first so moving between definitions cannot
+            // silently discard an unfinished edit.
+            if (_isDocumentMode && _selectedDefinition != null && _document != null &&
+                _selectedDefinition.Entry.DefName != value?.Entry.DefName &&
+                HasUncommittedDocumentInputs)
+            {
+                var target = value?.Entry.DefName;
+                if (!CommitDocumentInputs()) return;
+                value = Definitions.FirstOrDefault(x => x.Entry.DefName == target);
+            }
             _selectedDefinition = value;
             Notify();
             Notify(nameof(SelectedDefName));
