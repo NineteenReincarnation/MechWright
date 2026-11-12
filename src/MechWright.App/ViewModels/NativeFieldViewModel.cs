@@ -75,6 +75,10 @@ public sealed partial class MainWindowViewModel
             ? $"共观察到 {_nativeFields.All.Count} 种 XML 字段路径 · 来源：本机 Core / DLC · 非 C# 完整字段规范"
             : "选择 RimWorld 安装目录才能读取原版字段。Mod 文件夹不会被冒充为原版来源。";
         FilterNativeFields();
+        // The same verified/discovered catalog backs the inline Inspector.
+        // Refresh rows so observed numeric and Boolean fields get the proper
+        // editor rather than remaining generic text inputs.
+        RefreshDocumentWorksheet();
     }
 
     private void FilterNativeFields()
