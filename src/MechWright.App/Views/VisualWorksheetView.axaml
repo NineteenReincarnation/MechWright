@@ -19,6 +19,58 @@
           </StackPanel>
         </Button>
       </Grid>
+      <Border IsVisible="{Binding WorksheetCatalogOpen}" CornerRadius="8"
+              BorderBrush="#36595A" BorderThickness="1" Background="#162B2F" Padding="13">
+        <StackPanel Spacing="10">
+          <TextBlock Text="选择字段，加入当前配置清单" FontSize="15"
+                     FontWeight="SemiBold" Foreground="#C0DDD4"/>
+          <Grid ColumnDefinitions="158,*,Auto" ColumnSpacing="9">
+            <ComboBox Grid.Column="0" ItemsSource="{Binding WorksheetCatalogCategories}"
+                      SelectedItem="{Binding WorksheetCatalogCategory,Mode=TwoWay}"
+                      MinHeight="36"/>
+            <TextBox Grid.Column="1" Watermark="按名称、功能或字段搜索"
+                     Text="{Binding WorksheetCatalogSearch,Mode=TwoWay}" MinHeight="36"/>
+            <Button Grid.Column="2" Content="读取游戏字段库"
+                    Click="ScanFields_Click" MinHeight="36"/>
+          </Grid>
+          <TextBlock Text="{Binding WorksheetCatalogCount}" FontSize="11"
+                     Foreground="#9BB9B3"/>
+          <ScrollViewer MaxHeight="290" VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding WorksheetCatalogRows}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><StackPanel Spacing="5"/></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:WorksheetCatalogRow">
+                  <Border Background="#102228" BorderBrush="#345154"
+                          BorderThickness="1" CornerRadius="6" Padding="10">
+                    <Grid ColumnDefinitions="180,*,90" ColumnSpacing="12">
+                      <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Title}" FontSize="12"
+                                   FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Category}" FontSize="10"
+                                   Foreground="#9CB8B0"/>
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Detail}" TextWrapping="Wrap"
+                                   Foreground="#B1C4C2" FontSize="11" MaxLines="2"
+                                   ToolTip.Tip="{Binding Path}"/>
+                        <TextBlock Text="{Binding Source}" Foreground="#85A7A9"
+                                   FontSize="10" TextWrapping="Wrap"/>
+                      </StackPanel>
+                      <Button Grid.Column="2" Content="添加" Classes="primary"
+                              Click="AddCatalogRow_Click" VerticalAlignment="Center"/>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+          <TextBlock Text="添加只创建待填写行，不会直接修改 XML；保存对应行后才写入工程。"
+                     Foreground="#9BB6B8" FontSize="11" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
       <Border CornerRadius="7" Background="#18292F" Padding="12">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
           <TextBox Grid.Column="0" Watermark="查找已显示的字段"
@@ -68,7 +120,10 @@
                     <Button Content="保存" Classes="primary"
                             Click="SaveRow_Click" MinHeight="31"/>
                     <Button Content="恢复继承" Click="ResetRow_Click"
+                            IsVisible="{Binding !IsPinned}"
                             IsEnabled="{Binding CanReset}" MinHeight="30"/>
+                    <Button Content="移除待填写" Click="DiscardRow_Click"
+                            IsVisible="{Binding IsPinned}" MinHeight="30"/>
                   </StackPanel>
                 </Grid>
               </Border>
