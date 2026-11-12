@@ -96,6 +96,14 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         {
             if (_isRefreshingDocument) return;
             if (ReferenceEquals(_selectedDefinition, value)) return;
+            // Filtering the list may temporarily clear its selected item.
+            // Keep the active editor until the user selects another Def.
+            if (value == null && _selectedDefinition != null &&
+                Definitions.Contains(_selectedDefinition))
+            {
+                Notify(nameof(SelectedDefinition));
+                return;
+            }
             // Switching the selected Def is a navigation action. Apply the
             // current list inputs first so moving between definitions cannot
             // silently discard an unfinished edit.
