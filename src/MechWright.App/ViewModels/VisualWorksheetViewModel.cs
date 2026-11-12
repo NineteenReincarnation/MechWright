@@ -38,8 +38,13 @@ public sealed partial class MainWindowViewModel
     {
         EnsureWorksheetDraftOwner();
         var name = CurrentMechName;
-        var previous = WorksheetFields.ToDictionary(x =>
-            (x.Spec.DefType, x.Spec.Path), x => x);
+        // A filter can temporarily hide a row. Keep its edited value until
+        // the user saves, discards or switches to a different mechanoid.
+        foreach (var row in WorksheetFields)
+        {
+            var key = (row.Spec.DefType, row.Spec.Path);
+            if (row.IsEdited) _worksheetEditedRows[key] = row;
+        }
         WorksheetFields.Clear();
         if (name == null || _workspace == null)
         {
@@ -90,10 +95,14 @@ public sealed partial class MainWindowViewModel
             // Only retain a draft if it was deliberately modified and the
             // original underlying XML value has not changed in the meantime.
             var key=(field.DefType,field.Path);
-            if (previous.TryGetValue(key,out var prior) && prior.IsEdited &&
+            if (_worksheetEditedRows.TryGetValue(key,out var prior) && prior.IsEdited &&
                 prior.SavedValue==saved)
                 WorksheetFields.Add(prior with { ShowCategoryHeader=header, IsPinned=pinned });
-            else WorksheetFields.Add(new WorksheetFieldRow(field,saved,header) { IsPinned=pinned });
+            else
+            {
+                _worksheetEditedRows.Remove(key);
+                WorksheetFields.Add(new WorksheetFieldRow(field,saved,header) { IsPinned=pinned });
+            }
         }
         Notify(nameof(WorksheetCount));
         RefreshWorksheetCatalog();
