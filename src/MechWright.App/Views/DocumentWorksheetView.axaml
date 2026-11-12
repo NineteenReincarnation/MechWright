@@ -122,8 +122,8 @@
             </StackPanel>
           </Border>
 
-          <TextBox Text="{Binding DocumentFieldSearch,Mode=TwoWay}"
-                   PlaceholderText="筛选当前配置…" MaxWidth="510"
+          <TextBox x:Name="FieldSearchBox" Text="{Binding DocumentFieldSearch,Mode=TwoWay}"
+                   PlaceholderText="筛选当前配置… (Ctrl+F)" MaxWidth="510"
                    HorizontalAlignment="Left" MinHeight="36"/>
           <StackPanel IsVisible="{Binding DocumentHasNoFields}" Spacing="11"
                       HorizontalAlignment="Center" Margin="0,37,0,32">
@@ -214,7 +214,7 @@
                     <Grid ColumnDefinitions="135,*" ColumnSpacing="9">
                       <ComboBox Grid.Column="0" ItemsSource="{Binding DocumentQuickCategories}"
                                 SelectedItem="{Binding DocumentQuickCategory,Mode=TwoWay}"/>
-                      <TextBox Grid.Column="1" Text="{Binding DocumentQuickSearch,Mode=TwoWay}"
+                      <TextBox x:Name="AddSearchBox" Grid.Column="1" Text="{Binding DocumentQuickSearch,Mode=TwoWay}"
                                PlaceholderText="搜索：速度、护甲、体型……"/>
                     </Grid>
                     <TextBlock Text="{Binding DocumentQuickCount}" FontSize="11"
