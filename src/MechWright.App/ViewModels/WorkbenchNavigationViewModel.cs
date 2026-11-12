@@ -7,6 +7,7 @@ namespace MechWright.App.ViewModels;
 public sealed partial class MainWindowViewModel
 {
     private int _workbenchArea = 1;
+    private bool _changingWorkbenchArea;
 
     /// <summary>
     /// 0=XML Inspector, 1=properties, 2=body, 3=graphics, 4=combat,
@@ -23,7 +24,12 @@ public sealed partial class MainWindowViewModel
 
     public void OpenWorkbenchArea(int area)
     {
+        if (_changingWorkbenchArea) return;
         area = Math.Clamp(area, 0, 8);
+        if (area == WorkbenchArea) return;
+        _changingWorkbenchArea = true;
+        try
+        {
         if (area == 0)
         {
             if (!_isDocumentMode) UseDocumentMode();
@@ -57,6 +63,8 @@ public sealed partial class MainWindowViewModel
         var targetStep = StepForArea(area);
         if (WorkflowStep != targetStep) WorkflowStep = targetStep;
         Notify(nameof(WorkbenchArea));
+        }
+        finally { _changingWorkbenchArea = false; }
     }
 
     private static int StepForArea(int area) => area switch
