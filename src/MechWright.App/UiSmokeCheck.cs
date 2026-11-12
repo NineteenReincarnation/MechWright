@@ -249,6 +249,12 @@ internal static class UiSmokeCheck
             {
                 result = 1;
                 System.Diagnostics.Trace.WriteLine("MechWright UI smoke failure: " + ex);
+                try
+                {
+                    File.WriteAllText(Path.Combine(AppContext.BaseDirectory,
+                        "ui-smoke-error.txt"), ex.ToString());
+                }
+                catch (IOException) { }
             }
             finally { desktop.Shutdown(result); }
         }, DispatcherPriority.Background);
