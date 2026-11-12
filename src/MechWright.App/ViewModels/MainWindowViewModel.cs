@@ -100,6 +100,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             Notify(nameof(SelectedDefName));
             InvalidateVanillaComparison();
             RefreshFields();
+            RefreshDocumentWorksheet();
         }
     }
 
@@ -203,7 +204,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     public void NewFile()
     {
         SetDocument(DefDocument.CreateEmpty(), "未命名 · Defs.xml");
-        Status = "新建 XML · 可通过左侧建立 ThingDef、PawnKindDef 或 BodyDef";
+        Status = "空白 XML 已打开。可直接在列表中添加定义与字段。";
     }
 
     public void LoadFile(string source, string fileName, string? selectDef = null)
@@ -229,6 +230,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         _document = document;
         SourceName = name;
         RefreshAll();
+        UseDocumentMode();
     }
 
     private void RefreshAll(int? preferredIndex = null, string? fieldPath = null, string? bodyPath = null)
@@ -267,6 +269,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         Notify(nameof(CanRedo));
         Notify(nameof(HasDocument));
         RefreshWorkflowVisibility();
+        RefreshDocumentWorksheet();
     }
 
     private void RefreshFields(string? preferredPath = null, string? bodyPath = null)
