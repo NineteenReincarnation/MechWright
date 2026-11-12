@@ -108,6 +108,18 @@ internal static class UiSmokeCheck
                 Require(vm.XmlPreview.Contains("<MoveSpeed>5.2</MoveSpeed>"),
                     "Inspector group collapse must never mutate XML.");
 
+                vm.CreateQuickDefinition("BodyPartDef");
+                var second = vm.SelectedDefinition!;
+                vm.SelectedDefinition = vm.Definitions.Single(x =>
+                    x.Entry.DefName == "MP_UiFile");
+                var uncommittedMove = vm.DocumentNodes.Single(x => x.Name == "MoveSpeed");
+                uncommittedMove.Number = 6.25m;
+                Require(vm.HasUncommittedDocumentInputs,
+                    "Changing a row must be recognized as pending input.");
+                vm.SelectedDefinition = second;
+                Require(vm.XmlPreview.Contains("<MoveSpeed>6.25</MoveSpeed>"),
+                    "Changing definitions discarded unfinished input.");
+
                 vm.CreateWorkspace();
                 Require(vm.IsDocumentMode && vm.NeedsFirstMechanoid,
                     "Empty project must open its file editor without launching a wizard.");
