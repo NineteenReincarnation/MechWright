@@ -134,7 +134,7 @@
       </Border>
 
       <!-- Every editor uses the same file tree, selection and save bar. -->
-      <TabControl Grid.Column="1"
+      <TabControl Grid.Column="1" Classes="workbench"
                   SelectedIndex="{Binding WorkbenchArea,Mode=TwoWay}"
                   Background="#181D23">
         <TabItem Header="配置">
