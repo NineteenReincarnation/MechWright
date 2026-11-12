@@ -111,6 +111,18 @@ public sealed partial class MainWindow : Window
         catch (Exception ex) { _vm.ReportError(ex); }
     }
 
+    private void SwitchToDocument_Click(object? sender, RoutedEventArgs e) =>
+        _vm.UseDocumentMode();
+
+    private void SwitchToGuided_Click(object? sender, RoutedEventArgs e) =>
+        _vm.UseGuidedMode();
+
+    private void AddDefinitionInline_Click(object? sender, RoutedEventArgs e)
+    {
+        _vm.UseDocumentMode();
+        _vm.ToggleDocumentCreatePanel();
+    }
+
     private void PreviousStage_Click(object? sender, RoutedEventArgs e) => _vm.PreviousStage();
     private void NextStage_Click(object? sender, RoutedEventArgs e) => _vm.NextStage();
     private void ReturnToReview_Click(object? sender, RoutedEventArgs e) => _vm.WorkflowStep = 4;
@@ -451,12 +463,12 @@ public sealed partial class MainWindow : Window
             else if (e.Key == Key.N) { NewFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
             else if (e.Key == Key.O) { OpenFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
             else if (e.Key == Key.S) { Export_Click(this, new RoutedEventArgs()); e.Handled = true; }
-            else if (e.Key == Key.Right && _vm.ShowWorkspacePage)
+            else if (e.Key == Key.Right && _vm.IsGuidedMode)
             {
                 _vm.NextStage();
                 e.Handled = true;
             }
-            else if (e.Key == Key.Left && _vm.ShowWorkspacePage)
+            else if (e.Key == Key.Left && _vm.IsGuidedMode)
             {
                 _vm.PreviousStage();
                 e.Handled = true;
