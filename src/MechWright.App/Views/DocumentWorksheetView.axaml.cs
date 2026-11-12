@@ -32,6 +32,33 @@ public sealed partial class DocumentWorksheetView : UserControl
         if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentCreatePanel();
     }
 
+    private void SaveLabel_LostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm && vm.HasUncommittedDocumentInputs)
+            vm.CommitDocumentInputs();
+    }
+
+    private void CommitValue_LostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm &&
+            sender is Control { DataContext: DocumentNodeRow row } && row.IsEdited)
+            vm.SaveDocumentNode(row);
+    }
+
+    private void CommitBoolean_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm &&
+            sender is CheckBox { DataContext: DocumentNodeRow row } && row.IsEdited)
+            vm.SaveDocumentNode(row);
+    }
+
+    private void CommitChoice_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm &&
+            sender is ComboBox { DataContext: DocumentNodeRow row } && row.IsEdited)
+            vm.SaveDocumentNode(row);
+    }
+
     private void SaveLabel_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm) vm.SaveDocumentDisplayName();
