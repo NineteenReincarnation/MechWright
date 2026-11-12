@@ -19,6 +19,7 @@ public sealed partial class MainWindowViewModel
     }
 
     public bool CanUseFullWorkbench => HasWorkspace && CurrentMechName != null;
+    public string PrimarySaveLabel => HasWorkspace ? "导出整个 Mod" : "保存 XML";
 
     public void OpenWorkbenchArea(int area)
     {
