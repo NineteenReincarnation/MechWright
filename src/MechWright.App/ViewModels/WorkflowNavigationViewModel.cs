@@ -37,6 +37,7 @@ public sealed partial class MainWindowViewModel
             Notify(nameof(NeedsFirstMechanoid));
             SelectStageDocument();
             if (step == 4) RefreshVisualReview();
+            SyncWorkbenchAreaWithStage();
         }
     }
 
@@ -98,6 +99,7 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(ShowWorkspacePage));
         Notify(nameof(CanExportProject));
         Notify(nameof(NeedsFirstMechanoid));
+        Notify(nameof(CanUseFullWorkbench));
     }
 
     private void SelectStageDocument()
