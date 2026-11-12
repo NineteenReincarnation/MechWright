@@ -100,16 +100,27 @@
                 <TextBox Grid.Column="1" Text="{Binding DocumentQuickSearch,Mode=TwoWay}"
                          PlaceholderText="搜索：速度、护甲、体型……"/>
               </Grid>
+              <TextBlock Text="{Binding DocumentQuickCount}" FontSize="11"
+                         Foreground="#93ABAF"/>
               <ListBox ItemsSource="{Binding DocumentQuickOptions}"
                        SelectedItem="{Binding SelectedDocumentQuickOption,Mode=TwoWay}"
                        MinHeight="95" MaxHeight="195" Background="#192127">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:DocumentQuickOption">
                     <Grid ColumnDefinitions="180,*" ColumnSpacing="10" Margin="8,6">
-                      <TextBlock Grid.Column="0" Text="{Binding Title}" FontWeight="SemiBold"
-                                 FontSize="12" VerticalAlignment="Center"/>
-                      <TextBlock Grid.Column="1" Text="{Binding Hint}" FontSize="11"
-                                 Foreground="#93A8B1" TextWrapping="Wrap"/>
+                      <StackPanel Grid.Column="0" Spacing="3">
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
+                                   FontSize="12"/>
+                        <TextBlock Text="{Binding Category}" FontSize="10"
+                                   Foreground="#849BA6"/>
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="3">
+                        <TextBlock Text="{Binding Hint}" FontSize="11"
+                                   Foreground="#AEC1C5" TextWrapping="Wrap"
+                                   MaxLines="2"/>
+                        <TextBlock Text="{Binding SourceLabel}" FontSize="10"
+                                   Foreground="#8699A3" TextTrimming="CharacterEllipsis"/>
+                      </StackPanel>
                     </Grid>
                   </DataTemplate>
                 </ListBox.ItemTemplate>
@@ -202,6 +213,9 @@
                                 Margin="{Binding RowIndent}">
                       <TextBlock Text="{Binding Title}" FontSize="13"
                                  FontWeight="SemiBold" TextWrapping="Wrap"/>
+                      <Button Content="{Binding ExpandLabel}" Click="ToggleGroup_Click"
+                              IsVisible="{Binding IsGroup}" FontSize="10"
+                              MinHeight="24" Padding="8,2" HorizontalAlignment="Left"/>
                       <TextBlock Text="{Binding StructureHint}" FontSize="10"
                                  IsVisible="{Binding HasStructureHint}"
                                  Foreground="#8196A1" TextTrimming="CharacterEllipsis"/>
