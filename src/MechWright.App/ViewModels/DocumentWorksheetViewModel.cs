@@ -343,8 +343,9 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
     public string Name => Node.Name;
     public bool IsRoot => Node.IsRoot;
     public bool IsGroup => Node.IsGroup ||
-        (Node.Value is null or "" && Node.Name is "statBases" or "race" or
-         "graphicData" or "tools" or "verbs" or "comps" or "parts" or "li");
+        (string.IsNullOrEmpty(Node.Value) && Node.Name is
+            ("statBases" or "race" or "graphicData" or "tools" or "verbs" or
+             "comps" or "parts" or "li"));
     public bool CanEdit => !Node.IsRoot && !Node.IsGroup && !Node.IsIdentity;
     public bool CanDelete => !Node.IsRoot && !Node.IsIdentity && Node.Name != "label";
     public string Title => Node.Name switch
@@ -366,7 +367,7 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
     private string? _choice;
     private readonly string _kind;
     private readonly string[] _choices;
-    public bool IsNumber => CanEdit && _kind is "Number" or "Integer";
+    public bool IsNumber => CanEdit && (_kind is "Number" or "Integer");
     public bool IsBoolean => CanEdit && _kind == "Boolean";
     public bool IsChoice => CanEdit && _kind == "Enum" && _choices.Length > 0;
     public bool IsText => CanEdit && !IsNumber && !IsBoolean && !IsChoice;
