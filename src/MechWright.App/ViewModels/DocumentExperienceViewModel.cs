@@ -279,6 +279,7 @@ public sealed partial class MainWindowViewModel
 
     public void CreateQuickDefinition(string defType)
     {
+        if (!CommitDocumentInputs()) return;
         if (_document == null) { Status = "先新建 XML 文件。"; return; }
         try
         {
@@ -371,6 +372,7 @@ public sealed partial class MainWindowViewModel
     {
         if (_document == null || SelectedDefinition == null ||
             SelectedDocumentQuickOption is not { } option || !DocumentCanAddQuickOption) return;
+        if (!CommitDocumentInputs()) return;
         try
         {
             var value = DocumentQuickIsNumber ? DocumentQuickNumber!.Value.ToString(
