@@ -40,6 +40,17 @@ public static class DocumentWorksheetEditor
         return document.Definitions().Last();
     }
 
+    private static readonly HashSet<string> Containers = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "statBases", "race", "graphicData", "tools", "verbs", "comps",
+        "modExtensions", "parts", "costList", "ingredients", "lifeStages",
+        "abilities", "weaponTags", "apparelTags", "tradeTags", "li"
+    };
+
+    public static bool CanContainFields(FreeformDefinitionEditor.Node node) =>
+        node.IsRoot || node.IsGroup ||
+        (node.Value is null or "" && Containers.Contains(node.Name));
+
     public static string AddField(DefDocument document, DefEntry definition,
         string selectedPath, string name, string value, bool group)
     {
@@ -48,12 +59,22 @@ public static class DocumentWorksheetEditor
         var rows = FreeformDefinitionEditor.Read(document, definition);
         var selected = rows.FirstOrDefault(x => x.Path == selectedPath)
             ?? rows.First();
-        var parentPath = selected.IsRoot || selected.IsGroup
+        var parentPath = CanContainFields(selected)
             ? selected.Path
             : rows.FirstOrDefault(x => x.Path == ParentPath(selected.Path))?.Path
               ?? rows[0].Path;
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("请先选择一个字段，或填写自定义字段名称。");
+        // Ordinary scalar fields are unique within a container. Repeated
+        // list nodes remain supported as native li siblings.
+        if (!name.Equals("li", StringComparison.OrdinalIgnoreCase))
+        {
+            var parent = definition.Element.DescendantsAndSelf()
+                .FirstOrDefault(x => DefDocument.GetPath(x) == parentPath);
+            if (parent?.Elements(name).Any() == true)
+                throw new InvalidOperationException("此处已有“" + name +
+                    "”。请直接修改现有字段，或添加列表项。");
+        }
         return FreeformDefinitionEditor.AddChild(document, definition, parentPath,
             name.Trim(), value ?? "", group);
     }
