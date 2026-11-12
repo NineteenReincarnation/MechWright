@@ -50,6 +50,38 @@ internal static class UiSmokeCheck
                 vm.SaveWorksheetField(cp);
                 Require(VisualContentEditor.Read(project,"MP_UiSmoke",cp.Spec)=="437",
                     "Editing a worksheet field did not save into native PawnKindDef.");
+
+                // The primary page adds fields in place. A draft must not
+                // modify XML before Save, and removing a draft must be safe.
+                vm.ToggleWorksheetCatalog();
+                Require(vm.WorksheetCatalogOpen, "Inline field catalog did not open.");
+                var vacuumField=new VisualContentEditor.Option("ThingDef",
+                    "race/canFlyInVacuum","真空飞行","其他原生属性",
+                    "Boolean","false","原生可选属性","UI smoke",true);
+                vm.AddWorksheetCatalogField(new WorksheetCatalogRow(vacuumField));
+                var pending=vm.WorksheetFields.First(x=>
+                    x.Spec.Path=="race/canFlyInVacuum");
+                Require(pending.IsPinned &&
+                    VisualContentEditor.Read(project,"MP_UiSmoke",vacuumField)==null,
+                    "An unsaved worksheet draft modified native XML.");
+                pending.Boolean=true;
+                vm.SaveWorksheetField(pending);
+                Require(VisualContentEditor.Read(project,"MP_UiSmoke",vacuumField)=="true" &&
+                    vm.WorksheetFields.Any(x=>
+                        x.Spec.Path=="race/canFlyInVacuum" && !x.IsPinned),
+                    "Saving an inline field did not persist it as a regular worksheet row.");
+
+                var abandoned=new VisualContentEditor.Option("ThingDef",
+                    "statBases/Flammability","易燃性","基础性能",
+                    "Number","0.5","原生可选属性","UI smoke",false);
+                vm.AddWorksheetCatalogField(new WorksheetCatalogRow(abandoned));
+                var draft=vm.WorksheetFields.First(x=>
+                    x.Spec.Path=="statBases/Flammability");
+                vm.DiscardWorksheetDraft(draft);
+                Require(VisualContentEditor.Read(project,"MP_UiSmoke",abandoned)==null &&
+                    vm.WorksheetFields.All(x=>x.Spec.Path!="statBases/Flammability"),
+                    "Removing an unsaved draft should leave the native XML unchanged.");
+
                 vm.WorkflowStep = 1;
                 Require(vm.SelectedDefinition?.Entry.Type == "BodyDef" &&
                     vm.BodyParts.Count > 0, "Body stage did not select the linked BodyDef.");
