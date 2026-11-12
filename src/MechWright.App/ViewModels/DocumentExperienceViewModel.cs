@@ -69,7 +69,7 @@ public sealed partial class MainWindowViewModel
     {
         get
         {
-            if (SelectedDefinition == null) return "选择要编辑的内容";
+            if (SelectedDefinition == null) return "配置列表";
             var label = SelectedDefinition.Entry.Label;
             return string.IsNullOrWhiteSpace(label) ||
                 label.Equals(SelectedDefinition.Entry.DefName, StringComparison.Ordinal)
@@ -237,6 +237,19 @@ public sealed partial class MainWindowViewModel
 
     public void ToggleDocumentCreatePanel() =>
         DocumentCreatePanelOpen = !DocumentCreatePanelOpen;
+
+    /// <summary>
+    /// Standard workflow: a new XML can go straight into its property list.
+    /// The minimal ThingDef identity is created only when editing begins.
+    /// Other Def types remain available through optional choices.
+    /// </summary>
+    public void BeginDocumentConfiguration()
+    {
+        if (_document == null) return;
+        if (SelectedDefinition == null) CreateQuickDefinition("ThingDef");
+        if (SelectedDefinition != null && !DocumentQuickPanelOpen)
+            ToggleDocumentQuickPanel();
+    }
 
     public void CreateQuickDefinition(string defType)
     {
