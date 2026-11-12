@@ -39,6 +39,35 @@ public sealed class GameAssemblyFieldCatalogTests
     }
 
     [Fact]
+    public async Task FindsDllMetadataAlongsideInstalledCoreXmlInSingleScan()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "MechWright_Metadata_" +
+            Guid.NewGuid().ToString("N"));
+        var defs = Path.Combine(root, "Data", "Core", "Defs");
+        var managed = Path.Combine(root, "RimWorldWin64_Data", "Managed");
+        Directory.CreateDirectory(defs);
+        Directory.CreateDirectory(managed);
+        try
+        {
+            File.WriteAllText(Path.Combine(defs, "Fixture.xml"),
+                "<Defs><ThingDef><defName>Fixture</defName><statBases>" +
+                "<MoveSpeed>4.5</MoveSpeed></statBases></ThingDef></Defs>");
+            File.Copy(typeof(FixtureModels.ThingDef).Assembly.Location,
+                Path.Combine(managed, "Assembly-CSharp.dll"));
+            var scan = await DefCatalog.ScanFullAsync(root);
+            Assert.True(scan.IsGameInstallation);
+            Assert.Contains(scan.NativeFields.For("ThingDef"),
+                x => x.Path == "statBases/MoveSpeed");
+            Assert.Contains(scan.GameFields.For("ThingDef"),
+                x => x.Path == "customFloat" && x.Kind == "Number");
+            Assert.Contains(InspectorFieldCatalog.For("ThingDef", scan.NativeFields,
+                scan.GameFields), x => x.Path == "customFloat" &&
+                x.IsAssemblyCandidate && !x.IsObserved);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact]
     public void InspectorMarksClrOnlyCandidatesAndKeepsBuiltInPriority()
     {
         var metadata = GameAssemblyFieldCatalog.Read(typeof(FixtureModels.ThingDef).Assembly.Location);
