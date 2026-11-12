@@ -25,11 +25,16 @@
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8"
                     VerticalAlignment="Center">
           <Button Content="＋ 新建 XML" Classes="primary" Click="NewFile_Click"/>
-          <Button Content="新建 Mod" Click="NewWorkspace_Click"/>
           <Button Content="打开 XML" Click="OpenFile_Click"/>
-          <Button Content="导入 Mod" Click="ImportWorkspace_Click"/>
           <Button Content="{Binding PrimarySaveLabel}" Click="SaveWorkbench_Click"
                   IsEnabled="{Binding HasDocument}"/>
+          <Menu VerticalAlignment="Center">
+            <MenuItem Header="其他操作">
+              <MenuItem Header="新建 Mod 工程" Click="NewWorkspace_Click"/>
+              <MenuItem Header="导入 Mod 工程" Click="ImportWorkspace_Click"/>
+              <MenuItem Header="查看原版机械体" Click="OpenVanillaLibrary_Click"/>
+            </MenuItem>
+          </Menu>
           <Border Width="1" Background="#43505B" Margin="4,6"/>
           <Button Content="撤销" Click="Undo_Click" IsEnabled="{Binding CanUndo}"/>
           <Button Content="重做" Click="Redo_Click" IsEnabled="{Binding CanRedo}"/>
