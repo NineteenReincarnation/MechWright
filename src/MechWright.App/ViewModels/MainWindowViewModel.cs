@@ -460,6 +460,20 @@ public sealed class DefinitionRow(DefEntry entry)
 {
     public DefEntry Entry { get; } = entry;
     public string Display => Entry.DisplayName;
+    public string FriendlyTitle =>
+        string.IsNullOrWhiteSpace(Entry.Label) ||
+        Entry.Label.Equals(Entry.DefName, StringComparison.Ordinal)
+            ? Entry.Type switch
+            {
+                "ThingDef" => "机械体 / 物品",
+                "PawnKindDef" => "生成种类",
+                "BodyDef" => "身体结构",
+                "BodyPartDef" => "身体部件",
+                "RecipeDef" => "制作配方",
+                _ => "自定义内容"
+            }
+            : Entry.Label;
+    public string TechnicalId => Entry.DefName;
 }
 
 public sealed class FieldRow(DefField field)
