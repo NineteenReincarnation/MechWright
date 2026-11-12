@@ -64,6 +64,8 @@ public sealed partial class MainWindowViewModel
 
     public void ToggleWorksheetCatalog()
     {
+        if (SelectedContentCustomTarget == null && FreeformTargets.Count > 0)
+            SelectedContentCustomTarget = FreeformTargets[0];
         WorksheetCatalogOpen = !WorksheetCatalogOpen;
         RefreshWorksheetCatalog();
     }
