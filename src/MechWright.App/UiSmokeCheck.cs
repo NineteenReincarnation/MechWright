@@ -51,6 +51,18 @@ internal static class UiSmokeCheck
                 Require(VisualContentEditor.Read(project,"MP_UiSmoke",cp.Spec)=="437",
                     "Editing a worksheet field did not save into native PawnKindDef.");
 
+                // Search must never discard unrelated unsaved row edits.
+                var mass=vm.WorksheetFields.First(x=>x.Spec.Path=="statBases/Mass");
+                var massBefore=VisualContentEditor.Read(project,"MP_UiSmoke",mass.Spec);
+                mass.Number=123;
+                vm.WorksheetSearch="combatPower";
+                Require(vm.WorksheetFields.All(x=>x.Spec.Path!="statBases/Mass"),
+                    "Worksheet search did not filter the visible field rows.");
+                vm.WorksheetSearch="";
+                Require(vm.WorksheetFields.First(x=>x.Spec.Path=="statBases/Mass").Number==123 &&
+                    VisualContentEditor.Read(project,"MP_UiSmoke",mass.Spec)==massBefore,
+                    "Filtering discarded an unsaved field edit or wrote it to XML.");
+
                 // The primary page adds fields in place. A draft must not
                 // modify XML before Save, and removing a draft must be safe.
                 vm.ToggleWorksheetCatalog();
