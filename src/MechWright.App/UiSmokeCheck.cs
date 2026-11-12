@@ -58,6 +58,8 @@ internal static class UiSmokeCheck
                 vm.DocumentQuickNumber = 4.8m;
                 Require(vm.DocumentCanAddQuickOption, "Explicit numeric input was not accepted.");
                 vm.ApplyDocumentQuickOption();
+                Require(vm.DocumentQuickPanelOpen,
+                    "Add picker closed after first field.");
                 Require(vm.XmlPreview.Contains("<MoveSpeed>4.8</MoveSpeed>") &&
                     vm.DocumentVisibleNodes.Any(x => x.Name == "MoveSpeed"),
                     "Inline novice add did not create a visible, real XML field.");
