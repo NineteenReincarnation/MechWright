@@ -13,6 +13,7 @@ namespace MechWright.App;
 public sealed partial class MainWindow : Window
 {
     private readonly MainWindowViewModel _vm = new();
+    private string? _lastStandaloneExportPath;
 
     public MainWindow()
     {
@@ -356,28 +357,44 @@ public sealed partial class MainWindow : Window
         catch (Exception ex) { _vm.ReportError(ex); }
     }
 
-    private async void Export_Click(object? sender, RoutedEventArgs e)
+    private async void Export_Click(object? sender, RoutedEventArgs e) =>
+        await SaveXmlAsync(saveAs: false);
+
+    private async Task SaveXmlAsync(bool saveAs)
     {
-        // The toolbar is the only disk-save action. Apply any focused list
-        // input first so Save XML never exports stale values.
         if (_vm.IsDocumentMode && !_vm.CommitDocumentInputs()) return;
         var xml = _vm.GetExportText();
         if (xml == null) return;
         try
         {
-            // Always ask the user where to write; never silently modify the original game directory.
-            var destination = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            // Reuse only a path the user explicitly selected for saving in
+            // this session. Never silently overwrite an imported game XML.
+            string? path = !saveAs && !_vm.HasWorkspace &&
+                string.Equals(_vm.SourceName, _lastStandaloneExportPath,
+                    StringComparison.OrdinalIgnoreCase)
+                ? _lastStandaloneExportPath : null;
+            if (path == null)
             {
-                Title = "导出游戏原生 Def XML",
-                SuggestedFileName = "MP_Mechanoid.xml",
-                FileTypeChoices = [new FilePickerFileType("XML Definitions") { Patterns = ["*.xml"] }],
-                DefaultExtension = "xml",
-                ShowOverwritePrompt = true
-            });
-            var path = destination?.TryGetLocalPath();
+                var destination = await StorageProvider.SaveFilePickerAsync(
+                    new FilePickerSaveOptions
+                    {
+                        Title = "保存游戏原生 Def XML",
+                        SuggestedFileName = _vm.SourceName.EndsWith(".xml",
+                            StringComparison.OrdinalIgnoreCase)
+                            ? Path.GetFileName(_vm.SourceName) : "MP_Mechanoid.xml",
+                        FileTypeChoices =
+                        [
+                            new FilePickerFileType("XML Definitions") { Patterns = ["*.xml"] }
+                        ],
+                        DefaultExtension = "xml",
+                        ShowOverwritePrompt = true
+                    });
+                path = destination?.TryGetLocalPath();
+            }
             if (path == null) return;
             await AtomicFileWriter.WriteAsync(path, xml);
             _vm.Saved(path, xml);
+            if (!_vm.HasWorkspace) _lastStandaloneExportPath = path;
         }
         catch (Exception ex) { _vm.ReportError(ex); }
     }
@@ -470,6 +487,15 @@ public sealed partial class MainWindow : Window
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
+        // Global save must also work while a value field has keyboard focus.
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.S)
+        {
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+                _ = SaveXmlAsync(saveAs: true);
+            else Export_Click(this, new RoutedEventArgs());
+            e.Handled = true;
+            return;
+        }
         // Keep native TextBox undo/copy/editing shortcuts intact.
         if (e.Source is TextBox)
         {
