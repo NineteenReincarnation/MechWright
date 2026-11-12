@@ -344,7 +344,21 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
     public FreeformDefinitionEditor.Node Node { get; }
     public string Path => Node.Path;
+    public int Depth => Node.Depth;
     public string Name => Node.Name;
+    private bool _isExpanded = true;
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set
+        {
+            if (_isExpanded == value) return;
+            _isExpanded = value;
+            Notify();
+            Notify(nameof(ExpandLabel));
+        }
+    }
+    public string ExpandLabel => _isExpanded ? "折叠" : "展开";
     public bool IsRoot => Node.IsRoot;
     public bool IsGroup => Node.IsGroup ||
         (string.IsNullOrEmpty(Node.Value) && Node.Name is
