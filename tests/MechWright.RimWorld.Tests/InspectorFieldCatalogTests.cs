@@ -56,6 +56,17 @@ public sealed class InspectorFieldCatalogTests
     }
 
     [Fact]
+    public void XmlPathsIdentifySimpleFieldsButNotRepeatedListEntries()
+    {
+        Assert.Equal("statBases/MoveSpeed", InspectorFieldCatalog.ToRelativePath(
+            "/Defs[1]/ThingDef[1]/statBases[1]/MoveSpeed[1]"));
+        Assert.Null(InspectorFieldCatalog.ToRelativePath(
+            "/Defs[1]/ThingDef[1]/tools[1]/li[2]/power[1]"));
+        Assert.Null(InspectorFieldCatalog.ToRelativePath(
+            "/Defs[1]/ThingDef[1]/comps[1]/li[1]/compClass[1]"));
+    }
+
+    [Fact]
     public void EnumMetadataSuppliesItsActualChoices()
     {
         var fields = InspectorFieldCatalog.For("ThingDef", NativeFieldCatalog.Empty);
