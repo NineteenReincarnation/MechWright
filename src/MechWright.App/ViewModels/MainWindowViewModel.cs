@@ -94,6 +94,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         get => _selectedDefinition;
         set
         {
+            if (_isRefreshingDocument) return;
             if (ReferenceEquals(_selectedDefinition, value)) return;
             // Switching the selected Def is a navigation action. Apply the
             // current list inputs first so moving between definitions cannot
@@ -244,8 +245,18 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         UseDocumentMode();
     }
 
+    private bool _isRefreshingDocument;
+
     private void RefreshAll(int? preferredIndex = null, string? fieldPath = null, string? bodyPath = null)
     {
+        // Clearing/repopulating the bound Def list can temporarily set
+        // ListBox.SelectedItem to null. Ignore that UI feedback while the
+        // underlying document is being rebuilt.
+        if (_isRefreshingDocument) return;
+        _isRefreshingDocument = true;
+        try
+        {
+
         Definitions.Clear();
         if (_document != null)
         {
@@ -281,6 +292,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         Notify(nameof(HasDocument));
         RefreshWorkflowVisibility();
         RefreshDocumentWorksheet();
+    
+        }
+        finally { _isRefreshingDocument = false; }
     }
 
     private void RefreshFields(string? preferredPath = null, string? bodyPath = null)
