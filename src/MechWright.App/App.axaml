@@ -5,15 +5,15 @@
   <Application.Styles>
     <FluentTheme />
     <Style Selector="Window">
-      <Setter Property="Background" Value="#0B1014"/>
-      <Setter Property="Foreground" Value="#E6ECEB"/>
+      <Setter Property="Background" Value="#161C22"/>
+      <Setter Property="Foreground" Value="#F0F2F2"/>
     </Style>
     <Style Selector="Button">
-      <Setter Property="Background" Value="#25363C"/>
-      <Setter Property="Foreground" Value="#E6ECEB"/>
-      <Setter Property="BorderBrush" Value="#40555A"/>
+      <Setter Property="Background" Value="#2D3741"/>
+      <Setter Property="Foreground" Value="#F0F2F2"/>
+      <Setter Property="BorderBrush" Value="#45525D"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="CornerRadius" Value="5"/>
+      <Setter Property="CornerRadius" Value="7"/>
       <Setter Property="Padding" Value="12,7"/>
       <Setter Property="MinHeight" Value="34"/>
       <Setter Property="Transitions">
@@ -24,12 +24,12 @@
       </Setter>
     </Style>
     <Style Selector="Button:pointerover">
-      <Setter Property="Background" Value="#345258"/>
+      <Setter Property="Background" Value="#394650"/>
     </Style>
     <Style Selector="TextBox">
-      <Setter Property="Background" Value="#111A20"/>
-      <Setter Property="BorderBrush" Value="#3E5158"/>
-      <Setter Property="Foreground" Value="#E6ECEB"/>
+      <Setter Property="Background" Value="#1C252D"/>
+      <Setter Property="BorderBrush" Value="#465762"/>
+      <Setter Property="Foreground" Value="#F0F2F2"/>
       <Setter Property="CornerRadius" Value="4"/>
       <Setter Property="MinHeight" Value="34"/>
     </Style>
@@ -42,13 +42,13 @@
     </Style>
     <!-- Lilt-inspired feedback adapted to native Avalonia input states. -->
     <Style Selector="Button.primary">
-      <Setter Property="Background" Value="#315A57"/>
-      <Setter Property="BorderBrush" Value="#477F79"/>
-      <Setter Property="Foreground" Value="#F0F9F7"/>
+      <Setter Property="Background" Value="#38675E"/>
+      <Setter Property="BorderBrush" Value="#568C80"/>
+      <Setter Property="Foreground" Value="#F6FBF9"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     <Style Selector="Button.primary:pointerover">
-      <Setter Property="Background" Value="#40736C"/>
+      <Setter Property="Background" Value="#47796E"/>
     </Style>
     <Style Selector="Button:pressed">
       <Setter Property="Opacity" Value="0.82"/>
@@ -83,11 +83,13 @@
       <Setter Property="CornerRadius" Value="5"/>
     </Style>
     <Style Selector="ListBoxItem:pointerover">
-      <Setter Property="Background" Value="#20343B"/>
+      <Setter Property="Background" Value="#293842"/>
     </Style>
     <Style Selector="ListBoxItem:selected">
-      <Setter Property="Background" Value="#294E51"/>
-      <Setter Property="Foreground" Value="#E9F6F3"/>
+      <Setter Property="Background" Value="#304348"/>
+      <Setter Property="Foreground" Value="#F0F2F2"/>
+      <Setter Property="BorderBrush" Value="#4B796F"/>
+      <Setter Property="BorderThickness" Value="1"/>
     </Style>
     <Style Selector="TabItem">
       <Setter Property="FontSize" Value="12"/>
