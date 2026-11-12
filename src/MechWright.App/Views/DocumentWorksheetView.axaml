@@ -1,0 +1,152 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MechWright.App.ViewModels"
+             x:Class="MechWright.App.Views.DocumentWorksheetView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Margin="18,15,24,28" Spacing="16">
+      <StackPanel Spacing="5">
+        <TextBlock Text="XML 配置列表" FontWeight="SemiBold" FontSize="21"/>
+        <TextBlock Text="{Binding DocumentFileTitle}" FontSize="12" Foreground="#92B4AD"/>
+        <TextBlock Text="按需增加定义与字段。每一项都可单独修改；不自动生成机械体、武器或身体模板。"
+                   Foreground="#A5B5BB" FontSize="12" TextWrapping="Wrap"/>
+      </StackPanel>
+
+      <Border Background="#14272B" BorderBrush="#345057" BorderThickness="1"
+              CornerRadius="8" Padding="15">
+        <StackPanel Spacing="11">
+          <TextBlock Text="01  定义" FontSize="15" FontWeight="SemiBold" Foreground="#C4DDD3"/>
+          <TextBlock Text="一个 XML 文件可以包含多个定义。选择左侧定义来编辑；空白文件先在这里添加一项。"
+                     FontSize="11" Foreground="#9EB4B5" TextWrapping="Wrap"/>
+          <Grid ColumnDefinitions="220,220,*" ColumnSpacing="10">
+            <StackPanel Grid.Column="0" Spacing="5">
+              <TextBlock Text="类别" FontSize="11" Foreground="#99B9B3"/>
+              <ComboBox ItemsSource="{Binding DocumentDefinitionTypes}"
+                        SelectedItem="{Binding DocumentSelectedType,Mode=TwoWay}"
+                        MinHeight="36">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:DocumentDefTypeChoice">
+                    <TextBlock Text="{Binding Display}"/>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="5">
+              <TextBlock Text="定义标识" FontSize="11" Foreground="#99B9B3"/>
+              <TextBox Text="{Binding DocumentDefName,Mode=TwoWay}" MinHeight="36"
+                       Watermark="MP_NewDefinition"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="5">
+              <TextBlock Text="显示名称（可留空）" FontSize="11" Foreground="#99B9B3"/>
+              <TextBox Text="{Binding DocumentDefLabel,Mode=TwoWay}" MinHeight="36"
+                       Watermark="游戏中显示的名字"/>
+            </StackPanel>
+          </Grid>
+          <Button Content="＋ 添加定义到当前 XML" Classes="primary"
+                  Click="AppendDefinition_Click" HorizontalAlignment="Left"
+                  MinHeight="34"/>
+        </StackPanel>
+      </Border>
+
+      <StackPanel Spacing="9" IsVisible="{Binding DocumentHasDefinition}">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="0,6,0,0">
+          <StackPanel Grid.Column="0" Spacing="4">
+            <TextBlock Text="02  逐行编辑字段" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding DocumentDefinitionTitle}" Foreground="#92B8B0" FontSize="12"
+                       TextTrimming="CharacterEllipsis"/>
+          </StackPanel>
+          <TextBlock Grid.Column="1" Text="{Binding DocumentNodeCount}"
+                     Foreground="#88A4AB" VerticalAlignment="Bottom" FontSize="11"/>
+        </Grid>
+        <ListBox ItemsSource="{Binding DocumentNodes}" SelectionMode="Single"
+                 SelectedItem="{Binding DocumentSelectedNode,Mode=TwoWay}"
+                 Background="Transparent" BorderThickness="0">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:DocumentNodeRow">
+              <Border BorderBrush="#304950" BorderThickness="1" CornerRadius="6"
+                      Background="#152329" Margin="0,3" Padding="12,10">
+                <Grid ColumnDefinitions="20,208,*,108" ColumnSpacing="10" MinHeight="44">
+                  <TextBlock Grid.Column="0" Text="{Binding Indent}"
+                             Foreground="#648F87" FontFamily="Consolas"/>
+                  <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Title}" TextWrapping="Wrap"
+                               FontSize="12" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding StructureHint}" Foreground="#8AABB0"
+                               FontSize="10" TextWrapping="Wrap" MaxLines="2"/>
+                  </StackPanel>
+                  <Grid Grid.Column="2" VerticalAlignment="Center">
+                    <TextBox Text="{Binding Text,Mode=TwoWay}" IsVisible="{Binding IsText}"
+                             MinHeight="35"/>
+                    <NumericUpDown IsVisible="{Binding IsNumber}"
+                                   Value="{Binding Number,Mode=TwoWay}"
+                                   Minimum="-999999999" Maximum="999999999" Increment="1"
+                                   FormatString="0.########" MinHeight="35"/>
+                    <CheckBox IsVisible="{Binding IsBoolean}" IsChecked="{Binding Boolean,Mode=TwoWay}"
+                              Content="启用" VerticalAlignment="Center"/>
+                    <ComboBox IsVisible="{Binding IsChoice}" ItemsSource="{Binding Choices}"
+                              SelectedItem="{Binding Choice,Mode=TwoWay}" MinHeight="35"/>
+                    <TextBlock Text="容器 / 选择后添加子项" IsVisible="{Binding IsGroup}"
+                               Foreground="#91B9B1" VerticalAlignment="Center" FontSize="11"/>
+                    <TextBlock Text="定义根节点" IsVisible="{Binding IsRoot}"
+                               Foreground="#91B9B1" VerticalAlignment="Center" FontSize="11"/>
+                  </Grid>
+                  <StackPanel Grid.Column="3" Spacing="5" VerticalAlignment="Center">
+                    <Button Content="保存" Click="SaveNode_Click" Classes="primary"
+                            IsVisible="{Binding CanEdit}" MinHeight="29"/>
+                    <Button Content="删除" Click="RemoveNode_Click"
+                            IsVisible="{Binding CanDelete}" MinHeight="27"/>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <Border BorderBrush="#345057" BorderThickness="1" CornerRadius="8"
+                Background="#172B2F" Padding="15" Margin="0,7,0,0">
+          <StackPanel Spacing="11">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="03  添加下一项" FontSize="15" FontWeight="SemiBold"/>
+              <TextBlock Grid.Column="1" Text="{Binding DocumentInsertLocation}"
+                         Foreground="#A1B9B7" FontSize="11" VerticalAlignment="Center"/>
+            </Grid>
+            <TextBlock Text="在上方点选一行：选中分组就在分组内部添加；选中普通字段则添加同级字段。"
+                       Foreground="#9EB2B8" FontSize="11" TextWrapping="Wrap"/>
+            <Grid ColumnDefinitions="230,*,120" ColumnSpacing="10">
+              <StackPanel Grid.Column="0" Spacing="5">
+                <TextBlock Text="添加什么" Foreground="#A4B9B9" FontSize="11"/>
+                <ComboBox ItemsSource="{Binding DocumentFieldChoices}"
+                          SelectedItem="{Binding DocumentSelectedField,Mode=TwoWay}"
+                          MinHeight="36">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DocumentFieldChoice">
+                      <TextBlock Text="{Binding Display}"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="5">
+                <TextBlock Text="填写数值（分组不需要）" Foreground="#A4B9B9" FontSize="11"/>
+                <TextBox Text="{Binding DocumentNewValue,Mode=TwoWay}" MinHeight="36"
+                         Watermark="根据字段填写内容"/>
+              </StackPanel>
+              <Button Grid.Column="2" Content="＋ 添加" Classes="primary"
+                      Click="AddField_Click" VerticalAlignment="Bottom" MinHeight="36"/>
+            </Grid>
+            <StackPanel IsVisible="{Binding DocumentUsesCustomName}" Spacing="8">
+              <TextBox Watermark="输入未收录的原生字段名，例如：customField"
+                       Text="{Binding DocumentCustomFieldName,Mode=TwoWay}"/>
+              <CheckBox Content="此项是分组，可在里面继续添加字段"
+                        IsChecked="{Binding DocumentCustomIsGroup,Mode=TwoWay}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding DocumentNewFieldHint}" Foreground="#91ABAC"
+                       FontSize="11" TextWrapping="Wrap"/>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      <Border Background="#122A2A" CornerRadius="6" Padding="12">
+        <TextBlock Text="{Binding DocumentMessage}" Foreground="#C2DCD3"
+                   FontSize="12" TextWrapping="Wrap"/>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
