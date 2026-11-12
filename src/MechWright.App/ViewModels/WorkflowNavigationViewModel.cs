@@ -100,6 +100,7 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(CanExportProject));
         Notify(nameof(NeedsFirstMechanoid));
         Notify(nameof(CanUseFullWorkbench));
+        Notify(nameof(PrimarySaveLabel));
     }
 
     private void SelectStageDocument()
