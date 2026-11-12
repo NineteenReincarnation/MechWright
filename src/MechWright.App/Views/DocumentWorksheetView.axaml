@@ -212,7 +212,8 @@
                     <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center"
                                 Margin="{Binding RowIndent}">
                       <TextBlock Text="{Binding Title}" FontSize="13"
-                                 FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                 FontWeight="SemiBold" TextWrapping="Wrap"
+                                 ToolTip.Tip="{Binding ContextHint}"/>
                       <Button Content="{Binding ExpandLabel}" Click="ToggleGroup_Click"
                               IsVisible="{Binding IsGroup}" FontSize="10"
                               MinHeight="24" Padding="8,2" HorizontalAlignment="Left"/>
