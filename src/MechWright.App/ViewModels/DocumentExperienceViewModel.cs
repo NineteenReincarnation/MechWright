@@ -15,7 +15,7 @@ public sealed partial class MainWindowViewModel
     public ObservableCollection<string> DocumentQuickChoices { get; } = new();
 
     public IReadOnlyList<string> DocumentQuickCategories { get; } =
-        ["常用", "基础属性", "机体", "武器与战斗", "外观与声音", "其他"];
+        InspectorFieldCatalog.Categories;
 
     private readonly Dictionary<string, DocumentNodeRow> _documentRowDrafts = new();
     private DefDocument? _documentRowOwner;
@@ -23,6 +23,7 @@ public sealed partial class MainWindowViewModel
     private string _documentFieldSearch = "";
     private string _documentQuickSearch = "";
     private string _documentQuickCategory = "常用";
+    private string _documentQuickCount = "";
     private string _documentLabelDraft = "";
     private string _documentQuickText = "";
     private decimal? _documentQuickNumber;
@@ -33,27 +34,6 @@ public sealed partial class MainWindowViewModel
     private bool _documentStructurePanelOpen;
     private bool _documentCreatePanelOpen;
     private string _documentQuickMessage = "";
-
-    private static readonly DocumentQuickOption[] BuiltInOptions =
-    [
-        new("description", "说明文字", "常用", "介绍这个对象的用途", "Text"),
-        new("statBases/MoveSpeed", "移动速度", "基础属性", "格/秒", "Number"),
-        new("statBases/Mass", "质量", "基础属性", "单位 kg", "Number"),
-        new("statBases/MarketValue", "市场价值", "基础属性", "物品的市场价值", "Number"),
-        new("statBases/ArmorRating_Sharp", "锐器护甲", "基础属性", "如 0.4 表示 40%", "Number"),
-        new("statBases/ArmorRating_Blunt", "钝器护甲", "基础属性", "如 0.2 表示 20%", "Number"),
-        new("statBases/ArmorRating_Heat", "热能护甲", "基础属性", "对热伤害的护甲", "Number"),
-        new("statBases/BandwidthCost", "控制带宽", "机体", "被机械师控制时使用的带宽", "Integer"),
-        new("race/baseBodySize", "身体大小", "机体", "与画面贴图大小不同", "Number"),
-        new("race/baseHealthScale", "生命倍率", "机体", "部件生命值的倍率", "Number"),
-        new("race/mechWeightClass", "机体重量等级", "机体", "原生轻中重分类", "Enum"),
-        new("race/body", "身体结构", "机体", "填写已有的 BodyDef 引用标识", "Text"),
-        new("combatPower", "战斗点数 CP", "武器与战斗", "用于 PawnKindDef 生成的战斗点数", "Number"),
-        new("maxPerGroup", "单组生成数量", "武器与战斗", "PawnKindDef 的生成上限", "Integer"),
-        new("allowInMechClusters", "加入机械集群", "武器与战斗", "该类型是否出现在机械集群", "Boolean"),
-        new("graphicData/texPath", "贴图路径", "外观与声音", "RimWorld 相对贴图路径", "Text"),
-        new("graphicData/drawSize", "贴图绘制大小", "外观与声音", "如 1.5", "Number"),
-    ];
 
     public string DocumentObjectKind => SelectedDefinition?.Entry.Type switch
     {
@@ -103,13 +83,29 @@ public sealed partial class MainWindowViewModel
     public string DocumentQuickSearch
     {
         get => _documentQuickSearch;
-        set { _documentQuickSearch = value ?? ""; Notify(); RebuildQuickOptions(); }
+        set
+        {
+            _documentQuickSearch = value ?? "";
+            Notify();
+            if (_documentQuickSearch.Trim().Length > 0 && _documentQuickCategory == "常用")
+            {
+                _documentQuickCategory = "全部";
+                Notify(nameof(DocumentQuickCategory));
+            }
+            RebuildQuickOptions();
+        }
     }
     public string DocumentQuickCategory
     {
         get => _documentQuickCategory;
         set { _documentQuickCategory = value ?? "常用"; Notify(); RebuildQuickOptions(); }
     }
+    public string DocumentQuickCount
+    {
+        get => _documentQuickCount;
+        private set { _documentQuickCount = value; Notify(); }
+    }
+    public bool DocumentQuickHasOptions => DocumentQuickOptions.Count > 0;
     public string DocumentLabelDraft
     {
         get => _documentLabelDraft;
@@ -146,10 +142,7 @@ public sealed partial class MainWindowViewModel
             DocumentQuickBoolean = null;
             DocumentQuickChoice = null;
             DocumentQuickChoices.Clear();
-            var name = value?.Path.Split('/')[^1];
-            foreach (var choice in name == null
-                         ? [] : StandardFieldRules.Describe(name)?.Allowed ?? [])
-                DocumentQuickChoices.Add(choice);
+            foreach (var choice in value?.Choices ?? []) DocumentQuickChoices.Add(choice);
             Notify();
             Notify(nameof(DocumentQuickIsText));
             Notify(nameof(DocumentQuickIsNumber));
@@ -169,8 +162,9 @@ public sealed partial class MainWindowViewModel
          DocumentQuickIsBoolean ? DocumentQuickBoolean.HasValue :
          DocumentQuickIsChoice ? DocumentQuickChoice != null :
          !string.IsNullOrWhiteSpace(DocumentQuickText));
-    public string DocumentQuickSelectionHint => SelectedDocumentQuickOption?.Hint ??
-        "选择一项配置，填写数值后加入当前列表。";
+    public string DocumentQuickSelectionHint => SelectedDocumentQuickOption == null
+        ? "选择一项配置，填写数值后加入当前列表。"
+        : SelectedDocumentQuickOption.Hint + " · " + SelectedDocumentQuickOption.SourceLabel;
     public string DocumentQuickMessage
     {
         get => _documentQuickMessage;
@@ -305,55 +299,32 @@ public sealed partial class MainWindowViewModel
         if (SelectedDefinition == null || _document == null)
         {
             SelectedDocumentQuickOption = null;
+            DocumentQuickCount = "";
+            Notify(nameof(DocumentQuickHasOptions));
             return;
         }
-        var kind = SelectedDefinition.Entry.Type;
-        var query = DocumentQuickSearch.Trim();
-        var all = BuiltInOptions.Concat(
-            VisualContentEditor.All(_nativeFields).Where(x =>
-                x.DefType == kind && x.Path.Split('/').All(part =>
-                    part != "li" && part != "defName"))
-                .Select(x => new DocumentQuickOption(x.Path, x.Label, x.Category,
-                    x.Help, x.Kind)));
-        var distinct = all.Where(x => x.Path != "label" && x.Path != "defName")
-            .DistinctBy(x => x.Path)
-            .Where(x => AllowedQuickPath(kind, x.Path))
-            .Where(x => !DocumentPathExists(x.Path))
-            .Where(x => DocumentQuickCategory == "常用"
-                ? BuiltInOptions.Any(y => y.Path == x.Path)
-                : QuickCategory(x.Category) == DocumentQuickCategory)
-            .Where(x => query.Length == 0 || x.Title.Contains(query,
-                StringComparison.OrdinalIgnoreCase) ||
-                x.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                x.Hint.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .Take(120).ToArray();
-        foreach (var item in distinct) DocumentQuickOptions.Add(item);
-        var stillSelected = DocumentQuickOptions.FirstOrDefault(x => x.Path == previousPath);
-        if (stillSelected != null) _selectedDocumentQuickOption = stillSelected;
+
+        var descriptors = InspectorFieldCatalog.For(
+            SelectedDefinition.Entry.Type, _nativeFields);
+        var occupied = descriptors.Where(x => DocumentPathExists(x.Path))
+            .Select(x => x.Path).ToHashSet(StringComparer.Ordinal);
+        var filtered = InspectorFieldCatalog.Filter(
+            descriptors, DocumentQuickCategory, DocumentQuickSearch, occupied, 300);
+        foreach (var field in filtered)
+            DocumentQuickOptions.Add(new DocumentQuickOption(
+                field.Path, field.Label, field.Category, field.Hint, field.Kind,
+                field.SourceLabel, field.Choices, field.IsObserved));
+        var current = DocumentQuickOptions.FirstOrDefault(x => x.Path == previousPath);
+        if (current != null && SelectedDocumentQuickOption?.Path == current.Path)
+            _selectedDocumentQuickOption = current;
         else SelectedDocumentQuickOption = null;
+        DocumentQuickCount = DocumentQuickOptions.Count == 0
+            ? "当前条件没有可添加的字段，可以换一个分类或搜索词。"
+            : "可添加 " + DocumentQuickOptions.Count + " 项";
         Notify(nameof(SelectedDocumentQuickOption));
         Notify(nameof(DocumentCanAddQuickOption));
+        Notify(nameof(DocumentQuickHasOptions));
     }
-
-    private static string QuickCategory(string source) => source switch
-    {
-        "基础性能" => "基础属性",
-        "机械师与生成" => "机体",
-        "外观与音效" => "外观与声音",
-        "其他原生属性" or "身份与描述" => "其他",
-        _ => source
-    };
-
-    private static bool AllowedQuickPath(string kind, string path) => kind switch
-    {
-        "ThingDef" => path is not ("combatPower" or "maxPerGroup" or
-            "allowInMechClusters") && !path.StartsWith("lifeStages/", StringComparison.Ordinal),
-        "PawnKindDef" => path is "description" or "combatPower" or
-            "maxPerGroup" or "allowInMechClusters" or "controlGroupPortraitZoom" ||
-            !path.StartsWith("statBases/", StringComparison.Ordinal) &&
-            !path.StartsWith("race/base", StringComparison.Ordinal),
-        _ => path == "description" || path.StartsWith("statBases/", StringComparison.Ordinal)
-    };
 
     private bool DocumentPathExists(string path)
     {
@@ -386,8 +357,10 @@ public sealed partial class MainWindowViewModel
     }
 }
 
-public sealed record DocumentQuickOption(string Path, string Title,
-    string Category, string Hint, string Kind)
+public sealed record DocumentQuickOption(
+    string Path, string Title, string Category, string Hint,
+    string Kind, string SourceLabel, IReadOnlyList<string> Choices,
+    bool IsObserved)
 {
     public string ShortCategory => Category;
 }
