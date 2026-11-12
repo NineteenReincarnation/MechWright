@@ -1,4 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Threading;
 using Avalonia.Interactivity;
 using MechWright.App.ViewModels;
 
@@ -6,7 +8,55 @@ namespace MechWright.App.Views;
 
 public sealed partial class DocumentWorksheetView : UserControl
 {
-    public DocumentWorksheetView() => InitializeComponent();
+    public DocumentWorksheetView()
+    {
+        InitializeComponent();
+        KeyDown += OnEditorKeyDown;
+    }
+
+    private void OnEditorKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm) return;
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.F)
+        {
+            FieldSearchBox.Focus();
+            e.Handled = true;
+        }
+        else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.K)
+        {
+            if (!vm.DocumentHasDefinition) vm.BeginDocumentConfiguration();
+            else if (!vm.DocumentQuickPanelOpen) vm.ToggleDocumentQuickPanel();
+            Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
+            e.Handled = true;
+        }
+        else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.Enter &&
+                 vm.DocumentQuickPanelOpen && vm.DocumentCanAddQuickOption)
+        {
+            vm.ApplyDocumentQuickOption();
+            Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Enter &&
+                 e.Source is TextBox { DataContext: DocumentNodeRow row } &&
+                 row.IsEdited)
+        {
+            vm.SaveDocumentNode(row);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            if (vm.DocumentQuickPanelOpen)
+            {
+                vm.ToggleDocumentQuickPanel();
+                e.Handled = true;
+            }
+            else if (vm.DocumentStructurePanelOpen)
+            {
+                vm.ToggleDocumentStructurePanel();
+                e.Handled = true;
+            }
+        }
+    }
 
     private void StartBlank_Click(object? sender, RoutedEventArgs e)
     {
