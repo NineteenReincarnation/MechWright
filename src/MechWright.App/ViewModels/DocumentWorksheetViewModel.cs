@@ -217,12 +217,19 @@ public sealed partial class MainWindowViewModel
         DocumentNodes.Clear();
         if (_document != null && SelectedDefinition != null)
         {
+            var known = InspectorFieldCatalog.For(SelectedDefinition.Entry.Type, _nativeFields)
+                .ToDictionary(x => x.Path, StringComparer.Ordinal);
             foreach (var node in FreeformDefinitionEditor.Read(_document, SelectedDefinition.Entry))
             {
                 if (drafts.TryGetValue(node.Path, out var prior) &&
                     prior.SavedValue == node.Value)
                     DocumentNodes.Add(prior);
-                else DocumentNodes.Add(new DocumentNodeRow(node));
+                else
+                {
+                    var path = InspectorFieldCatalog.ToRelativePath(node.Path);
+                    known.TryGetValue(path ?? "", out var description);
+                    DocumentNodes.Add(new DocumentNodeRow(node, description));
+                }
             }
         }
         DocumentSelectedNode = DocumentNodes.FirstOrDefault(x => x.Path == oldNode)
@@ -359,6 +366,10 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
         }
     }
     public string ExpandLabel => _isExpanded ? "折叠" : "展开";
+    private readonly InspectorFieldCatalog.Field? _metadata;
+    public string ContextHint => _metadata?.Hint ?? "";
+    public string SourceHint => _metadata?.SourceLabel ?? "";
+    public bool HasContextHint => ContextHint.Length > 0;
     public bool IsRoot => Node.IsRoot;
     public bool IsGroup => Node.IsGroup ||
         (string.IsNullOrEmpty(Node.Value) && Node.Name is
@@ -366,7 +377,7 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
              "comps" or "parts" or "li"));
     public bool CanEdit => !Node.IsRoot && !IsGroup && !Node.IsIdentity;
     public bool CanDelete => !Node.IsRoot && !Node.IsIdentity && Node.Name != "label";
-    public string Title => Node.Name switch
+    public string Title => _metadata?.Label ?? (Node.Name switch
     {
         "defName" => "定义标识",
         "label" => "显示名称",
@@ -381,7 +392,7 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
         "parts" => "身体部件",
         "li" => "列表项",
         _ => StandardFieldRules.Describe(Node.Name)?.Description ?? Node.Name
-    };
+    });
     public string StructureHint => IsGroup ? "包含子项目" :
         Node.Attributes.Length > 0 ? Node.Attributes : "";
     public bool HasStructureHint => StructureHint.Length > 0;
@@ -422,13 +433,15 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
         set { if (_choice == value) return; _choice = value; Changed(); }
     }
     private void Changed() { IsEdited = true; Notify(nameof(IsEdited)); }
-    public DocumentNodeRow(FreeformDefinitionEditor.Node node)
+    public DocumentNodeRow(FreeformDefinitionEditor.Node node,
+        InspectorFieldCatalog.Field? metadata = null)
     {
         Node = node;
+        _metadata = metadata;
         var rule = StandardFieldRules.Describe(node.Name);
-        _choices = rule?.Allowed ?? [];
-        _kind = rule?.Kind ?? (bool.TryParse(node.Value, out _) ? "Boolean"
-            : "Text");
+        _choices = rule?.Allowed ?? metadata?.Choices.ToArray() ?? [];
+        _kind = rule?.Kind ?? metadata?.Kind ??
+            (bool.TryParse(node.Value, out _) ? "Boolean" : "Text");
         _text = node.Value ?? "";
         _number = decimal.TryParse(_text, NumberStyles.Float,
             CultureInfo.InvariantCulture, out var value) ? value : 0;
