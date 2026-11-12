@@ -65,7 +65,11 @@ public sealed partial class DocumentWorksheetView : UserControl
 
     private void StartBlank_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm) vm.BeginDocumentConfiguration();
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.BeginDocumentConfiguration();
+            Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
+        }
     }
 
     private void QuickThing_Click(object? sender, RoutedEventArgs e) =>
@@ -121,12 +125,22 @@ public sealed partial class DocumentWorksheetView : UserControl
 
     private void ToggleQuickPanel_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentQuickPanel();
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.ToggleDocumentQuickPanel();
+            if (vm.DocumentQuickPanelOpen)
+                Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
+        }
     }
 
     private void ConfirmQuickField_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm) vm.ApplyDocumentQuickOption();
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.ApplyDocumentQuickOption();
+            if (vm.DocumentQuickPanelOpen)
+                Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
+        }
     }
 
     private void ToggleStructurePanel_Click(object? sender, RoutedEventArgs e)
