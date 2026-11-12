@@ -52,6 +52,13 @@ public sealed partial class DocumentWorksheetView : UserControl
         if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentStructurePanel();
     }
 
+    private void ToggleGroup_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm &&
+            sender is Button { DataContext: DocumentNodeRow row })
+            vm.ToggleDocumentGroup(row);
+    }
+
     private void AddIntoRow_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm &&
