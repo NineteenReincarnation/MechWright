@@ -18,6 +18,10 @@ public sealed partial class MainWindowViewModel
     private string _nativeFieldStatus = "扫描本机 Core / DLC 目录后可以使用原生 XML 字段目录。";
 
     public ObservableCollection<NativeFieldRow> VisibleNativeFields { get; } = new();
+    public string DocumentSchemaStatus => _nativeFields.All.Count == 0 && _gameFields.Count == 0
+        ? "本机游戏字段尚未连接"
+        : "XML 字段 " + _nativeFields.All.Count +
+          " · 程序集候选 " + _gameFields.Count;
     public string NativeFieldStatus
     {
         get => _nativeFieldStatus;
@@ -73,6 +77,7 @@ public sealed partial class MainWindowViewModel
     {
         _nativeFields = scan.NativeFields;
         _gameFields = scan.GameFields;
+        Notify(nameof(DocumentSchemaStatus));
         NativeFieldStatus = scan.IsGameInstallation
             ? $"原版 XML 字段 {_nativeFields.All.Count} 项 · CLR 程序集字段候选 {_gameFields.Count} 项 · 均为本机只读"
             : "选择 RimWorld 安装目录才能读取原版字段。Mod 文件夹不会被冒充为原版来源。";
