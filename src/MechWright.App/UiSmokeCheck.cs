@@ -29,6 +29,8 @@ internal static class UiSmokeCheck
 
                 // Main entry: blank XML opens a usable list without a mech wizard.
                 vm.NewFile();
+                Require(vm.WorkbenchArea == 0 && vm.PrimarySaveLabel == "保存 XML",
+                    "Standalone file should use the global XML workbench and save label.");
                 Require(vm.IsDocumentMode && vm.HasDocument &&
                     !vm.HasWorkspace && vm.Definitions.Count == 0,
                     "New XML must open an empty file-first workspace.");
@@ -75,6 +77,12 @@ internal static class UiSmokeCheck
                 Require(vm.Definitions.Count == 1 &&
                     vm.SelectedDefinition?.Entry.DefName == "MP_UiFile",
                     "Inline definition row did not create the selected XML Def.");
+                var selectedBeforeFilter = vm.SelectedDefinition;
+                vm.SearchQuery = "not-an-existing-definition";
+                Require(vm.VisibleDefinitions.Count == 0 &&
+                    ReferenceEquals(vm.SelectedDefinition, selectedBeforeFilter),
+                    "Search must not silently select or close a different definition.");
+                vm.SearchQuery = "";
                 vm.DocumentSelectedNode = vm.DocumentNodes.First(x => x.IsRoot);
                 vm.DocumentSelectedField = vm.DocumentFieldChoices.First(x => x.Name == "statBases");
                 vm.AddDocumentField();
@@ -121,6 +129,8 @@ internal static class UiSmokeCheck
                     "Changing definitions discarded unfinished input.");
 
                 vm.CreateWorkspace();
+                Require(vm.PrimarySaveLabel == "导出整个 Mod",
+                    "Project toolbar must not imply that saving one XML saves a Mod.");
                 Require(vm.IsDocumentMode && vm.NeedsFirstMechanoid &&
                     vm.WorkbenchArea == 0 && !vm.CanUseFullWorkbench,
                     "An empty Mod project should start in the XML workbench.");
