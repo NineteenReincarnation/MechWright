@@ -310,8 +310,7 @@ public sealed partial class MainWindowViewModel
     /// written to disk until the top-level Save XML action.
     /// </summary>
     public bool HasUncommittedDocumentInputs =>
-        DocumentNodes.Any(x => x.CanEdit && x.IsEdited &&
-            x.GetValue() != x.SavedValue) ||
+        DocumentNodes.Any(x => x.CanEdit && x.IsEdited) ||
         (_document != null && SelectedDefinition != null &&
             DocumentLabelDraft != (_document.Xml.Root?.Elements()
                 .FirstOrDefault(x => x.Element("defName")?.Value ==
@@ -362,10 +361,12 @@ public sealed partial class MainWindowViewModel
 
     public void SaveDocumentNode(DocumentNodeRow? row)
     {
-        if (_document == null || SelectedDefinition == null || row == null || !row.CanEdit) return;
+        if (_document == null || SelectedDefinition == null || row == null ||
+            !row.CanEdit || !row.IsEdited || !DocumentNodes.Contains(row)) return;
         try
         {
             var value = row.GetValue();
+            if (value == row.SavedValue) return;
             var path = row.Path;
             var index = SelectedDefinition.Entry.Index;
             DocumentWorksheetEditor.UpdateValue(_document, SelectedDefinition.Entry, path, value);
