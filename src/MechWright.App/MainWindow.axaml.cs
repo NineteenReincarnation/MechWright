@@ -521,6 +521,16 @@ public sealed partial class MainWindow : Window
             e.Handled = true;
             return;
         }
+        // Navigation is global across the workbench, even while an editor
+        // has focus. Do not reuse Ctrl+Left/Right for nested stage navigation.
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.Tab)
+        {
+            var size = _vm.CanUseFullWorkbench ? 9 : 1;
+            var delta = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1;
+            _vm.OpenWorkbenchArea((_vm.WorkbenchArea + delta + size) % size);
+            e.Handled = true;
+            return;
+        }
         // Keep native TextBox undo/copy/editing shortcuts intact.
         if (e.Source is TextBox)
         {
@@ -533,16 +543,7 @@ public sealed partial class MainWindow : Window
             else if (e.Key == Key.Y) { _vm.Redo(); e.Handled = true; }
             else if (e.Key == Key.N) { NewFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
             else if (e.Key == Key.O) { OpenFile_Click(this, new RoutedEventArgs()); e.Handled = true; }
-            else if (e.Key == Key.Right && _vm.IsGuidedMode)
-            {
-                _vm.NextStage();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Left && _vm.IsGuidedMode)
-            {
-                _vm.PreviousStage();
-                e.Handled = true;
-            }
+
         }
         if (!e.Handled) base.OnKeyDown(e);
     }
