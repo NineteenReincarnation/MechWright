@@ -205,6 +205,7 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(DocumentIsEmpty));
         Notify(nameof(DocumentHasNoFields));
         RebuildQuickOptions();
+        RefreshInlineInspector();
     }
 
     private void RebuildDocumentVisibleNodes()
