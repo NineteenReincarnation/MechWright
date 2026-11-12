@@ -121,12 +121,30 @@ internal static class UiSmokeCheck
                     "Changing definitions discarded unfinished input.");
 
                 vm.CreateWorkspace();
-                Require(vm.IsDocumentMode && vm.NeedsFirstMechanoid,
-                    "Empty project must open its file editor without launching a wizard.");
+                Require(vm.IsDocumentMode && vm.NeedsFirstMechanoid &&
+                    vm.WorkbenchArea == 0 && !vm.CanUseFullWorkbench,
+                    "An empty Mod project should start in the XML workbench.");
+                vm.OpenWorkbenchArea(4);
+                Require(vm.WorkbenchArea == 0,
+                    "A project without a mechanoid must not enter combat tools.");
                 vm.GenerateMechanoid(new MechanoidBlueprint(
                     "MP_UiSmoke", "UI smoke test mechanoid"));
-                Require(vm.ShowWorkspacePage && !vm.NeedsFirstMechanoid,
-                    "Generating a mechanoid should enter the editor.");
+                Require(vm.ShowWorkspacePage && !vm.NeedsFirstMechanoid &&
+                    vm.CanUseFullWorkbench,
+                    "Generating a mechanoid should unlock the full workbench.");
+
+                vm.OpenWorkbenchArea(3);
+                Require(vm.WorkbenchArea == 3 && vm.WorkflowStep == 1 &&
+                    vm.IsGuidedMode, "Graphics needs one-click global navigation.");
+                vm.OpenWorkbenchArea(4);
+                Require(vm.WorkbenchArea == 4 && vm.WorkflowStep == 2,
+                    "Combat must be directly accessible from another tool.");
+                vm.OpenWorkbenchArea(0);
+                Require(vm.IsDocumentMode && vm.WorkbenchArea == 0,
+                    "The global workbench could not return to XML configuration.");
+                vm.OpenWorkbenchArea(1);
+                Require(vm.WorkbenchArea == 1 && vm.IsGuidedMode,
+                    "Returning to a visual tool required an extra wizard.");
 
                 vm.WorkflowStep = 0;
                 Require(vm.SelectedDefinition?.Entry.Type == "ThingDef",
