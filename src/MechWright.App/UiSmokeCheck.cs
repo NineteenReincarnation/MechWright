@@ -32,6 +32,33 @@ internal static class UiSmokeCheck
                 Require(vm.IsDocumentMode && vm.HasDocument &&
                     !vm.HasWorkspace && vm.Definitions.Count == 0,
                     "New XML must open an empty file-first workspace.");
+                Require(vm.DocumentIsEmpty && vm.DocumentVisibleNodes.Count == 0,
+                    "A blank XML should show the first-content empty state.");
+                vm.CreateQuickDefinition("ThingDef");
+                Require(vm.DocumentHasDefinition && vm.DocumentHasNoFields &&
+                    vm.SelectedDefinition?.Entry.DefName.StartsWith("MP_", StringComparison.Ordinal) == true,
+                    "One-click content should create only a minimal native definition.");
+                vm.DocumentLabelDraft = "测试机体";
+                vm.SaveDocumentDisplayName();
+                Require(vm.SelectedDefinition?.Entry.Label == "测试机体",
+                    "Friendly name was not written to the XML.");
+                vm.ToggleDocumentQuickPanel();
+                Require(vm.DocumentQuickOptions.Any(x => x.Path == "statBases/MoveSpeed"),
+                    "The novice add menu did not expose a basic field.");
+                vm.SelectedDocumentQuickOption = vm.DocumentQuickOptions.First(x =>
+                    x.Path == "statBases/MoveSpeed");
+                Require(!vm.DocumentCanAddQuickOption,
+                    "Numeric values cannot be written before explicit user input.");
+                vm.DocumentQuickNumber = 4.8m;
+                Require(vm.DocumentCanAddQuickOption, "Explicit numeric input was not accepted.");
+                vm.ApplyDocumentQuickOption();
+                Require(vm.XmlPreview.Contains("<MoveSpeed>4.8</MoveSpeed>") &&
+                    vm.DocumentVisibleNodes.Any(x => x.Name == "MoveSpeed"),
+                    "Inline novice add did not create a visible, real XML field.");
+                vm.Undo();
+                Require(!vm.XmlPreview.Contains("<MoveSpeed>4.8</MoveSpeed>"),
+                    "Quick-add undo did not roll back the entire field.");
+                vm.NewFile();
                 vm.DocumentDefName = "MP_UiFile";
                 vm.DocumentDefLabel = "Simple part";
                 vm.AppendDocumentDefinition();
