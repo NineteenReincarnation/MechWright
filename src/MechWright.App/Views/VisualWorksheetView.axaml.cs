@@ -42,6 +42,11 @@ public sealed partial class VisualWorksheetView : UserControl
             vm.DiscardWorksheetDraft(row);
     }
 
+    private void SaveCustomField_Click(object? sender,RoutedEventArgs e)
+    {
+        if(DataContext is MainWindowViewModel vm) vm.ApplyCustomContentField();
+    }
+
     private async void ScanFields_Click(object? sender,RoutedEventArgs e)
     {
         if(DataContext is not MainWindowViewModel vm)return;
