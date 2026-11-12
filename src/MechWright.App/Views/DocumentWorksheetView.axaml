@@ -25,22 +25,20 @@
           <PathIcon Data="M6 3H15L20 8V21H6Z M14 3V9H20 M9 14H17 M9 18H16"
                     Width="42" Height="42" Foreground="#91C3B5"
                     HorizontalAlignment="Center"/>
-          <TextBlock Text="这个文件还没有内容" FontSize="23" FontWeight="SemiBold"
+          <TextBlock Text="从这里填写第一项配置" FontSize="23" FontWeight="SemiBold"
                      TextAlignment="Center"/>
-          <TextBlock Text="选一个要设计的对象，马上进入配置列表。不需要先填写整套参数。"
+          <TextBlock Text="直接选择速度、护甲、体型或其他属性。程序自动建立必要的文件结构，无需填写 XML。"
                      Foreground="#A8B4BE" TextWrapping="Wrap" TextAlignment="Center"/>
-          <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
-            <Button Grid.Row="0" Grid.Column="0" Content="＋ 机械体 / 物品"
-                    Classes="primary" Click="QuickThing_Click" MinHeight="55"/>
-            <Button Grid.Row="0" Grid.Column="1" Content="＋ 生成种类"
-                    Click="QuickKind_Click" MinHeight="55"/>
-            <Button Grid.Row="1" Grid.Column="0" Content="＋ 身体结构"
-                    Click="QuickBody_Click" MinHeight="55"/>
-            <Button Grid.Row="1" Grid.Column="1" Content="＋ 身体部件"
-                    Click="QuickPart_Click" MinHeight="55"/>
-          </Grid>
-          <Button Content="其他类型…" Click="ToggleCreatePanel_Click"
-                  HorizontalAlignment="Center"/>
+          <Button Content="＋ 添加配置" Classes="primary" Click="StartBlank_Click"
+                  MinHeight="55" HorizontalAlignment="Stretch" Margin="30,8"/>
+          <TextBlock Text="默认从机械体 / 物品开始。其他类型可直接选择："
+                     FontSize="11" Foreground="#879CA6" TextAlignment="Center"/>
+          <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center">
+            <Button Content="生成种类" Click="QuickKind_Click"/>
+            <Button Content="身体结构" Click="QuickBody_Click"/>
+            <Button Content="身体部件" Click="QuickPart_Click"/>
+            <Button Content="更多类型…" Click="ToggleCreatePanel_Click"/>
+          </StackPanel>
         </StackPanel>
         <Border IsVisible="{Binding DocumentCreatePanelOpen}" Background="#252E36"
                 BorderBrush="#45535C" BorderThickness="1" CornerRadius="7" Padding="15">
