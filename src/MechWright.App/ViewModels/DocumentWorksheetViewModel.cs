@@ -246,6 +246,7 @@ public sealed partial class MainWindowViewModel
 
     public void AppendDocumentDefinition()
     {
+        if (!CommitDocumentInputs()) return;
         if (_document == null)
         {
             DocumentMessage = "先新建 XML 文件。";
