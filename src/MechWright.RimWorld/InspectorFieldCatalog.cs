@@ -18,9 +18,10 @@ public static class InspectorFieldCatalog
     {
         public string Name => Path.Split('/')[^1];
         public bool IsObserved => !IsStarter;
-        public string SourceLabel => IsObserved
-            ? "原版 XML 样本 · " + Source
-            : "已整理字段";
+        public string SourceLabel => IsStarter ? "已整理字段" :
+            Source.StartsWith("程序集 · ", StringComparison.Ordinal)
+                ? Source + " · 候选"
+                : "原版 XML 样本 · " + Source;
     }
 
     public static IReadOnlyList<string> Categories { get; } =
@@ -103,9 +104,12 @@ public static class InspectorFieldCatalog
         catch (XmlException) { return false; }
     }
 
-    public static IReadOnlyList<Field> For(string defType, NativeFieldCatalog observed)
+    public static IReadOnlyList<Field> For(
+        string defType, NativeFieldCatalog observed,
+        GameAssemblyFieldCatalog? gameMetadata = null)
     {
         ArgumentNullException.ThrowIfNull(observed);
+        gameMetadata ??= GameAssemblyFieldCatalog.Empty;
         var fields = new List<Field>();
         var used = new HashSet<string>(StringComparer.Ordinal);
         foreach (var starter in Starters.Where(s => s.Type == defType))
@@ -116,6 +120,24 @@ public static class InspectorFieldCatalog
                 starter.Category, rule?.Kind ?? starter.Kind, starter.Hint,
                 "内置字段说明", true,
                 rule?.Allowed ?? starter.Choices ?? [], true));
+        }
+
+        // Metadata proves that a public C# field exists but does not prove
+        // that RimWorld XML loading recognizes it. It is explicitly marked as
+        // a candidate and can be selected only with a deliberate user action.
+        // Reviewed starter fields retain precedence.
+        foreach (var field in gameMetadata.For(defType))
+        {
+            if (!ValidPath(field.Path) || !used.Add(field.Path)) continue;
+            var rule = StandardFieldRules.Describe(field.Name);
+            var label = rule?.Description ?? field.Name;
+            fields.Add(new Field(defType, field.Path, label,
+                CategoryFor(defType, field.Path),
+                rule?.Kind ?? field.Kind,
+                (rule?.Hint ?? "来自程序集的候选字段") +
+                "；字段存在不代表游戏 XML 一定能够加载。",
+                "程序集 · " + field.DeclaringType, false,
+                rule?.Allowed ?? field.Choices, false));
         }
 
         // Samples are restricted to THIS definition type: the UI must never
