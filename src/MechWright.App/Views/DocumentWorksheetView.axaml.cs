@@ -1,11 +1,15 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Threading;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using MechWright.App.ViewModels;
 
 namespace MechWright.App.Views;
 
+/// <summary>
+/// The normal editor is one continuous list. Complex XML controls are tucked
+/// away until explicitly requested at the end of that list.
+/// </summary>
 public sealed partial class DocumentWorksheetView : UserControl
 {
     public DocumentWorksheetView()
@@ -17,23 +21,21 @@ public sealed partial class DocumentWorksheetView : UserControl
     private void OnEditorKeyDown(object? sender, KeyEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm) return;
-        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.F)
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Control) &&
+            e.Key is Key.F or Key.K)
         {
-            FieldSearchBox.Focus();
+            if (!vm.DocumentHasDefinition) vm.CreateQuickDefinition("ThingDef");
+            Dispatcher.UIThread.Post(() => InlineSearchBox.Focus());
             e.Handled = true;
         }
-        else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.K)
+        else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.Enter)
         {
-            if (!vm.DocumentHasDefinition) vm.BeginDocumentConfiguration();
-            else if (!vm.DocumentQuickPanelOpen) vm.ToggleDocumentQuickPanel();
-            Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
+            vm.CommitDocumentInputs();
             e.Handled = true;
         }
-        else if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.Enter &&
-                 vm.DocumentQuickPanelOpen && vm.DocumentCanAddQuickOption)
+        else if (e.Key == Key.Enter && ReferenceEquals(e.Source, IdentityEditor))
         {
-            vm.ApplyDocumentQuickOption();
-            Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
+            vm.CommitDocumentInputs();
             e.Handled = true;
         }
         else if (e.Key == Key.Enter && ReferenceEquals(e.Source, LabelEditor))
@@ -42,22 +44,21 @@ public sealed partial class DocumentWorksheetView : UserControl
             e.Handled = true;
         }
         else if (e.Key == Key.Enter &&
-                 e.Source is TextBox { DataContext: DocumentNodeRow row } &&
-                 row.IsEdited)
+                 e.Source is TextBox { DataContext: InlineInspectorRow row })
         {
-            vm.SaveDocumentNode(row);
+            vm.CommitInlineInspector(row);
             e.Handled = true;
         }
         else if (e.Key == Key.Escape)
         {
-            if (vm.DocumentQuickPanelOpen)
+            if (vm.InlineSearch.Length > 0)
             {
-                vm.ToggleDocumentQuickPanel();
+                vm.InlineSearch = "";
                 e.Handled = true;
             }
-            else if (vm.DocumentStructurePanelOpen)
+            else if (vm.InlineAdvancedOpen)
             {
-                vm.ToggleDocumentStructurePanel();
+                vm.ToggleInlineAdvanced();
                 e.Handled = true;
             }
         }
@@ -66,107 +67,51 @@ public sealed partial class DocumentWorksheetView : UserControl
     private void StartBlank_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm)
-        {
-            vm.BeginDocumentConfiguration();
-            Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
-        }
-    }
-
-    private void QuickThing_Click(object? sender, RoutedEventArgs e) =>
-        QuickCreate("ThingDef");
-    private void QuickKind_Click(object? sender, RoutedEventArgs e) =>
-        QuickCreate("PawnKindDef");
-    private void QuickBody_Click(object? sender, RoutedEventArgs e) =>
-        QuickCreate("BodyDef");
-    private void QuickPart_Click(object? sender, RoutedEventArgs e) =>
-        QuickCreate("BodyPartDef");
-
-    private void QuickCreate(string type)
-    {
-        if (DataContext is MainWindowViewModel vm) vm.CreateQuickDefinition(type);
-    }
-
-    private void ToggleCreatePanel_Click(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentCreatePanel();
+            vm.CreateQuickDefinition("ThingDef");
     }
 
     private void SaveLabel_LostFocus(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm && vm.HasUncommittedDocumentInputs)
-            vm.CommitDocumentInputs();
-    }
-
-    private void CommitValue_LostFocus(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm &&
-            sender is Control { DataContext: DocumentNodeRow row } && row.IsEdited)
-            Dispatcher.UIThread.Post(() => vm.SaveDocumentNode(row),
+            Dispatcher.UIThread.Post(() => vm.CommitDocumentInputs(),
                 DispatcherPriority.Background);
     }
 
-    private void CommitBoolean_Click(object? sender, RoutedEventArgs e)
+    private void CommitIdentity_LostFocus(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainWindowViewModel vm &&
-            sender is CheckBox { DataContext: DocumentNodeRow row } && row.IsEdited)
-            Dispatcher.UIThread.Post(() => vm.SaveDocumentNode(row),
+        if (DataContext is MainWindowViewModel vm && vm.HasInlinePendingEdits)
+            Dispatcher.UIThread.Post(() => vm.CommitDocumentInputs(),
                 DispatcherPriority.Background);
     }
 
-    private void CommitChoice_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void CommitInline_LostFocus(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm &&
-            sender is ComboBox { DataContext: DocumentNodeRow row } && row.IsEdited)
-            Dispatcher.UIThread.Post(() => vm.SaveDocumentNode(row),
+            sender is Control { DataContext: InlineInspectorRow row } && row.IsEdited)
+            Dispatcher.UIThread.Post(() => vm.CommitInlineInspector(row),
                 DispatcherPriority.Background);
     }
 
-    private void SaveLabel_Click(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm) vm.SaveDocumentDisplayName();
-    }
-
-    private void ToggleQuickPanel_Click(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm)
-        {
-            vm.ToggleDocumentQuickPanel();
-            if (vm.DocumentQuickPanelOpen)
-                Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
-        }
-    }
-
-    private void ConfirmQuickField_Click(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm)
-        {
-            vm.ApplyDocumentQuickOption();
-            if (vm.DocumentQuickPanelOpen)
-                Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
-        }
-    }
-
-    private void ToggleStructurePanel_Click(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm) vm.ToggleDocumentStructurePanel();
-    }
-
-    private void ToggleGroup_Click(object? sender, RoutedEventArgs e)
+    private void CommitInlineBoolean_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm &&
-            sender is Button { DataContext: DocumentNodeRow row })
-            vm.ToggleDocumentGroup(row);
+            sender is CheckBox { DataContext: InlineInspectorRow row } && row.IsEdited)
+            Dispatcher.UIThread.Post(() => vm.CommitInlineInspector(row),
+                DispatcherPriority.Background);
     }
 
-    private void AddIntoRow_Click(object? sender, RoutedEventArgs e)
+    private void CommitInlineChoice_SelectionChanged(object? sender,
+        SelectionChangedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm &&
-            sender is Button { DataContext: DocumentNodeRow row })
-        {
-            // Keep the current row visible. Its editor opens beside the
-            // list instead of jumping to a separate form at the top.
-            vm.ToggleDocumentStructurePanel(row);
-        }
+            sender is ComboBox { DataContext: InlineInspectorRow row } && row.IsEdited)
+            Dispatcher.UIThread.Post(() => vm.CommitInlineInspector(row),
+                DispatcherPriority.Background);
+    }
+
+    private void ToggleAdvanced_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.ToggleInlineAdvanced();
     }
 
     private void AppendDefinition_Click(object? sender, RoutedEventArgs e)
@@ -179,17 +124,10 @@ public sealed partial class DocumentWorksheetView : UserControl
         if (DataContext is MainWindowViewModel vm) vm.AddDocumentField();
     }
 
-    private void SaveNode_Click(object? sender, RoutedEventArgs e)
+    private void RemoveSelectedNode_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm &&
-            sender is Button { DataContext: DocumentNodeRow row })
-            vm.SaveDocumentNode(row);
-    }
-
-    private void RemoveNode_Click(object? sender, RoutedEventArgs e)
-    {
-        if (DataContext is MainWindowViewModel vm &&
-            sender is Button { DataContext: DocumentNodeRow row })
+            vm.DocumentSelectedNode is { CanDelete: true } row)
             vm.RemoveDocumentNode(row);
     }
 }
