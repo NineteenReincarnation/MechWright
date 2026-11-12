@@ -209,8 +209,11 @@ public sealed partial class MainWindowViewModel
         if (DocumentSelectedType == null)
             DocumentSelectedType = DocumentDefinitionTypes.FirstOrDefault();
         var oldNode = preferNode ?? DocumentSelectedNode?.Path;
-        var drafts = DocumentNodes.Where(x => x.IsEdited)
-            .ToDictionary(x => x.Path, x => x);
+        var sameDefinition = ReferenceEquals(_documentRowOwner, _document) &&
+            _documentRowOwnerName == SelectedDefinition?.Entry.DefName;
+        var drafts = sameDefinition ? DocumentNodes.Where(x => x.IsEdited)
+            .ToDictionary(x => x.Path, x => x) :
+            new Dictionary<string, DocumentNodeRow>();
         DocumentNodes.Clear();
         if (_document != null && SelectedDefinition != null)
         {
@@ -231,6 +234,7 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(DocumentFileTitle));
         Notify(nameof(DocumentInsertLocation));
         RefreshDocumentFieldChoices();
+        RefreshDocumentExperience();
     }
 
     public void AppendDocumentDefinition()
@@ -346,13 +350,22 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
         (string.IsNullOrEmpty(Node.Value) && Node.Name is
             ("statBases" or "race" or "graphicData" or "tools" or "verbs" or
              "comps" or "parts" or "li"));
-    public bool CanEdit => !Node.IsRoot && !Node.IsGroup && !Node.IsIdentity;
+    public bool CanEdit => !Node.IsRoot && !IsGroup && !Node.IsIdentity;
     public bool CanDelete => !Node.IsRoot && !Node.IsIdentity && Node.Name != "label";
     public string Title => Node.Name switch
     {
         "defName" => "定义标识",
         "label" => "显示名称",
         "description" => "说明文字",
+        "statBases" => "基础属性",
+        "race" => "机体属性",
+        "graphicData" => "外观与显示",
+        "tools" => "近战工具",
+        "verbs" => "远程攻击",
+        "comps" => "附加组件",
+        "modExtensions" => "扩展内容",
+        "parts" => "身体部件",
+        "li" => "列表项",
         _ => StandardFieldRules.Describe(Node.Name)?.Description ?? Node.Name
     };
     public string StructureHint => Node.IsRoot ? "定义根节点" :
