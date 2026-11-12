@@ -34,8 +34,14 @@ internal static class UiSmokeCheck
                     "New XML must open an empty file-first workspace.");
                 Require(vm.DocumentIsEmpty && vm.DocumentVisibleNodes.Count == 0,
                     "A blank XML should show the first-content empty state.");
-                vm.CreateQuickDefinition("ThingDef");
-                Require(vm.DocumentHasDefinition && vm.DocumentHasNoFields &&
+                vm.BeginDocumentConfiguration();
+                Require(vm.DocumentHasDefinition && vm.DocumentQuickPanelOpen &&
+                    vm.DocumentQuickOptions.Count > 0,
+                    "New XML cannot enter a usable field list in one action.");
+                vm.ToggleDocumentQuickPanel();
+                Require(vm.DocumentHasNoFields,
+                    "Starting the editor must not silently write values.");
+                Require(vm.DocumentHasDefinition &&
                     vm.SelectedDefinition?.Entry.DefName.StartsWith("MP_", StringComparison.Ordinal) == true,
                     "One-click content should create only a minimal native definition.");
                 vm.DocumentLabelDraft = "测试机体";
