@@ -71,6 +71,15 @@ public sealed partial class MainWindowViewModel
         }
     }
 
+    private XElement? InlineDefinitionElement()
+    {
+        if (_document?.Xml.Root == null || SelectedDefinition == null) return null;
+        return _document.Xml.Root.Elements()
+            .Where(x => x.Name.LocalName.EndsWith("Def", StringComparison.Ordinal) ||
+                        x.Name.LocalName == "Patch")
+            .ElementAtOrDefault(SelectedDefinition.Entry.Index);
+    }
+
     private void RefreshInlineInspector()
     {
         var ownerId = SelectedDefinition?.Entry.DefName;
@@ -142,7 +151,7 @@ public sealed partial class MainWindowViewModel
                 !field.Path.Contains(search, StringComparison.OrdinalIgnoreCase) &&
                 !field.Hint.Contains(search, StringComparison.OrdinalIgnoreCase)) continue;
 
-            var node = SelectedDefinition.Entry.Element;
+            var node = InlineDefinitionElement();
             foreach (var segment in field.Path.Split('/')) node = node?.Element(segment);
             var saved = node?.HasElements == false ? node.Value : null;
             var row = drafts.TryGetValue(field.Path, out var existing) &&
@@ -200,7 +209,8 @@ public sealed partial class MainWindowViewModel
             _applyingInline = true;
             var index = SelectedDefinition.Entry.Index;
             var document = _document;
-            var definition = SelectedDefinition.Entry.Element;
+            var definition = InlineDefinitionElement() ??
+                throw new InvalidOperationException("当前定义已失效，请重新选择。");
             document.Transform(_ =>
             {
                 if (changeIdentity) definition.Element("defName")!.Value = newId;
