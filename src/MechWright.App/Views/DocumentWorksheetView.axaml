@@ -70,12 +70,10 @@
           <StackPanel Spacing="8">
             <TextBlock Text="{Binding DocumentObjectKind}" FontSize="12"
                        Foreground="#A6B9BC" FontWeight="SemiBold"/>
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="9">
-              <TextBox Grid.Column="0" Text="{Binding DocumentLabelDraft,Mode=TwoWay}"
-                       LostFocus="SaveLabel_LostFocus"
-                       PlaceholderText="输入显示名称…" FontSize="16" MinHeight="44"/>
-              <Button Grid.Column="1" Content="保存名称" Click="SaveLabel_Click"/>
-            </Grid>
+            <TextBox x:Name="LabelEditor"
+                     Text="{Binding DocumentLabelDraft,Mode=TwoWay}"
+                     LostFocus="SaveLabel_LostFocus"
+                     PlaceholderText="输入显示名称，完成输入后自动应用…" FontSize="16" MinHeight="44"/>
           </StackPanel>
           <Border Height="1" Background="#35404A" Margin="0,3"/>
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="9">
