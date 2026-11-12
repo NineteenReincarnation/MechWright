@@ -63,6 +63,42 @@ public sealed class DocumentWorksheetEditorTests
     }
 
     [Fact]
+    public void QuickAddPropertyCreatesRequiredParentsInOneUndoStep()
+    {
+        var document = DefDocument.Parse("""
+            <Defs>
+              <!-- Preserve settings -->
+              <ThingDef><defName>MP_Test</defName><customValue X="retain">yes</customValue></ThingDef>
+            </Defs>
+            """);
+        var def = document.Definitions().Single();
+        DocumentWorksheetEditor.AppendFieldPath(document, def, "statBases/MoveSpeed", "5.6");
+        Assert.Equal("5.6", document.Xml.Root!.Element("ThingDef")!
+            .Element("statBases")?.Element("MoveSpeed")?.Value);
+        Assert.Throws<InvalidOperationException>(() =>
+            DocumentWorksheetEditor.AppendFieldPath(document, def, "statBases/MoveSpeed", "4"));
+        Assert.Contains("X=\"retain\"", document.Export());
+        Assert.True(document.Undo());
+        Assert.Null(document.Xml.Root!.Element("ThingDef")!.Element("statBases"));
+        Assert.True(document.Redo());
+        Assert.Equal("5.6", document.Xml.Root!.Element("ThingDef")!
+            .Element("statBases")?.Element("MoveSpeed")?.Value);
+    }
+
+    [Fact]
+    public void ValidationDoesNotPartiallyCreateParents()
+    {
+        var document = DefDocument.CreateEmpty();
+        var def = DocumentWorksheetEditor.AppendDefinition(
+            document, "ThingDef", "MP_Test", "");
+        Assert.Throws<ArgumentException>(() =>
+            DocumentWorksheetEditor.AppendFieldPath(document, def, "statBases/MoveSpeed", "-10"));
+        Assert.Null(document.Xml.Root!.Element("ThingDef")!.Element("statBases"));
+        DocumentWorksheetEditor.SetDisplayLabel(document, def, "机体测试");
+        Assert.Equal("机体测试", document.Xml.Root!.Element("ThingDef")!.Element("label")?.Value);
+    }
+
+    [Fact]
     public void InvalidIdentityCannotMutateXml()
     {
         var doc = DefDocument.CreateEmpty();
