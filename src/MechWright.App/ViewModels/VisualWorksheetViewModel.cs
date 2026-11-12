@@ -36,6 +36,7 @@ public sealed partial class MainWindowViewModel
 
     private void RefreshWorksheet()
     {
+        EnsureWorksheetDraftOwner();
         var name = CurrentMechName;
         var previous = WorksheetFields.ToDictionary(x =>
             (x.Spec.DefType, x.Spec.Path), x => x);
@@ -43,6 +44,7 @@ public sealed partial class MainWindowViewModel
         if (name == null || _workspace == null)
         {
             Notify(nameof(WorksheetCount));
+            RefreshWorksheetCatalog();
             return;
         }
         // Worksheet deliberately includes only standard fields and explicitly
@@ -57,6 +59,8 @@ public sealed partial class MainWindowViewModel
                 available.TryAdd((present.DefType,present.Path),observed);
             else available.TryAdd((present.DefType,present.Path),present);
         }
+        foreach(var draft in _worksheetDraftOptions.Values)
+            available.TryAdd((draft.DefType,draft.Path),draft);
         var order=new[]
         {
             "身份与描述","基础性能","机械师与生成","武器与战斗",
@@ -64,11 +68,13 @@ public sealed partial class MainWindowViewModel
         };
         var ordered=available.Values.Where(x => 
                 VisualContentEditor.Common.Contains(x) ||
+                _worksheetDraftOptions.ContainsKey((x.DefType,x.Path)) ||
                 VisualContentEditor.Read(_workspace,name,x)!=null)
             .Where(x => WorksheetSearch.Length==0 ||
                 x.Label.Contains(WorksheetSearch,StringComparison.OrdinalIgnoreCase) ||
                 x.Path.Contains(WorksheetSearch,StringComparison.OrdinalIgnoreCase))
-            .OrderBy(x=>Array.IndexOf(order,x.Category) is var pos && pos>=0?pos:99)
+            .OrderBy(x=>_worksheetDraftOptions.ContainsKey((x.DefType,x.Path)) ? -1 :
+                (Array.IndexOf(order,x.Category) is var pos && pos>=0?pos:99))
             .ThenBy(x=>Array.FindIndex(VisualContentEditor.Common.ToArray(), y =>
                 y.DefType==x.DefType && y.Path==x.Path) is var i && i>=0 ? i : 1000)
             .ThenBy(x=>x.Label,StringComparer.Ordinal).ToArray();
@@ -77,17 +83,20 @@ public sealed partial class MainWindowViewModel
         foreach (var field in ordered)
         {
             var saved=VisualContentEditor.Read(_workspace,name,field);
-            var header=lastCategory!=field.Category;
-            lastCategory=field.Category;
+            var pinned=_worksheetDraftOptions.ContainsKey((field.DefType,field.Path));
+            var category=pinned ? "新添加 · 待填写" : field.Category;
+            var header=lastCategory!=category;
+            lastCategory=category;
             // Only retain a draft if it was deliberately modified and the
             // original underlying XML value has not changed in the meantime.
             var key=(field.DefType,field.Path);
             if (previous.TryGetValue(key,out var prior) && prior.IsEdited &&
                 prior.SavedValue==saved)
-                WorksheetFields.Add(prior with { ShowCategoryHeader=header });
-            else WorksheetFields.Add(new WorksheetFieldRow(field,saved,header));
+                WorksheetFields.Add(prior with { ShowCategoryHeader=header, IsPinned=pinned });
+            else WorksheetFields.Add(new WorksheetFieldRow(field,saved,header) { IsPinned=pinned });
         }
         Notify(nameof(WorksheetCount));
+        RefreshWorksheetCatalog();
     }
 
     public void SaveWorksheetField(WorksheetFieldRow? row)
@@ -97,6 +106,7 @@ public sealed partial class MainWindowViewModel
         {
             var text=row.ExplicitValue();
             VisualContentEditor.Apply(_workspace,CurrentMechName,row.Spec,text);
+            _worksheetDraftOptions.Remove((row.Spec.DefType,row.Spec.Path));
             RefreshAll(SelectedDefinition?.Entry.Index);
             RefreshWorksheet();
             WorksheetMessage="已保存“"+row.Spec.Label+"”，可以撤销。";
@@ -124,6 +134,7 @@ public sealed record WorksheetFieldRow : INotifyPropertyChanged
     public VisualContentEditor.Option Spec { get; init; }
     public string? SavedValue { get; }
     public bool ShowCategoryHeader { get; init; }
+    public bool IsPinned { get; init; }
     private string _text;
     private decimal _number;
     private bool _boolean;
@@ -146,7 +157,7 @@ public sealed record WorksheetFieldRow : INotifyPropertyChanged
         _boolean=bool.TryParse(text,out var b)&&b;
         _choice=text;
     }
-    public string Category => Spec.Category;
+    public string Category => IsPinned ? "新添加 · 待填写" : Spec.Category;
     public string Title => Spec.Label;
     public string Hint => Spec.Help;
     public string SourceLabel => Spec.DefType=="PawnKindDef"?"种类与生成":"机体定义";
@@ -156,7 +167,9 @@ public sealed record WorksheetFieldRow : INotifyPropertyChanged
     public bool IsText => !IsNumber && !IsBoolean && !IsChoice;
     public IReadOnlyList<string> Choices => Spec.Choices ?? [];
     public bool CanReset => SavedValue!=null;
-    public string CurrentStatus => SavedValue==null?"尚未单独设置 · 当前显示建议值":"已写入当前工程";
+    public string CurrentStatus => IsPinned
+        ? "尚未写入工程 · 点击保存后生效"
+        : SavedValue==null ? "尚未单独设置 · 当前显示建议值" : "已写入当前工程";
     public bool IsEdited => _isEdited;
     public string Text
     {
