@@ -125,7 +125,8 @@ public sealed partial class MainWindowViewModel
         {
             var current = DocumentSelectedNode;
             if (current == null || current.IsRoot) return "位置：当前定义下";
-            return current.IsGroup ? "位置：" + current.Name + " 内部"
+            return DocumentWorksheetEditor.CanContainFields(current.Node)
+                ? "位置：" + current.Name + " 内部"
                 : "位置：与“" + current.Name + "”同级";
         }
     }
@@ -185,7 +186,7 @@ public sealed partial class MainWindowViewModel
         var previous = DocumentSelectedField?.Name;
         DocumentFieldChoices.Clear();
         var current = DocumentSelectedNode;
-        var parent = current?.IsGroup == true || current?.IsRoot == true
+        var parent = current != null && DocumentWorksheetEditor.CanContainFields(current.Node)
             ? current?.Name : DocumentNodes.FirstOrDefault(x =>
                 x.Path == DocumentWorksheetEditor.ParentPath(current?.Path ?? ""))?.Name;
         var suggestions = parent switch
@@ -341,7 +342,9 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
     public string Path => Node.Path;
     public string Name => Node.Name;
     public bool IsRoot => Node.IsRoot;
-    public bool IsGroup => Node.IsGroup;
+    public bool IsGroup => Node.IsGroup ||
+        (Node.Value is null or "" && Node.Name is "statBases" or "race" or
+         "graphicData" or "tools" or "verbs" or "comps" or "parts" or "li");
     public bool CanEdit => !Node.IsRoot && !Node.IsGroup && !Node.IsIdentity;
     public bool CanDelete => !Node.IsRoot && !Node.IsIdentity && Node.Name != "label";
     public string Title => Node.Name switch
