@@ -21,6 +21,7 @@ public sealed partial class MainWindowViewModel
         _isDocumentMode = true;
         Notify(nameof(IsDocumentMode));
         Notify(nameof(IsGuidedMode));
+        Notify(nameof(WorkbenchArea));
         RefreshDocumentWorksheet();
     }
 
@@ -31,10 +32,12 @@ public sealed partial class MainWindowViewModel
             Status = "当前文件没有可关联的完整机械体，先继续编辑 XML 定义。";
             return;
         }
+        if (HasUncommittedDocumentInputs && !CommitDocumentInputs()) return;
         _isDocumentMode = false;
         Notify(nameof(IsDocumentMode));
         Notify(nameof(IsGuidedMode));
         StartDesign(CurrentMechName);
+        Notify(nameof(WorkbenchArea));
     }
 
     public ObservableCollection<DocumentNodeRow> DocumentNodes { get; } = new();
