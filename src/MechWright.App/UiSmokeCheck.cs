@@ -26,8 +26,42 @@ internal static class UiSmokeCheck
                 var vm = window.DataContext as MainWindowViewModel ??
                     throw new InvalidOperationException("MainWindow has no editor ViewModel.");
                 Require(vm.ShowStartPage, "New project page should be the initial view.");
+
+                // Main entry: blank XML opens a usable list without a mech wizard.
+                vm.NewFile();
+                Require(vm.IsDocumentMode && vm.HasDocument &&
+                    !vm.HasWorkspace && vm.Definitions.Count == 0,
+                    "New XML must open an empty file-first workspace.");
+                vm.DocumentDefName = "MP_UiFile";
+                vm.DocumentDefLabel = "Simple part";
+                vm.AppendDocumentDefinition();
+                Require(vm.Definitions.Count == 1 &&
+                    vm.SelectedDefinition?.Entry.DefName == "MP_UiFile",
+                    "Inline definition row did not create the selected XML Def.");
+                vm.DocumentSelectedNode = vm.DocumentNodes.First(x => x.IsRoot);
+                vm.DocumentSelectedField = vm.DocumentFieldChoices.First(x => x.Name == "statBases");
+                vm.AddDocumentField();
+                Require(vm.DocumentNodes.Any(x => x.Name == "statBases"),
+                    "Blank document could not create a statBases group.");
+                vm.DocumentSelectedNode = vm.DocumentNodes.First(x => x.Name == "statBases");
+                vm.DocumentSelectedField = vm.DocumentFieldChoices.First(x => x.Name == "MoveSpeed");
+                vm.DocumentNewValue = "4.7";
+                vm.AddDocumentField();
+                var docMove = vm.DocumentNodes.First(x => x.Name == "MoveSpeed");
+                docMove.Number = 5.2m;
+                vm.SaveDocumentNode(docMove);
+                Require(vm.XmlPreview.Contains("<MoveSpeed>5.2</MoveSpeed>"),
+                    "Row changes were not written to the current XML.");
+                vm.Undo();
+                Require(vm.XmlPreview.Contains("<MoveSpeed>4.7</MoveSpeed>"),
+                    "Undo could not restore a file-first row edit.");
+                vm.Redo();
+                Require(vm.XmlPreview.Contains("<MoveSpeed>5.2</MoveSpeed>"),
+                    "Redo could not restore a file-first row edit.");
+
                 vm.CreateWorkspace();
-                Require(vm.NeedsFirstMechanoid, "Empty workspace must guide the user.");
+                Require(vm.IsDocumentMode && vm.NeedsFirstMechanoid,
+                    "Empty project must open its file editor without launching a wizard.");
                 vm.GenerateMechanoid(new MechanoidBlueprint(
                     "MP_UiSmoke", "UI smoke test mechanoid"));
                 Require(vm.ShowWorkspacePage && !vm.NeedsFirstMechanoid,
