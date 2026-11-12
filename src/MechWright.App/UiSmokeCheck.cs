@@ -91,6 +91,18 @@ internal static class UiSmokeCheck
                 vm.Redo();
                 Require(vm.XmlPreview.Contains("<MoveSpeed>5.2</MoveSpeed>"),
                     "Redo could not restore a file-first row edit.");
+                var expandedGroup = vm.DocumentNodes.First(x => x.Name == "statBases");
+                Require(vm.DocumentVisibleNodes.Any(x => x.Name == "MoveSpeed"),
+                    "Expanded Inspector group must show its fields.");
+                vm.ToggleDocumentGroup(expandedGroup);
+                Require(vm.DocumentVisibleNodes.All(x => x.Name != "MoveSpeed"),
+                    "Collapsing a group should hide its child without removing XML.");
+                vm.DocumentFieldSearch = "MoveSpeed";
+                Require(vm.DocumentVisibleNodes.Any(x => x.Name == "MoveSpeed"),
+                    "Inspector search must find a field within collapsed groups.");
+                vm.DocumentFieldSearch = "";
+                Require(vm.XmlPreview.Contains("<MoveSpeed>5.2</MoveSpeed>"),
+                    "Inspector group collapse must never mutate XML.");
 
                 vm.CreateWorkspace();
                 Require(vm.IsDocumentMode && vm.NeedsFirstMechanoid,
