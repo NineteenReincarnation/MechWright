@@ -112,6 +112,9 @@
           <StackPanel Grid.Row="5" Spacing="8">
             <Button Content="＋ 新增工程文件" Click="AddProjectXml_Click"
                     IsVisible="{Binding HasWorkspace}"/>
+            <Button Content="连接本机游戏字段" Click="ConnectGameSchema_Click"/>
+            <TextBlock Text="{Binding DocumentSchemaStatus}" FontSize="10"
+                       Foreground="#91A7B0" TextWrapping="Wrap"/>
             <Button Content="原版机械体图鉴" Click="OpenVanillaLibrary_Click"/>
             <Button Content="查看 XML 源码" Click="EditRaw_Click"/>
             <Button Content="机械体专项工具" Click="SwitchToGuided_Click"
