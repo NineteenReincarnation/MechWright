@@ -18,6 +18,8 @@ public sealed partial class MainWindowViewModel
         InspectorFieldCatalog.Categories;
 
     private readonly Dictionary<string, DocumentNodeRow> _documentRowDrafts = new();
+    private readonly HashSet<string> _collapsedDocumentGroups =
+        new(StringComparer.Ordinal);
     private DefDocument? _documentRowOwner;
     private string? _documentRowOwnerName;
     private string _documentFieldSearch = "";
@@ -180,6 +182,7 @@ public sealed partial class MainWindowViewModel
             _documentRowOwner = _document;
             _documentRowOwnerName = ownerName;
             _documentRowDrafts.Clear();
+            _collapsedDocumentGroups.Clear();
         }
         foreach (var row in DocumentNodes.Where(x => x.IsEdited))
             _documentRowDrafts[row.Path] = row;
@@ -200,15 +203,37 @@ public sealed partial class MainWindowViewModel
     private void RebuildDocumentVisibleNodes()
     {
         DocumentVisibleNodes.Clear();
-        var q = DocumentFieldSearch.Trim();
-        foreach (var row in DocumentNodes.Where(x =>
-                     !x.IsRoot && !x.Node.IsIdentity && x.Name != "label" &&
-                     (q.Length == 0 ||
-                      x.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
-                      x.Name.Contains(q, StringComparison.OrdinalIgnoreCase))))
-            DocumentVisibleNodes.Add(row);
+        var query = DocumentFieldSearch.Trim();
+        // Search finds children even under a collapsed group. In normal view
+        // expanding/collapsing affects only the display, never the XML.
+        var hiddenDepth = -1;
+        foreach (var row in DocumentNodes)
+        {
+            if (query.Length == 0)
+            {
+                if (hiddenDepth >= 0 && row.Depth > hiddenDepth) continue;
+                if (hiddenDepth >= 0) hiddenDepth = -1;
+            }
+            if (!row.IsRoot && !row.Node.IsIdentity && row.Name != "label" &&
+                (query.Length == 0 ||
+                 row.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                 row.Name.Contains(query, StringComparison.OrdinalIgnoreCase)))
+                DocumentVisibleNodes.Add(row);
+            if (query.Length == 0 && row.IsGroup &&
+                _collapsedDocumentGroups.Contains(row.Path))
+                hiddenDepth = row.Depth;
+            row.IsExpanded = !_collapsedDocumentGroups.Contains(row.Path);
+        }
         Notify(nameof(DocumentHasEditableRows));
         Notify(nameof(DocumentHasNoFields));
+    }
+
+    public void ToggleDocumentGroup(DocumentNodeRow? row)
+    {
+        if (row == null || !row.IsGroup) return;
+        if (!_collapsedDocumentGroups.Add(row.Path))
+            _collapsedDocumentGroups.Remove(row.Path);
+        RebuildDocumentVisibleNodes();
     }
 
     public void ToggleDocumentQuickPanel()
