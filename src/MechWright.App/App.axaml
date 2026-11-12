@@ -95,5 +95,14 @@
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="Padding" Value="12,8"/>
     </Style>
+    <Style Selector="TabControl.workbench TabItem">
+      <Setter Property="Padding" Value="15,11"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="#A9BAC0"/>
+    </Style>
+    <Style Selector="TabControl.workbench TabItem:selected">
+      <Setter Property="Background" Value="#30443F"/>
+      <Setter Property="Foreground" Value="#EFF6F3"/>
+    </Style>
   </Application.Styles>
 </Application>
