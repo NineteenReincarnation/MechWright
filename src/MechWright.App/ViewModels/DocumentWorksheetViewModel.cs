@@ -217,7 +217,7 @@ public sealed partial class MainWindowViewModel
         DocumentNodes.Clear();
         if (_document != null && SelectedDefinition != null)
         {
-            var known = InspectorFieldCatalog.For(SelectedDefinition.Entry.Type, _nativeFields)
+            var known = InspectorFieldCatalog.For(SelectedDefinition.Entry.Type, _nativeFields, _gameFields)
                 .ToDictionary(x => x.Path, StringComparer.Ordinal);
             foreach (var node in FreeformDefinitionEditor.Read(_document, SelectedDefinition.Entry))
             {
