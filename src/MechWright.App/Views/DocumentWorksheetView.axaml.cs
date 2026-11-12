@@ -36,6 +36,11 @@ public sealed partial class DocumentWorksheetView : UserControl
             Dispatcher.UIThread.Post(() => AddSearchBox.Focus());
             e.Handled = true;
         }
+        else if (e.Key == Key.Enter && ReferenceEquals(e.Source, LabelEditor))
+        {
+            vm.CommitDocumentInputs();
+            e.Handled = true;
+        }
         else if (e.Key == Key.Enter &&
                  e.Source is TextBox { DataContext: DocumentNodeRow row } &&
                  row.IsEdited)
