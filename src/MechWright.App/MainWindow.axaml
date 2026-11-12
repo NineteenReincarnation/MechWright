@@ -20,14 +20,8 @@
           </StackPanel>
         </StackPanel>
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-          <Button Content="新建机械体" Classes="primary" Click="NewMechanoidWizard_Click"/>
-          <Button Classes="primary" Click="OpenContentEditor_Click"
-                  IsEnabled="{Binding HasWorkspace}">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <PathIcon Data="M12 3V21M3 12H21" Width="15" Height="15"/>
-              <TextBlock Text="添加内容"/>
-            </StackPanel>
-          </Button>
+          <Button Content="新建 XML" Classes="primary" Click="NewFile_Click"/>
+          <Button Content="打开 XML" Click="OpenFile_Click"/>
           <Button Content="导入 Mod" Click="ImportWorkspace_Click"/>
           <Button Content="原版图鉴" Click="OpenVanillaLibrary_Click"/>
           <Border Width="1" Background="#354750" Margin="4,5"/>
@@ -42,18 +36,18 @@
       <Grid RowDefinitions="*,Auto,*" MaxWidth="880" HorizontalAlignment="Center">
         <StackPanel Grid.Row="0" VerticalAlignment="Bottom" Spacing="12" Margin="0,0,0,34">
           <TextBlock Text="机 械 体 设 计 工 作 台" FontSize="30" FontWeight="Bold" Foreground="#EDF1F1"/>
-          <TextBlock Text="从一个机械体开始。按照基础属性、身体、武器与资源的顺序完成配置，最后检查并导出。"
+          <TextBlock Text="从一份空白 XML 开始。直接添加定义、字段和分组，逐行编辑，无需先创建完整机械体。" 
                      FontSize="14" Foreground="#A4B6BD" TextWrapping="Wrap" MaxWidth="700"/>
         </StackPanel>
         <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="18" MinHeight="230">
           <Border Grid.Column="0" Classes="feature-card" Padding="24">
             <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
-              <TextBlock Grid.Row="0" Text="01 / CREATE" FontFamily="Consolas" Foreground="#8CBEB4" FontSize="11"/>
-              <TextBlock Grid.Row="1" Text="新建机械体" FontSize="21" FontWeight="SemiBold"/>
-              <TextBlock Grid.Row="2" Text="填写机体的名称与常规数据，自动建立关联 XML。随后按步骤继续设计。"
+              <TextBlock Grid.Row="0" Text="01 / NEW FILE" FontFamily="Consolas" Foreground="#8CBEB4" FontSize="11"/>
+              <TextBlock Grid.Row="1" Text="新建空白 XML" FontSize="21" FontWeight="SemiBold"/>
+              <TextBlock Grid.Row="2" Text="立即进入列表编辑器。从空白文件添加任意定义，不预填战斗点数、机体结构或其他参数。"
                          FontSize="13" Foreground="#9EAFB6" TextWrapping="Wrap"/>
-              <Button Grid.Row="3" Content="开始设计" Classes="primary" HorizontalAlignment="Stretch"
-                      Click="NewMechanoidWizard_Click"/>
+              <Button Grid.Row="3" Content="新建 XML 并开始编辑" Classes="primary" HorizontalAlignment="Stretch"
+                      Click="NewFile_Click"/>
             </Grid>
           </Border>
           <Border Grid.Column="1" Classes="feature-card" Padding="24">
@@ -80,9 +74,9 @@
             </Grid>
           </Border>
           <StackPanel Orientation="Horizontal" Spacing="14">
-            <Button Content="新建空白 XML" Click="NewFile_Click"/>
+            <Button Content="新建工程（多文件）" Click="NewWorkspace_Click"/>
             <Button Content="打开单个 XML" Click="OpenFile_Click"/>
-            <Button Content="新建空白工程" Click="NewWorkspace_Click"/>
+            <Button Content="原版字段浏览" Click="ScanCatalog_Click"/>
           </StackPanel>
         </StackPanel>
       </Grid>
@@ -91,7 +85,8 @@
     <!-- Focused workspace: current step owns the screen, not 11 simultaneous tabs. -->
     <Grid Grid.Row="1" IsVisible="{Binding ShowWorkspacePage}"
           ColumnDefinitions="245,*" ColumnSpacing="14" Margin="16,14">
-      <Border Grid.Column="0" Background="#121B21" BorderBrush="#294048"
+      <Border Grid.Column="0" IsVisible="{Binding IsGuidedMode}"
+              Background="#121B21" BorderBrush="#294048"
               BorderThickness="1" CornerRadius="9">
         <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="14" RowSpacing="9">
           <StackPanel Grid.Row="0" Spacing="4" Margin="3,6,0,5">
@@ -197,7 +192,8 @@
         </Grid>
       </Border>
 
-      <Border Grid.Column="1" Background="#141D23" BorderBrush="#294048"
+      <Border Grid.Column="1" IsVisible="{Binding IsGuidedMode}"
+              Background="#141D23" BorderBrush="#294048"
               BorderThickness="1" CornerRadius="9">
         <Grid RowDefinitions="90,*,64" Margin="20" RowSpacing="12">
           <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="15">
@@ -432,6 +428,75 @@
           </Grid>
         </Grid>
       </Border>
+      <!-- Default file-first workspace: the XML and its actual node tree are
+           editable immediately, without an obligatory mechanoid wizard. -->
+      <Grid Grid.ColumnSpan="2" IsVisible="{Binding IsDocumentMode}"
+            ColumnDefinitions="248,*" ColumnSpacing="14">
+        <Border Grid.Column="0" Background="#121B21" BorderBrush="#294048"
+                BorderThickness="1" CornerRadius="9" Padding="14">
+          <Grid RowDefinitions="Auto,Auto,150,Auto,*,Auto" RowSpacing="11">
+            <StackPanel Grid.Row="0" Spacing="5" Margin="2,5">
+              <TextBlock Text="文件与定义" FontSize="17" FontWeight="SemiBold"/>
+              <TextBlock Text="一个文件可包含多个定义" Foreground="#92A8AD" FontSize="11"/>
+            </StackPanel>
+            <TextBlock Grid.Row="1" Text="工程文件" IsVisible="{Binding HasWorkspace}"
+                       FontSize="11" Foreground="#9BBFB7"/>
+            <ListBox Grid.Row="2" IsVisible="{Binding HasWorkspace}"
+                     ItemsSource="{Binding ProjectFiles}"
+                     SelectedItem="{Binding SelectedProjectFile,Mode=TwoWay}"
+                     BorderBrush="#2D454C" BorderThickness="1" Background="#102028">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ProjectFileRow">
+                  <TextBlock Text="{Binding Display}" FontSize="11"
+                             TextTrimming="CharacterEllipsis" Margin="5,6"
+                             ToolTip.Tip="{Binding File.RelativePath}"/>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock Grid.Row="3" Text="当前 XML 中的定义"
+                       FontSize="12" Foreground="#A7C6BE"/>
+            <ListBox Grid.Row="4" ItemsSource="{Binding Definitions}"
+                     SelectedItem="{Binding SelectedDefinition,Mode=TwoWay}"
+                     Background="Transparent" BorderThickness="0">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:DefinitionRow">
+                  <Border Background="#1A2C32" CornerRadius="6" Padding="10" Margin="2,3">
+                    <TextBlock Text="{Binding Display}" FontSize="12"
+                               TextWrapping="Wrap"/>
+                  </Border>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel Grid.Row="5" Spacing="8">
+              <Button Content="＋ 在工程中添加 XML" Click="AddProjectXml_Click"
+                      IsVisible="{Binding HasWorkspace}"/>
+              <Button Content="高级 XML 源码" Click="EditRaw_Click"/>
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Grid.Column="1" Background="#141D23" BorderBrush="#294048"
+                BorderThickness="1" CornerRadius="9" Padding="12">
+          <Grid RowDefinitions="*,Auto" RowSpacing="11">
+            <Border Grid.Row="0" Background="#101820" BorderBrush="#293B44"
+                    BorderThickness="1" CornerRadius="7" ClipToBounds="True">
+              <views:DocumentWorksheetView/>
+            </Border>
+            <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="6,0">
+              <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10"
+                          VerticalAlignment="Center">
+                <TextBlock Text="{Binding DiagnosticCount}" Foreground="#D2B885"
+                           FontSize="11"/>
+                <TextBlock Text="{Binding DirtyFlag}" Foreground="#92A8AD" FontSize="11"/>
+              </StackPanel>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="9">
+                <Button Content="导出当前 XML" Click="Export_Click"/>
+                <Button Content="导出 Mod" Classes="primary"
+                        IsVisible="{Binding HasWorkspace}" Click="ExportWorkspace_Click"/>
+              </StackPanel>
+            </Grid>
+          </Grid>
+        </Border>
+      </Grid>
     </Grid>
 
     <Border Grid.Row="2" Background="#0D151A" BorderBrush="#293D46"
