@@ -69,7 +69,9 @@
         <Grid Margin="16,17" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto"
               RowSpacing="11">
           <StackPanel Grid.Row="0" Spacing="6">
-            <TextBlock Text="文件" FontWeight="SemiBold" FontSize="14"/>
+            <TextBlock Text="工作站文件" FontWeight="SemiBold" FontSize="14"/>
+            <TextBlock Text="{Binding WorkspaceTitle}" Foreground="#B3C7C8"
+                       FontSize="11" TextWrapping="Wrap" MaxLines="2"/>
             <TextBlock Text="{Binding SourceName}" Foreground="#97A8B1"
                        TextWrapping="Wrap" FontSize="11" MaxLines="3"/>
             <TextBlock Text="{Binding DirtyFlag}" FontSize="11"
