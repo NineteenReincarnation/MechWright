@@ -330,7 +330,7 @@ public sealed partial class MainWindowViewModel
         }
 
         var descriptors = InspectorFieldCatalog.For(
-            SelectedDefinition.Entry.Type, _nativeFields);
+            SelectedDefinition.Entry.Type, _nativeFields, _gameFields);
         var occupied = descriptors.Where(x => DocumentPathExists(x.Path))
             .Select(x => x.Path).ToHashSet(StringComparer.Ordinal);
         var filtered = InspectorFieldCatalog.Filter(
