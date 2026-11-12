@@ -32,6 +32,14 @@ public sealed partial class MainWindowViewModel
         set
         {
             if (ReferenceEquals(_selectedProjectFile, value)) return;
+            // A tab refresh can momentarily clear ListBox.SelectedItem; it is
+            // not a user request to close the currently active XML file.
+            if (value == null && _selectedProjectFile != null &&
+                ProjectFiles.Contains(_selectedProjectFile))
+            {
+                Notify(nameof(SelectedProjectFile));
+                return;
+            }
             if (_isDocumentMode && _selectedProjectFile != null &&
                 !ReferenceEquals(_selectedProjectFile.File.Document, value?.File.Document) &&
                 HasUncommittedDocumentInputs && !CommitDocumentInputs())
