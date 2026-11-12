@@ -163,8 +163,9 @@ public sealed partial class DocumentWorksheetView : UserControl
         if (DataContext is MainWindowViewModel vm &&
             sender is Button { DataContext: DocumentNodeRow row })
         {
+            // Keep the current row visible. Its editor opens beside the
+            // list instead of jumping to a separate form at the top.
             vm.ToggleDocumentStructurePanel(row);
-            MainScroll.Offset = new Avalonia.Vector(0, 0);
         }
     }
 
