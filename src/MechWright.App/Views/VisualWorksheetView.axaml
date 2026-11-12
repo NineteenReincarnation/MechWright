@@ -67,6 +67,46 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
           </ScrollViewer>
+          <Expander Header="自定义未收录字段（高级）" Margin="0,7,0,0">
+            <StackPanel Spacing="10" Margin="5,12,5,5">
+              <TextBlock Text="只有字段库里找不到需要的配置时才使用。这里填写的是原生字段名，不能保证游戏接受任意自定义属性。"
+                         TextWrapping="Wrap" Foreground="#D2B98B" FontSize="11"/>
+              <Grid ColumnDefinitions="170,170,*,125" ColumnSpacing="8">
+                <StackPanel Grid.Column="0" Spacing="4">
+                  <TextBlock Text="属于哪份定义" FontSize="11"/>
+                  <ComboBox ItemsSource="{Binding FreeformTargets}"
+                            SelectedItem="{Binding SelectedContentCustomTarget,Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:FreeformTargetRow">
+                        <TextBlock Text="{Binding Label}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <TextBlock Text="所在分组" FontSize="11"/>
+                  <TextBox Text="{Binding ContentCustomParent,Mode=TwoWay}"
+                           Watermark="例如 statBases"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="4">
+                  <TextBlock Text="原生字段名称" FontSize="11"/>
+                  <TextBox Text="{Binding ContentCustomName,Mode=TwoWay}"
+                           Watermark="例如 MoveSpeed"/>
+                </StackPanel>
+                <StackPanel Grid.Column="3" Spacing="4">
+                  <TextBlock Text="值类型" FontSize="11"/>
+                  <ComboBox ItemsSource="{Binding ContentCustomKinds}"
+                            SelectedItem="{Binding ContentCustomKind,Mode=TwoWay}"/>
+                </StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="9">
+                <TextBox Grid.Column="0" Text="{Binding ContentCustomValue,Mode=TwoWay}"
+                         Watermark="请输入该字段的值" MinHeight="35"/>
+                <Button Grid.Column="1" Content="写入自定义字段"
+                        Classes="primary" Click="SaveCustomField_Click"/>
+              </Grid>
+            </StackPanel>
+          </Expander>
           <TextBlock Text="添加只创建待填写行，不会直接修改 XML；保存对应行后才写入工程。"
                      Foreground="#9BB6B8" FontSize="11" TextWrapping="Wrap"/>
         </StackPanel>
