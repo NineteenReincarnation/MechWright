@@ -100,8 +100,12 @@
                    HorizontalAlignment="Stretch">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:DefinitionRow">
-                <TextBlock Text="{Binding Display}" FontSize="12"
-                           TextWrapping="Wrap" Margin="7,9"/>
+                <StackPanel Margin="7,7" Spacing="4">
+                  <TextBlock Text="{Binding FriendlyTitle}" FontSize="12"
+                             FontWeight="SemiBold" TextWrapping="Wrap"/>
+                  <TextBlock Text="{Binding TechnicalId}" FontSize="10"
+                             Foreground="#90A4AD" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
