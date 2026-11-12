@@ -200,10 +200,12 @@
                         BorderThickness="0,0,0,1" Padding="4,10">
                   <Grid ColumnDefinitions="200,*,36,65,54" ColumnSpacing="9"
                         MinHeight="52">
-                    <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center"
+                                Margin="{Binding RowIndent}">
                       <TextBlock Text="{Binding Title}" FontSize="13"
                                  FontWeight="SemiBold" TextWrapping="Wrap"/>
                       <TextBlock Text="{Binding StructureHint}" FontSize="10"
+                                 IsVisible="{Binding HasStructureHint}"
                                  Foreground="#8196A1" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                     <Grid Grid.Column="1" MinHeight="36" VerticalAlignment="Center">
