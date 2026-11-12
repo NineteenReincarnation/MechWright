@@ -383,8 +383,10 @@ public sealed partial class MainWindowViewModel
                 option.Path, value);
             var index = SelectedDefinition.Entry.Index;
             RefreshAll(index);
-            // Keep the browser open: users can add a sequence of fields without
-            // reopening the picker or scrolling back to the top of the list.
+            // RefreshAll can rebind the selected Def and rebuild the document
+            // workspace. Restore the active add mode after the refresh.
+            DocumentQuickPanelOpen = true;
+            DocumentStructurePanelOpen = false;
             DocumentQuickMessage = "已添加“" + option.Title + "”，选择下一项即可继续。";
             DocumentMessage = DocumentQuickMessage;
             Status = DocumentMessage;
