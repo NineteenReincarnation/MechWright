@@ -308,6 +308,21 @@ public sealed partial class MainWindow : Window
         _vm.StatusMessage("原版机械体图鉴已打开，可与主设计工作台并排使用。");
     }
 
+    private async void ConnectGameSchema_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "选择 RimWorld 游戏根目录或 Data 文件夹（只读）",
+                AllowMultiple = false
+            });
+            var path = folders.FirstOrDefault()?.TryGetLocalPath();
+            if (path != null) await _vm.LoadCatalogAsync(path);
+        }
+        catch (Exception ex) { _vm.ReportError(ex); }
+    }
+
     private async void ScanCatalog_Click(object? sender, RoutedEventArgs e)
     {
         try
