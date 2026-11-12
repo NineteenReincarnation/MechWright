@@ -74,13 +74,19 @@ public sealed partial class MainWindowViewModel
     }
     public void ApplyCustomContentField()
     {
-        if(_workspace==null || CurrentMechName==null)return;
+        if(_workspace==null || CurrentMechName==null)
+        {
+            WorksheetMessage = ContentStatus = "请先创建或选择一台机械体。";
+            return;
+        }
         try
         {
             var target=SelectedContentCustomTarget?.DefType??"ThingDef";
             var parent=ContentCustomParent.Trim();
             if(parent=="根目录")parent="";
             var name=ContentCustomName.Trim();
+            if(name.Length==0)
+                throw new ArgumentException("请输入要添加的原生字段名称。");
             var path=parent.Length==0?name:parent+"/"+name;
             var kind=ContentCustomKind;
             var option=new VisualContentEditor.Option(target,path,name,
@@ -92,9 +98,15 @@ public sealed partial class MainWindowViewModel
             RefreshWorksheet();
             FilterContent();
             ContentStatus="已添加字段“"+name+"”，并保留在纵向配置列表中。";
+            WorksheetMessage = ContentStatus;
+            WorksheetCatalogOpen = false;
             Status=ContentStatus;
         }
-        catch(Exception ex){ContentStatus=ex.Message;ReportError(ex);}
+        catch(Exception ex)
+        {
+            WorksheetMessage = ContentStatus=ex.Message;
+            ReportError(ex);
+        }
     }
 
     public ObservableCollection<ContentTemplateRow> ContentTemplates { get; } = new();
