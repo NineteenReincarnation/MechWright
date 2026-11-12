@@ -94,8 +94,11 @@ public sealed partial class MainWindowViewModel
             RefreshProjectAssets();
             StartDesign(blueprint.DefName);
             _isDocumentMode = false;
+            _workbenchArea = 1;
             Notify(nameof(IsDocumentMode));
             Notify(nameof(IsGuidedMode));
+            Notify(nameof(WorkbenchArea));
+            Notify(nameof(CanUseFullWorkbench));
             Status = $"已创建 {blueprint.DefName} · ThingDef / PawnKindDef / BodyDef 三个相互关联的 XML，可继续补充 Body、武器与培育配置。";
         }
         catch (Exception ex) { ReportError(ex); }
