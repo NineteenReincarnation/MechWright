@@ -64,6 +64,31 @@ public static class InspectorFieldCatalog
         new("AbilityDef", "description", "描述文字", "常用", "Text", "能力说明")
     ];
 
+    /// <summary>
+    /// Converts an XML DOM location such as
+    /// /Defs[1]/ThingDef[1]/statBases[1]/MoveSpeed[1] into its
+    /// native field path. Repeated list entries are intentionally excluded
+    /// from scalar editor binding.
+    /// </summary>
+    public static string? ToRelativePath(string xmlPath)
+    {
+        if (string.IsNullOrWhiteSpace(xmlPath)) return null;
+        var parts = xmlPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 3) return null;
+        var fields = new List<string>();
+        foreach (var part in parts.Skip(2))
+        {
+            var bracket = part.LastIndexOf('[');
+            if (bracket <= 0 || part[^1] != ']' ||
+                !int.TryParse(part.AsSpan(bracket + 1, part.Length - bracket - 2),
+                    NumberStyles.None, CultureInfo.InvariantCulture, out var index) ||
+                index != 1) return null;
+            fields.Add(part[..bracket]);
+        }
+        var path = string.Join('/', fields);
+        return ValidPath(path) ? path : null;
+    }
+
     private static bool ValidPath(string path)
     {
         var segments = path.Split('/');
