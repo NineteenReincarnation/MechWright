@@ -304,6 +304,62 @@ public sealed partial class MainWindowViewModel
         set { _documentCustomIsGroup = value; Notify(); }
     }
 
+    /// <summary>
+    /// One operation in the workbench is editing the list. The XML is updated
+    /// in memory when a cell is committed (or when the user exports), not
+    /// written to disk until the top-level Save XML action.
+    /// </summary>
+    public bool HasUncommittedDocumentInputs =>
+        DocumentNodes.Any(x => x.CanEdit && x.IsEdited &&
+            x.GetValue() != x.SavedValue) ||
+        (_document != null && SelectedDefinition != null &&
+            DocumentLabelDraft != (_document.Xml.Root?.Elements()
+                .FirstOrDefault(x => x.Element("defName")?.Value ==
+                    SelectedDefinition.Entry.DefName)?.Element("label")?.Value ?? ""));
+
+    public bool CommitDocumentInputs()
+    {
+        if (_document == null || SelectedDefinition == null) return true;
+        try
+        {
+            var changes = DocumentNodes.Where(x => x.CanEdit && x.IsEdited &&
+                x.GetValue() != x.SavedValue)
+                .Select(x => (x.Path, Value: x.GetValue(), x.Name)).ToArray();
+            // Validate all first; an invalid last row must not partially
+            // commit the earlier rows.
+            foreach (var change in changes)
+            {
+                var error = StandardFieldRules.Validate(change.Name, change.Value);
+                if (error != null) throw new ArgumentException(error);
+            }
+            var label = _document.Xml.Root?.Elements()
+                .FirstOrDefault(x => x.Element("defName")?.Value ==
+                    SelectedDefinition.Entry.DefName)?.Element("label")?.Value ?? "";
+            var changeLabel = DocumentLabelDraft != label;
+            if (changeLabel && string.IsNullOrWhiteSpace(DocumentLabelDraft))
+                throw new ArgumentException("名称不能留空。请填写名称或保留原有内容。");
+
+            if (changes.Length == 0 && !changeLabel) return true;
+            var index = SelectedDefinition.Entry.Index;
+            foreach (var change in changes)
+                DocumentWorksheetEditor.UpdateValue(
+                    _document, SelectedDefinition.Entry, change.Path, change.Value);
+            if (changeLabel)
+                DocumentWorksheetEditor.SetDisplayLabel(
+                    _document, SelectedDefinition.Entry, DocumentLabelDraft);
+            RefreshAll(index);
+            Status = "已应用 " + (changes.Length + (changeLabel ? 1 : 0)) +
+                " 项修改 · 使用顶部保存 XML 写入文件";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            DocumentMessage = "输入未应用：" + ex.Message;
+            ReportError(ex);
+            return false;
+        }
+    }
+
     public void SaveDocumentNode(DocumentNodeRow? row)
     {
         if (_document == null || SelectedDefinition == null || row == null || !row.CanEdit) return;
