@@ -36,10 +36,7 @@ public sealed partial class MainWindowViewModel
             // not a user request to close the currently active XML file.
             if (value == null && _selectedProjectFile != null &&
                 ProjectFiles.Contains(_selectedProjectFile))
-            {
-                Notify(nameof(SelectedProjectFile));
                 return;
-            }
             if (_isDocumentMode && _selectedProjectFile != null &&
                 !ReferenceEquals(_selectedProjectFile.File.Document, value?.File.Document) &&
                 HasUncommittedDocumentInputs && !CommitDocumentInputs())
