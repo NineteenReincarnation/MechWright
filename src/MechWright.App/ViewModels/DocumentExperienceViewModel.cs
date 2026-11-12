@@ -183,6 +183,13 @@ public sealed partial class MainWindowViewModel
             _documentRowOwnerName = ownerName;
             _documentRowDrafts.Clear();
             _collapsedDocumentGroups.Clear();
+            // Each file/Def starts with a clean editing surface; never carry
+            // an old add-field drawer into an unrelated empty document.
+            DocumentQuickPanelOpen = false;
+            DocumentStructurePanelOpen = false;
+            DocumentCreatePanelOpen = false;
+            DocumentFieldSearch = "";
+            DocumentQuickSearch = "";
         }
         foreach (var row in DocumentNodes.Where(x => x.IsEdited))
             _documentRowDrafts[row.Path] = row;
