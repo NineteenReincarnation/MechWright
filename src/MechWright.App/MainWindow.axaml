@@ -28,10 +28,8 @@
           <Button Content="新建 Mod" Click="NewWorkspace_Click"/>
           <Button Content="打开 XML" Click="OpenFile_Click"/>
           <Button Content="导入 Mod" Click="ImportWorkspace_Click"/>
-          <Button Content="保存 XML" Click="Export_Click"
+          <Button Content="{Binding PrimarySaveLabel}" Click="SaveWorkbench_Click"
                   IsEnabled="{Binding HasDocument}"/>
-          <Button Content="导出 Mod" Click="ExportWorkspace_Click"
-                  IsVisible="{Binding HasWorkspace}"/>
           <Border Width="1" Background="#43505B" Margin="4,6"/>
           <Button Content="撤销" Click="Undo_Click" IsEnabled="{Binding CanUndo}"/>
           <Button Content="重做" Click="Redo_Click" IsEnabled="{Binding CanRedo}"/>
@@ -123,6 +121,8 @@
             <TextBlock Text="{Binding DocumentSchemaStatus}" FontSize="10"
                        Foreground="#91A7B0" TextWrapping="Wrap"/>
             <Button Content="原版机械体图鉴" Click="OpenVanillaLibrary_Click"/>
+            <Button Content="当前 XML 副本…" Click="Export_Click"
+                    IsVisible="{Binding HasWorkspace}"/>
             <Button Content="查看 XML 源码" Click="EditRaw_Click"/>
             <TextBlock Text="配置与专项工具均在右侧工作区切换。"
                        FontSize="10" Foreground="#708891"
