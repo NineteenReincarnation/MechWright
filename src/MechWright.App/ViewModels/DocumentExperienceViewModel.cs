@@ -374,8 +374,10 @@ public sealed partial class MainWindowViewModel
                 option.Path, value);
             var index = SelectedDefinition.Entry.Index;
             RefreshAll(index);
-            DocumentQuickPanelOpen = false;
-            DocumentMessage = "已添加“" + option.Title + "”。可以继续调整，支持撤销。";
+            // Keep the browser open: users can add a sequence of fields without
+            // reopening the picker or scrolling back to the top of the list.
+            DocumentQuickMessage = "已添加“" + option.Title + "”，选择下一项即可继续。";
+            DocumentMessage = DocumentQuickMessage;
             Status = DocumentMessage;
         }
         catch (Exception ex) { DocumentQuickMessage = ex.Message; ReportError(ex); }
