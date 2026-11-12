@@ -103,6 +103,26 @@ public sealed partial class MainWindowViewModel
         try
         {
             var path = NewProjectXmlPath.Trim();
+            // The file-first sidebar needs a one-click action even when several
+            // XML documents have already been added.
+            if (ProjectFiles.Any(x => x.File.RelativePath.Equals(
+                    path, StringComparison.OrdinalIgnoreCase)))
+            {
+                var directory = Path.GetDirectoryName(path)?.Replace('\\', '/') ?? "";
+                var stem = Path.GetFileNameWithoutExtension(path);
+                var extension = Path.GetExtension(path);
+                var number = 2;
+                string candidate;
+                do
+                {
+                    candidate = (directory.Length == 0 ? "" : directory + "/") +
+                        stem + number + extension;
+                    number++;
+                }
+                while (ProjectFiles.Any(x => x.File.RelativePath.Equals(
+                    candidate, StringComparison.OrdinalIgnoreCase)));
+                path = candidate;
+            }
             var file = _workspace.AddXml(path, DefDocument.CreateEmpty().Export());
             var row = new ProjectFileRow(file);
             ProjectFiles.Add(row);
