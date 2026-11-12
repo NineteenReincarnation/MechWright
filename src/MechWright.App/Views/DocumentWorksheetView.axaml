@@ -72,6 +72,7 @@
                        Foreground="#A6B9BC" FontWeight="SemiBold"/>
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="9">
               <TextBox Grid.Column="0" Text="{Binding DocumentLabelDraft,Mode=TwoWay}"
+                       LostFocus="SaveLabel_LostFocus"
                        PlaceholderText="输入显示名称…" FontSize="16" MinHeight="44"/>
               <Button Grid.Column="1" Content="保存名称" Click="SaveLabel_Click"/>
             </Grid>
@@ -80,7 +81,7 @@
           <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="9">
             <StackPanel Grid.Column="0" Spacing="4">
               <TextBlock Text="配置列表" FontSize="18" FontWeight="SemiBold"/>
-              <TextBlock Text="逐行填写数值，保存后写入当前文件。"
+              <TextBlock Text="修改数值即可应用，最后使用顶部的保存 XML 导出文件。"
                          Foreground="#92A4AE" FontSize="11"/>
             </StackPanel>
             <Button Grid.Column="1" Content="＋ 添加配置" Classes="primary"
@@ -159,16 +160,20 @@
                     </StackPanel>
                     <Grid Grid.Column="1" MinHeight="36" VerticalAlignment="Center">
                       <TextBox Text="{Binding Text,Mode=TwoWay}"
+                               LostFocus="CommitValue_LostFocus"
                                IsVisible="{Binding IsText}"/>
                       <NumericUpDown Value="{Binding Number,Mode=TwoWay}"
+                                     LostFocus="CommitValue_LostFocus"
                                      IsVisible="{Binding IsNumber}"
                                      Minimum="-999999999" Maximum="999999999"
                                      FormatString="0.########" Increment="1"/>
                       <CheckBox IsChecked="{Binding Boolean,Mode=TwoWay}"
+                                Click="CommitBoolean_Click"
                                 IsVisible="{Binding IsBoolean}"
                                 Content="启用" VerticalAlignment="Center"/>
                       <ComboBox ItemsSource="{Binding Choices}"
                                 SelectedItem="{Binding Choice,Mode=TwoWay}"
+                                SelectionChanged="CommitChoice_SelectionChanged"
                                 IsVisible="{Binding IsChoice}"/>
                       <TextBlock Text="分组 · 包含子项目"
                                  IsVisible="{Binding IsGroup}"
@@ -176,8 +181,8 @@
                     </Grid>
                     <Button Grid.Column="2" Content="＋" Click="AddIntoRow_Click"
                             ToolTip.Tip="在此行下方添加" Padding="5"/>
-                    <Button Grid.Column="3" Content="保存" Click="SaveNode_Click"
-                            IsVisible="{Binding CanEdit}"/>
+                    <Button Grid.Column="3" Content="应用" Click="SaveNode_Click"
+                            IsVisible="{Binding IsEdited}"/>
                     <Button Grid.Column="4" Content="删除" Click="RemoveNode_Click"
                             IsVisible="{Binding CanDelete}"
                             Foreground="#9DAEB6" Background="Transparent"
