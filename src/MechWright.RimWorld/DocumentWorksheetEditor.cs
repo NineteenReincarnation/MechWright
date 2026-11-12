@@ -40,16 +40,10 @@ public static class DocumentWorksheetEditor
         return document.Definitions().Last();
     }
 
-    private static readonly HashSet<string> Containers = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "statBases", "race", "graphicData", "tools", "verbs", "comps",
-        "modExtensions", "parts", "costList", "ingredients", "lifeStages",
-        "abilities", "weaponTags", "apparelTags", "tradeTags", "li"
-    };
-
-    public static bool CanContainFields(FreeformDefinitionEditor.Node node) =>
+     public static bool CanContainFields(FreeformDefinitionEditor.Node node) =>
         node.IsRoot || node.IsGroup ||
-        (node.Value is null or "" && Containers.Contains(node.Name));
+        (node.Value is null or "" && !node.IsIdentity &&
+            node.Name is not ("label" or "description"));
 
     public static string AddField(DefDocument document, DefEntry definition,
         string selectedPath, string name, string value, bool group)
