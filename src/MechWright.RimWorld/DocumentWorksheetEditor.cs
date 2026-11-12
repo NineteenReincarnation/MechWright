@@ -45,6 +45,68 @@ public static class DocumentWorksheetEditor
         (node.Value is null or "" && !node.IsIdentity &&
             node.Name is not ("label" or "description"));
 
+
+    /// <summary>
+    /// A user-facing field choice adds its required parents and the field
+    /// together as one undoable change; nothing is written until confirmed.
+    /// </summary>
+    public static void AppendFieldPath(DefDocument document, DefEntry definition,
+        string path, string value)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        if (definition.Element.Document != document.Xml)
+            throw new InvalidOperationException("请重新选择当前文件中的定义。");
+        var segments = (path ?? "").Split('/');
+        if (segments.Length is < 1 or > 8 ||
+            segments.Any(s => s.Length is < 1 or > 100))
+            throw new ArgumentException("字段路径不正确。");
+        foreach (var segment in segments) System.Xml.XmlConvert.VerifyNCName(segment);
+        if (segments.Any(s => s == "li") || segments[0] == "defName")
+            throw new InvalidOperationException("此类结构请通过添加列表项编辑。");
+        if (string.IsNullOrWhiteSpace(value) || value.Length > 4096)
+            throw new ArgumentException("请先填写该项的值。");
+        var ruleError = StandardFieldRules.Validate(segments[^1], value);
+        if (ruleError != null) throw new ArgumentException(ruleError);
+        document.Transform(_ =>
+        {
+            var parent = definition.Element;
+            foreach (var segment in segments[..^1])
+            {
+                var next = parent.Element(segment);
+                if (next == null)
+                {
+                    next = new XElement(segment);
+                    parent.Add(next);
+                }
+                else if (!next.HasElements && !string.IsNullOrWhiteSpace(next.Value))
+                    throw new InvalidOperationException("不能在已有文字内容的字段中添加子项。");
+                parent = next;
+            }
+            if (parent.Element(segments[^1]) != null)
+                throw new InvalidOperationException("当前配置已存在，请直接修改列表里的值。");
+            parent.Add(new XElement(segments[^1], value.Trim()));
+        });
+    }
+
+    public static void SetDisplayLabel(DefDocument document, DefEntry definition, string label)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        label = (label ?? "").Trim();
+        if (label.Length is < 1 or > 200)
+            throw new ArgumentException("请输入显示名称（最多 200 字）。");
+        if (definition.Element.Document != document.Xml)
+            throw new InvalidOperationException("请选择当前文件中的定义。");
+        document.Transform(_ =>
+        {
+            var element = definition.Element.Element("label");
+            if (element == null)
+                definition.Element.Add(new XElement("label", label));
+            else if (!element.HasElements)
+                element.Value = label;
+            else throw new InvalidOperationException("显示名称不是普通文本，请使用高级编辑。");
+        });
+    }
+
     public static string AddField(DefDocument document, DefEntry definition,
         string selectedPath, string name, string value, bool group)
     {
