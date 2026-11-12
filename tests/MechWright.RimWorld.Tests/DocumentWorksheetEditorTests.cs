@@ -13,9 +13,9 @@ public sealed class DocumentWorksheetEditorTests
         var entry = DocumentWorksheetEditor.AppendDefinition(
             document, "ThingDef", "MP_NewPart", "");
         Assert.Equal("MP_NewPart", entry.DefName);
-        Assert.Null(entry.Element.Element("statBases"));
+        Assert.Null(document.Xml.Root!.Element("ThingDef")!.Element("statBases"));
         Assert.Null(entry.Element.Element("race"));
-        Assert.Null(entry.Element.Attribute("ParentName"));
+        Assert.Null(document.Xml.Root!.Element("ThingDef")!.Attribute("ParentName"));
         Assert.Null(entry.Element.Element("label"));
         Assert.Single(document.Definitions());
         Assert.True(document.Undo());
