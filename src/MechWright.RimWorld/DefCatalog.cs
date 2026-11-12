@@ -145,6 +145,8 @@ public static class DefCatalog
             GestationRecipeParents = isGameInstallation
                 ? VisualGestationEditor.DiscoverRecipeParents(sources) : []
         };
+    }
+
     private static string? FindGameAssembly(string data)
     {
         var gameRoot = Path.GetFileName(data).Equals("Data", StringComparison.OrdinalIgnoreCase)
@@ -158,7 +160,5 @@ public static class DefCatalog
         };
         return managed.Select(x => Path.Combine(x, "Assembly-CSharp.dll"))
             .FirstOrDefault(File.Exists);
-    }
-
     }
 }
