@@ -16,7 +16,8 @@
                 IsVisible="{Binding DocumentHasDefinition}" VerticalAlignment="Center"/>
       </Grid>
     </Border>
-    <ScrollViewer Grid.Row="1" x:Name="MainScroll"
+    <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+    <ScrollViewer Grid.Column="0" x:Name="MainScroll"
                   VerticalScrollBarVisibility="Auto"
                   HorizontalScrollBarVisibility="Disabled">
       <StackPanel Spacing="17" Margin="26,22,32,30">
@@ -87,71 +88,6 @@
             <Button Grid.Column="2" Content="分组 / 列表项"
                     Click="ToggleStructurePanel_Click" VerticalAlignment="Center"/>
           </Grid>
-          <Border IsVisible="{Binding DocumentQuickPanelOpen}" Background="#242E35"
-                  BorderBrush="#5B8179" BorderThickness="1" CornerRadius="7" Padding="15">
-            <StackPanel Spacing="10">
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="添加配置" FontSize="16" FontWeight="SemiBold"/>
-                <Button Grid.Column="1" Content="取消" Click="ToggleQuickPanel_Click"/>
-              </Grid>
-              <Grid ColumnDefinitions="168,*" ColumnSpacing="9">
-                <ComboBox Grid.Column="0" ItemsSource="{Binding DocumentQuickCategories}"
-                          SelectedItem="{Binding DocumentQuickCategory,Mode=TwoWay}"/>
-                <TextBox Grid.Column="1" Text="{Binding DocumentQuickSearch,Mode=TwoWay}"
-                         PlaceholderText="搜索：速度、护甲、体型……"/>
-              </Grid>
-              <TextBlock Text="{Binding DocumentQuickCount}" FontSize="11"
-                         Foreground="#93ABAF"/>
-              <ListBox ItemsSource="{Binding DocumentQuickOptions}"
-                       SelectedItem="{Binding SelectedDocumentQuickOption,Mode=TwoWay}"
-                       MinHeight="95" MaxHeight="195" Background="#192127">
-                <ListBox.ItemTemplate>
-                  <DataTemplate x:DataType="vm:DocumentQuickOption">
-                    <Grid ColumnDefinitions="180,*" ColumnSpacing="10" Margin="8,6">
-                      <StackPanel Grid.Column="0" Spacing="3">
-                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
-                                   FontSize="12"/>
-                        <TextBlock Text="{Binding Category}" FontSize="10"
-                                   Foreground="#849BA6"/>
-                      </StackPanel>
-                      <StackPanel Grid.Column="1" Spacing="3">
-                        <TextBlock Text="{Binding Hint}" FontSize="11"
-                                   Foreground="#AEC1C5" TextWrapping="Wrap"
-                                   MaxLines="2"/>
-                        <TextBlock Text="{Binding SourceLabel}" FontSize="10"
-                                   Foreground="#8699A3" TextTrimming="CharacterEllipsis"/>
-                      </StackPanel>
-                    </Grid>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-              <TextBlock Text="{Binding DocumentQuickSelectionHint}"
-                         FontSize="12" Foreground="#AEC6C0" TextWrapping="Wrap"/>
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <Grid Grid.Column="0" MinHeight="37">
-                  <TextBox Text="{Binding DocumentQuickText,Mode=TwoWay}"
-                           IsVisible="{Binding DocumentQuickIsText}"
-                           PlaceholderText="输入配置值"/>
-                  <NumericUpDown Value="{Binding DocumentQuickNumber,Mode=TwoWay}"
-                                 IsVisible="{Binding DocumentQuickIsNumber}"
-                                 FormatString="0.########" Increment="1"
-                                 Minimum="-999999999" Maximum="999999999"/>
-                  <CheckBox IsVisible="{Binding DocumentQuickIsBoolean}"
-                            IsChecked="{Binding DocumentQuickBoolean,Mode=TwoWay}"
-                            IsThreeState="True" Content="启用（取消勾选表示关闭）"
-                            VerticalAlignment="Center"/>
-                  <ComboBox IsVisible="{Binding DocumentQuickIsChoice}"
-                            ItemsSource="{Binding DocumentQuickChoices}"
-                            SelectedItem="{Binding DocumentQuickChoice,Mode=TwoWay}"/>
-                </Grid>
-                <Button Grid.Column="1" Content="添加到列表" Classes="primary"
-                        Click="ConfirmQuickField_Click" MinWidth="114"
-                        IsEnabled="{Binding DocumentCanAddQuickOption}"/>
-              </Grid>
-              <TextBlock Text="{Binding DocumentQuickMessage}" FontSize="11"
-                         Foreground="#DAA39C" TextWrapping="Wrap"/>
-            </StackPanel>
-          </Border>
           <Border IsVisible="{Binding DocumentStructurePanelOpen}" Background="#252E36"
                   BorderBrush="#45535C" BorderThickness="1" CornerRadius="7"
                   Padding="15">
@@ -259,5 +195,77 @@
                    FontSize="11" TextWrapping="Wrap"/>
       </StackPanel>
     </ScrollViewer>
+    <Border Grid.Column="1" IsVisible="{Binding DocumentQuickPanelOpen}"
+            Background="#1B252D" BorderBrush="#3D555B" BorderThickness="1,0,0,0">
+      <ScrollViewer VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+      <Border IsVisible="{Binding DocumentQuickPanelOpen}" Background="#222C34"
+                        BorderBrush="#5B8179" BorderThickness="1" CornerRadius="7" Padding="14" Margin="8,10,8,10" Width="358" VerticalAlignment="Stretch">
+                  <StackPanel Spacing="10">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="添加配置" FontSize="16" FontWeight="SemiBold"/>
+                      <Button Grid.Column="1" Content="取消" Click="ToggleQuickPanel_Click"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="135,*" ColumnSpacing="9">
+                      <ComboBox Grid.Column="0" ItemsSource="{Binding DocumentQuickCategories}"
+                                SelectedItem="{Binding DocumentQuickCategory,Mode=TwoWay}"/>
+                      <TextBox Grid.Column="1" Text="{Binding DocumentQuickSearch,Mode=TwoWay}"
+                               PlaceholderText="搜索：速度、护甲、体型……"/>
+                    </Grid>
+                    <TextBlock Text="{Binding DocumentQuickCount}" FontSize="11"
+                               Foreground="#93ABAF"/>
+                    <ListBox ItemsSource="{Binding DocumentQuickOptions}"
+                             SelectedItem="{Binding SelectedDocumentQuickOption,Mode=TwoWay}"
+                             MinHeight="95" MaxHeight="430" Background="#192127">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DocumentQuickOption">
+                          <Grid ColumnDefinitions="140,*" ColumnSpacing="10" Margin="8,6">
+                            <StackPanel Grid.Column="0" Spacing="3">
+                              <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
+                                         FontSize="12"/>
+                              <TextBlock Text="{Binding Category}" FontSize="10"
+                                         Foreground="#849BA6"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="3">
+                              <TextBlock Text="{Binding Hint}" FontSize="11"
+                                         Foreground="#AEC1C5" TextWrapping="Wrap"
+                                         MaxLines="2"/>
+                              <TextBlock Text="{Binding SourceLabel}" FontSize="10"
+                                         Foreground="#8699A3" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                          </Grid>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Text="{Binding DocumentQuickSelectionHint}"
+                               FontSize="12" Foreground="#AEC6C0" TextWrapping="Wrap"/>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                      <Grid Grid.Column="0" MinHeight="37">
+                        <TextBox Text="{Binding DocumentQuickText,Mode=TwoWay}"
+                                 IsVisible="{Binding DocumentQuickIsText}"
+                                 PlaceholderText="输入配置值"/>
+                        <NumericUpDown Value="{Binding DocumentQuickNumber,Mode=TwoWay}"
+                                       IsVisible="{Binding DocumentQuickIsNumber}"
+                                       FormatString="0.########" Increment="1"
+                                       Minimum="-999999999" Maximum="999999999"/>
+                        <CheckBox IsVisible="{Binding DocumentQuickIsBoolean}"
+                                  IsChecked="{Binding DocumentQuickBoolean,Mode=TwoWay}"
+                                  IsThreeState="True" Content="启用（取消勾选表示关闭）"
+                                  VerticalAlignment="Center"/>
+                        <ComboBox IsVisible="{Binding DocumentQuickIsChoice}"
+                                  ItemsSource="{Binding DocumentQuickChoices}"
+                                  SelectedItem="{Binding DocumentQuickChoice,Mode=TwoWay}"/>
+                      </Grid>
+                      <Button Grid.Column="1" Content="添加并继续" Classes="primary"
+                              Click="ConfirmQuickField_Click" MinWidth="102"
+                              IsEnabled="{Binding DocumentCanAddQuickOption}"/>
+                    </Grid>
+                    <TextBlock Text="{Binding DocumentQuickMessage}" FontSize="11"
+                               Foreground="#DAA39C" TextWrapping="Wrap"/>
+                  </StackPanel>
+                </Border>
+      </ScrollViewer>
+    </Border>
+    </Grid>
   </Grid>
 </UserControl>
