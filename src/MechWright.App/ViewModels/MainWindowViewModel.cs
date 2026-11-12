@@ -221,7 +221,12 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     public void NewFile()
     {
         SetDocument(DefDocument.CreateEmpty(), "未命名 · Defs.xml");
-        Status = "空白 XML 已打开。可直接在列表中添加定义与字段。";
+        // No creation wizard: start with one minimal ThingDef and a list of
+        // empty optional fields. They are NOT written until the user edits.
+        var entry = DocumentWorksheetEditor.AppendDefinition(_document!, "ThingDef",
+            "MP_Thing001", "");
+        RefreshAll(entry.Index);
+        Status = "已打开配置列表 · 从上到下填写，需要的字段才会写入 XML。";
     }
 
     public void LoadFile(string source, string fileName, string? selectDef = null)
