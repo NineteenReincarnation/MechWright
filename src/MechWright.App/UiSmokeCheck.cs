@@ -67,6 +67,8 @@ internal static class UiSmokeCheck
                 Require(!vm.XmlPreview.Contains("<MoveSpeed>4.8</MoveSpeed>"),
                     "Quick-add undo did not roll back the entire field.");
                 vm.NewFile();
+                Require(!vm.DocumentQuickPanelOpen,
+                    "New XML must reset the previous file editing panel.");
                 vm.DocumentDefName = "MP_UiFile";
                 vm.DocumentDefLabel = "Simple part";
                 vm.AppendDocumentDefinition();
