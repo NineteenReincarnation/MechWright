@@ -222,6 +222,7 @@ public sealed partial class MainWindowViewModel
         DocumentQuickPanelOpen = !DocumentQuickPanelOpen;
         if (DocumentQuickPanelOpen)
         {
+            DocumentQuickMessage = "";
             DocumentStructurePanelOpen = false;
             RebuildQuickOptions();
         }
@@ -305,9 +306,9 @@ public sealed partial class MainWindowViewModel
             .DistinctBy(x => x.Path)
             .Where(x => AllowedQuickPath(kind, x.Path))
             .Where(x => !DocumentPathExists(x.Path))
-            .Where(x => DocumentQuickCategory == "常用" ||
-                x.Category == DocumentQuickCategory || (DocumentQuickCategory == "其他" &&
-                    x.Category is "机械师与生成" or "其他原生属性"))
+            .Where(x => DocumentQuickCategory == "常用"
+                ? BuiltInOptions.Any(y => y.Path == x.Path)
+                : QuickCategory(x.Category) == DocumentQuickCategory)
             .Where(x => query.Length == 0 || x.Title.Contains(query,
                 StringComparison.OrdinalIgnoreCase) ||
                 x.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
@@ -320,6 +321,15 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(SelectedDocumentQuickOption));
         Notify(nameof(DocumentCanAddQuickOption));
     }
+
+    private static string QuickCategory(string source) => source switch
+    {
+        "基础性能" => "基础属性",
+        "机械师与生成" => "机体",
+        "外观与音效" => "外观与声音",
+        "其他原生属性" or "身份与描述" => "其他",
+        _ => source
+    };
 
     private static bool AllowedQuickPath(string kind, string path) => kind switch
     {
