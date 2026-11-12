@@ -8,6 +8,11 @@ public sealed partial class DocumentWorksheetView : UserControl
 {
     public DocumentWorksheetView() => InitializeComponent();
 
+    private void StartBlank_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.BeginDocumentConfiguration();
+    }
+
     private void QuickThing_Click(object? sender, RoutedEventArgs e) =>
         QuickCreate("ThingDef");
     private void QuickKind_Click(object? sender, RoutedEventArgs e) =>
