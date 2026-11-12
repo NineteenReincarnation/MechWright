@@ -39,6 +39,7 @@ public sealed partial class MainWindowViewModel
                 _document = value.File.Document;
                 SourceName = value.File.RelativePath;
                 RefreshAll();
+                RefreshDocumentWorksheet();
                 Status = $"项目文件 · {value.File.RelativePath}（其他文件的修改已保留）";
             }
         }
@@ -49,7 +50,7 @@ public sealed partial class MainWindowViewModel
         var workspace = new MechWorkspace("NewMechanoidMod", "");
         workspace.AddXml("1.7/Defs/Mechanoids.xml", DefDocument.CreateEmpty().Export());
         OpenWorkspace(workspace);
-        Status = "已建立空白机械体工程 · 添加定义或新的 XML 文件后，可统一导出";
+        Status = "空白 XML 已打开。可在列表中逐项添加定义与字段。";
     }
 
     public void OpenWorkspace(MechWorkspace workspace)
@@ -65,6 +66,7 @@ public sealed partial class MainWindowViewModel
         RefreshProjectAssets();
         RefreshWorkflowVisibility();
         StartDesign();
+        UseDocumentMode();
         Status = $"已打开工程 · {workspace.Name} · {workspace.DefinitionCount} 个定义";
     }
 
@@ -87,6 +89,9 @@ public sealed partial class MainWindowViewModel
                 x.Entry.DefName == blueprint.DefName);
             RefreshProjectAssets();
             StartDesign(blueprint.DefName);
+            _isDocumentMode = false;
+            Notify(nameof(IsDocumentMode));
+            Notify(nameof(IsGuidedMode));
             Status = $"已创建 {blueprint.DefName} · ThingDef / PawnKindDef / BodyDef 三个相互关联的 XML，可继续补充 Body、武器与培育配置。";
         }
         catch (Exception ex) { ReportError(ex); }
@@ -102,6 +107,7 @@ public sealed partial class MainWindowViewModel
             var row = new ProjectFileRow(file);
             ProjectFiles.Add(row);
             SelectedProjectFile = row;
+            UseDocumentMode();
             Status = $"已新增项目 XML · {path}";
         }
         catch (Exception ex) { ReportError(ex); }
