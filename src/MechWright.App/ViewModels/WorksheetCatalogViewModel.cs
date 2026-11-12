@@ -11,6 +11,10 @@ public sealed partial class MainWindowViewModel
 {
     private readonly Dictionary<(string DefType, string Path), VisualContentEditor.Option>
         _worksheetDraftOptions = new();
+    // Edited values must survive filtering and ordinary editor refreshes without
+    // prematurely entering the source XML.
+    private readonly Dictionary<(string DefType, string Path), WorksheetFieldRow>
+        _worksheetEditedRows = new();
     private MechWorkspace? _worksheetDraftWorkspace;
     private string? _worksheetDraftMech;
 
@@ -78,6 +82,8 @@ public sealed partial class MainWindowViewModel
         _worksheetDraftWorkspace = _workspace;
         _worksheetDraftMech = name;
         _worksheetDraftOptions.Clear();
+        _worksheetEditedRows.Clear();
+        WorksheetFields.Clear();
     }
 
     private void RefreshWorksheetCatalog()
@@ -142,7 +148,10 @@ public sealed partial class MainWindowViewModel
     {
         if (row == null || !row.IsPinned) return;
         EnsureWorksheetDraftOwner();
-        _worksheetDraftOptions.Remove((row.Spec.DefType, row.Spec.Path));
+        var key = (row.Spec.DefType, row.Spec.Path);
+        _worksheetDraftOptions.Remove(key);
+        _worksheetEditedRows.Remove(key);
+        WorksheetFields.Remove(row);
         RefreshWorksheet();
         WorksheetMessage = "已从清单中移除未保存的字段，没有修改工程。";
     }
