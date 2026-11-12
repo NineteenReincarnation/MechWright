@@ -28,7 +28,9 @@ public sealed partial class MainWindow : Window
 
     private async Task<bool> ConfirmDiscardAsync()
     {
-        if (!_vm.IsDirty) return true;
+        // Text fields that still have keyboard focus have not necessarily
+        // been committed to the document yet.
+        if (!_vm.IsDirty && !_vm.HasUncommittedDocumentInputs) return true;
         var dialog = new Window
         {
             Width = 390, Height = 165,
@@ -356,6 +358,9 @@ public sealed partial class MainWindow : Window
 
     private async void Export_Click(object? sender, RoutedEventArgs e)
     {
+        // The toolbar is the only disk-save action. Apply any focused list
+        // input first so Save XML never exports stale values.
+        if (_vm.IsDocumentMode && !_vm.CommitDocumentInputs()) return;
         var xml = _vm.GetExportText();
         if (xml == null) return;
         try
