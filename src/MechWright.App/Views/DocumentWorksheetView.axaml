@@ -87,39 +87,6 @@
             <Button Grid.Column="2" Content="分组 / 列表项"
                     Click="ToggleStructurePanel_Click" VerticalAlignment="Center"/>
           </Grid>
-          <Border IsVisible="{Binding DocumentStructurePanelOpen}" Background="#252E36"
-                  BorderBrush="#45535C" BorderThickness="1" CornerRadius="7"
-                  Padding="15">
-            <StackPanel Spacing="10">
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="分组和列表项" FontSize="15" FontWeight="SemiBold"/>
-                <Button Grid.Column="1" Content="取消" Click="ToggleStructurePanel_Click"/>
-              </Grid>
-              <TextBlock Text="{Binding DocumentInsertLocation}" Foreground="#9CB2B9"
-                         FontSize="11"/>
-              <Grid ColumnDefinitions="175,*,Auto" ColumnSpacing="9">
-                <ComboBox Grid.Column="0" ItemsSource="{Binding DocumentFieldChoices}"
-                          SelectedItem="{Binding DocumentSelectedField,Mode=TwoWay}">
-                  <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="vm:DocumentFieldChoice">
-                      <TextBlock Text="{Binding Display}"/>
-                    </DataTemplate>
-                  </ComboBox.ItemTemplate>
-                </ComboBox>
-                <TextBox Grid.Column="1" Text="{Binding DocumentNewValue,Mode=TwoWay}"
-                         PlaceholderText="值（如果是分组可留空）"/>
-                <Button Grid.Column="2" Content="添加" Click="AddField_Click"
-                        Classes="primary"/>
-              </Grid>
-              <StackPanel Spacing="8" IsVisible="{Binding DocumentUsesCustomName}">
-                <TextBox Text="{Binding DocumentCustomFieldName,Mode=TwoWay}"
-                         PlaceholderText="自定义原生字段名"/>
-                <CheckBox Content="创建可添加子项的分组"
-                          IsChecked="{Binding DocumentCustomIsGroup,Mode=TwoWay}"/>
-              </StackPanel>
-            </StackPanel>
-          </Border>
-
           <TextBox x:Name="FieldSearchBox" Text="{Binding DocumentFieldSearch,Mode=TwoWay}"
                    PlaceholderText="筛选当前配置… (Ctrl+F)" MaxWidth="510"
                    HorizontalAlignment="Left" MinHeight="36"/>
@@ -267,6 +234,44 @@
                                Foreground="#DAA39C" TextWrapping="Wrap"/>
                   </StackPanel>
                 </Border>
+      </ScrollViewer>
+    </Border>
+    <Border Grid.Column="1" IsVisible="{Binding DocumentStructurePanelOpen}"
+            Background="#1B252D" BorderBrush="#3D555B"
+            BorderThickness="1,0,0,0">
+      <ScrollViewer VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Width="278" Margin="14,18" Spacing="13">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="添加分组 / 列表项" FontSize="15"
+                       FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="关闭"
+                    Click="ToggleStructurePanel_Click"/>
+          </Grid>
+          <TextBlock Text="{Binding DocumentInsertLocation}"
+                     Foreground="#AFC4C6" FontSize="12" TextWrapping="Wrap"/>
+          <TextBlock Text="先在左侧选择一行，再选择要在此位置添加的内容。"
+                     Foreground="#91A7B0" FontSize="11" TextWrapping="Wrap"/>
+          <ComboBox ItemsSource="{Binding DocumentFieldChoices}"
+                    SelectedItem="{Binding DocumentSelectedField,Mode=TwoWay}"
+                    MinHeight="36">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:DocumentFieldChoice">
+                <TextBlock Text="{Binding Display}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBox Text="{Binding DocumentNewValue,Mode=TwoWay}"
+                   PlaceholderText="值（分组可以留空）" MinHeight="36"/>
+          <StackPanel Spacing="9" IsVisible="{Binding DocumentUsesCustomName}">
+            <TextBox Text="{Binding DocumentCustomFieldName,Mode=TwoWay}"
+                     PlaceholderText="自定义原生字段名称"/>
+            <CheckBox Content="此项是可展开的分组"
+                      IsChecked="{Binding DocumentCustomIsGroup,Mode=TwoWay}"/>
+          </StackPanel>
+          <Button Content="添加到当前位置" Classes="primary"
+                  Click="AddField_Click" MinHeight="38"/>
+        </StackPanel>
       </ScrollViewer>
     </Border>
     </Grid>
