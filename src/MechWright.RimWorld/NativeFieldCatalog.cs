@@ -53,8 +53,22 @@ public sealed class NativeFieldCatalog
                 Observations == Number ? "Number" : "Text";
             return new Field(kind, path, First, type,
                 string.Join(" / ", Packages.OrderBy(x => x, StringComparer.Ordinal)),
-                Observations, !ListMember);
+                Observations, !ListMember && IsSafeScalarPath(path));
         }
+    }
+
+    // A leaf inside a collection or polymorphic object is not a standalone
+    // XML field. Preserve it in the catalog for reference, but never offer
+    // direct insertion that could manufacture an invalid container.
+    private static bool IsSafeScalarPath(string path)
+    {
+        var parts = path.Split('/');
+        if (parts.Any(x => x is "li" or "defName" or "comps" or "verbs" or
+            "tools" or "lifeStages" or "modExtensions" or "hediffGivers" or
+            "recipes" or "butcherProducts" or "costList" or "thingCategories" or
+            "weaponTags" or "apparelTags" or "tradeTags" or "researchPrerequisites"))
+            return false;
+        return parts.Length <= 3;
     }
 
     private readonly IReadOnlyList<Field> _fields;
