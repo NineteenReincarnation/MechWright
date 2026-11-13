@@ -60,4 +60,32 @@ public sealed class NativeFieldCatalogTests
         Assert.Throws<ArgumentException>(() =>
             NativeFieldCatalog.Apply(doc, doc.Definitions().Single(), field, "4.5"));
     }
+    [Fact]
+    public void PolymorphicAndCollectionLeavesRemainVisibleButCannotBeInserted()
+    {
+        var source = new VanillaMechanoidLibrary.SourceDef(
+            "ThingDef", "MP_Fixture", null, null, "Biotech", "Fixture.xml",
+            XElement.Parse("<ThingDef><defName>MP_Fixture</defName>" +
+                "<comps><li Class='CompProperties_Test'><cooldown>12</cooldown></li></comps>" +
+                "<verbs><li><range>20</range></li></verbs>" +
+                "<lifeStages><li><label>adult</label></li></lifeStages>" +
+                "<race><baseBodySize>1.2</baseBodySize></race></ThingDef>"));
+        var catalog = NativeFieldCatalog.Build([source]);
+        Assert.False(catalog.For("ThingDef").Single(x =>
+            x.Path == "comps/li/cooldown").CanInsert);
+        Assert.False(catalog.For("ThingDef").Single(x =>
+            x.Path == "verbs/li/range").CanInsert);
+        Assert.False(catalog.For("ThingDef").Single(x =>
+            x.Path == "lifeStages/li/label").CanInsert);
+        Assert.True(catalog.For("ThingDef").Single(x =>
+            x.Path == "race/baseBodySize").CanInsert);
+        var document = DefDocument.Parse(
+            "<Defs><ThingDef><defName>MP_New</defName></ThingDef></Defs>");
+        var before = document.Export();
+        Assert.Throws<InvalidOperationException>(() => NativeFieldCatalog.Apply(
+            document, document.Definitions().Single(),
+            catalog.For("ThingDef").Single(x => x.Path == "comps/li/cooldown"), "10"));
+        Assert.Equal(before, document.Export());
+    }
+
 }
