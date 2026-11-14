@@ -110,7 +110,10 @@ public sealed class NativeFieldCatalog
                 var key = (source.Type, path);
                 if (!data.TryGetValue(key, out var counter))
                     data[key] = counter = new Counter();
-                counter.Add(value, source.Package, segments.Contains("li"));
+                counter.Add(value, source.Package, segments.Contains("li") ||
+                    element.Ancestors().Any(ancestor =>
+                        !ReferenceEquals(ancestor, source.Xml) &&
+                        ancestor.Attribute("Class") != null));
             }
         }
         return new NativeFieldCatalog(data.Select(x => x.Value.ToField(x.Key.Type, x.Key.Path))
@@ -128,7 +131,7 @@ public sealed class NativeFieldCatalog
             throw new InvalidOperationException("The selected Def comes from an old document snapshot.");
         if (!string.Equals(def.Type, field.DefType, StringComparison.Ordinal))
             throw new ArgumentException("The chosen field belongs to another Def type.");
-        if (!field.CanInsert || field.Path.Split('/').Contains("li"))
+        if (!field.CanInsert || !IsSafeScalarPath(field.Path))
             throw new InvalidOperationException("List/complex XML fields must be edited in the specialist or raw XML view.");
         if (string.IsNullOrWhiteSpace(input))
             throw new ArgumentException("A field needs an explicit value. Empty values must be edited in XML.");
