@@ -88,4 +88,32 @@ public sealed class NativeFieldCatalogTests
         Assert.Equal(before, document.Export());
     }
 
+    [Fact]
+    public void PolymorphicParentLeafIsObservedButNotOfferedAsScalarInsertion()
+    {
+        var source = new VanillaMechanoidLibrary.SourceDef(
+            "ThingDef", "MP_Fixture", null, null, "Biotech", "Fixture.xml",
+            XElement.Parse("<ThingDef><defName>MP_Fixture</defName>" +
+                "<race Class='CustomRaceProperties'><baseBodySize>1.2</baseBodySize></race>" +
+                "<statBases><MoveSpeed>4.2</MoveSpeed></statBases></ThingDef>"));
+        var catalog = NativeFieldCatalog.Build([source]);
+        Assert.False(catalog.For("ThingDef").Single(x =>
+            x.Path == "race/baseBodySize").CanInsert);
+        Assert.True(catalog.For("ThingDef").Single(x =>
+            x.Path == "statBases/MoveSpeed").CanInsert);
+    }
+
+    [Fact]
+    public void CraftedCollectionPathCannotBypassInsertionGuard()
+    {
+        var field = new NativeFieldCatalog.Field(
+            "ThingDef", "comps/li/cooldown", "12", "Integer", "Fixture", 1, true);
+        var doc = DefDocument.Parse("<Defs><ThingDef><defName>MP_X</defName></ThingDef></Defs>");
+        var before = doc.Export();
+        Assert.Throws<InvalidOperationException>(() =>
+            NativeFieldCatalog.Apply(doc, doc.Definitions().Single(), field, "10"));
+        Assert.Equal(before, doc.Export());
+        Assert.False(doc.IsDirty);
+    }
+
 }
