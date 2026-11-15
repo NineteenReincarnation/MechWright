@@ -116,4 +116,36 @@ public sealed class NativeFieldCatalogTests
         Assert.False(doc.IsDirty);
     }
 
+    [Fact]
+    public void ExistingPolymorphicParentRejectsScalarApplyWithoutMutation()
+    {
+        var field = Assert.Single(Create().For("ThingDef")
+            .Where(x => x.Path == "statBases/MoveSpeed"));
+        var document = DefDocument.Parse(
+            "<Defs><ThingDef><defName>MP_X</defName>" +
+            "<statBases Class='CustomStats'><MoveSpeed>3</MoveSpeed></statBases>" +
+            "</ThingDef></Defs>");
+        var before = document.Export();
+        Assert.Throws<InvalidOperationException>(() =>
+            NativeFieldCatalog.Apply(document, document.Definitions().Single(), field, "5"));
+        Assert.Equal(before, document.Export());
+        Assert.False(document.IsDirty);
+    }
+
+    [Fact]
+    public void RepeatedDestinationDoesNotSilentlyEditFirstSibling()
+    {
+        var field = Assert.Single(Create().For("ThingDef")
+            .Where(x => x.Path == "statBases/MoveSpeed"));
+        var document = DefDocument.Parse(
+            "<Defs><ThingDef><defName>MP_X</defName>" +
+            "<statBases><MoveSpeed>3</MoveSpeed><MoveSpeed>4</MoveSpeed></statBases>" +
+            "</ThingDef></Defs>");
+        var before = document.Export();
+        Assert.Throws<InvalidOperationException>(() =>
+            NativeFieldCatalog.Apply(document, document.Definitions().Single(), field, "5"));
+        Assert.Equal(before, document.Export());
+        Assert.False(document.IsDirty);
+    }
+
 }
