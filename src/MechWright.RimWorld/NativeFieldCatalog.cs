@@ -144,7 +144,14 @@ public sealed class NativeFieldCatalog
             var node = def.Element;
             foreach (var segment in field.Path.Split('/'))
             {
-                var child = node.Element(segment);
+                // An observed scalar path does not authorize editing a different
+                // runtime Class or selecting an arbitrary repeated sibling.
+                if (node.Attribute("Class") != null)
+                    throw new InvalidOperationException("A polymorphic XML object requires its own typed editor.");
+                var matches = node.Elements(segment).Take(2).ToArray();
+                if (matches.Length > 1)
+                    throw new InvalidOperationException("The XML path has repeated elements; select an explicit list item.");
+                var child = matches.FirstOrDefault();
                 if (child == null)
                 {
                     child = new XElement(segment);
@@ -152,6 +159,8 @@ public sealed class NativeFieldCatalog
                 }
                 node = child;
             }
+            if (node.Attribute("Class") != null)
+                throw new InvalidOperationException("A polymorphic XML leaf requires its own typed editor.");
             if (node.HasElements || node.Nodes().Any(n => n is not XText and not XCData))
                 throw new InvalidOperationException("The destination contains complex XML: refusing a destructive overwrite.");
             node.Value = input;
