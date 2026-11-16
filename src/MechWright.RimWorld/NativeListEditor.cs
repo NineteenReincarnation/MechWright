@@ -86,6 +86,31 @@ public static class NativeListEditor
         return path;
     }
 
+    /// <summary>Edits one existing scalar within a specifically selected list item.
+    /// Never creates missing paths or guesses which repeated child to modify.</summary>
+    public static void SetItemField(
+        DefDocument document, DefEntry def, string container,
+        string itemPath, string relativePath, string value)
+    {
+        var item = ResolveItem(document, def, container, itemPath);
+        if (string.IsNullOrWhiteSpace(relativePath))
+            throw new ArgumentException("An existing relative field path is required.", nameof(relativePath));
+        var node = item;
+        foreach (var segment in relativePath.Split('/'))
+        {
+            if (!System.Text.RegularExpressions.Regex.IsMatch(segment,
+                @"^[A-Za-z_][A-Za-z0-9_]*$", System.Text.RegularExpressions.RegexOptions.CultureInvariant))
+                throw new ArgumentException("Use a simple relative XML element path.", nameof(relativePath));
+            var matches = node.Elements(segment).Take(2).ToArray();
+            if (matches.Length != 1)
+                throw new InvalidOperationException("The list field is missing or ambiguous; select an existing unique leaf.");
+            node = matches[0];
+        }
+        if (node.HasElements || node.Nodes().Any(n => n is not XText and not XCData))
+            throw new InvalidOperationException("Only existing text-only leaves can be edited.");
+        document.Transform(_ => node.Value = value);
+    }
+
     public static string Duplicate(
         DefDocument document, DefEntry def, string container, string itemPath)
     {
@@ -134,7 +159,10 @@ public static class NativeListEditor
             !System.Text.RegularExpressions.Regex.IsMatch(container,
                 @"^[A-Za-z_][A-Za-z0-9_]*$", System.Text.RegularExpressions.RegexOptions.CultureInvariant))
             throw new ArgumentException("Invalid XML list container.");
-        var element = def.Element.Element(container);
+        var matches = def.Element.Elements(container).Take(2).ToArray();
+        if (matches.Length > 1)
+            throw new InvalidOperationException("Repeated list containers require explicit selection in raw XML.");
+        var element = matches.FirstOrDefault();
         if (element != null && (element.Elements().Any(x => x.Name.LocalName != "li") ||
             element.Nodes().OfType<XText>().Any(x => !string.IsNullOrWhiteSpace(x.Value))))
             throw new InvalidOperationException("Container has non-li XML children; use the raw XML editor.");
