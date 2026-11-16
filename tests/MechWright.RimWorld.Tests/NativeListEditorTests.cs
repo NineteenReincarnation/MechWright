@@ -85,4 +85,45 @@ public sealed class NativeListEditorTests
         Assert.True(doc.Undo());
         Assert.Equal(Source, doc.Export());
     }
+    [Fact]
+    public void ExplicitListLeafEditRoundTripsAndUndoPreservesUnknownXml()
+    {
+        var doc = DefDocument.Parse(Source);
+        var first = NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").First();
+        NativeListEditor.SetItemField(doc, doc.Definitions().Single(), "verbs",
+            first.XmlPath, "defaultProjectile", "MP_NewBullet");
+        Assert.Contains("<defaultProjectile>MP_NewBullet</defaultProjectile>", doc.Export());
+        Assert.Contains("<!-- preserve -->", doc.Export());
+        Assert.Contains("Inherit=\\\"False\\\"", doc.Export());
+        var loaded = DefDocument.Parse(doc.Export());
+        Assert.Equal("MP_NewBullet", loaded.Definitions().Single().Element
+            .Element("verbs")!.Elements("li").First().Element("defaultProjectile")!.Value);
+        Assert.True(doc.Undo());
+        Assert.Equal(Source, doc.Export());
+        Assert.True(doc.Redo());
+        Assert.Contains("MP_NewBullet", doc.Export());
+    }
+
+    [Fact]
+    public void AmbiguousOrMissingListLeavesAndContainersAreRejected()
+    {
+        var doc = DefDocument.Parse(Source);
+        var first = NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").First();
+        var before = doc.Export();
+        Assert.Throws<InvalidOperationException>(() => NativeListEditor.SetItemField(
+            doc, doc.Definitions().Single(), "verbs", first.XmlPath, "notThere", "x"));
+        Assert.Throws<ArgumentException>(() => NativeListEditor.SetItemField(
+            doc, doc.Definitions().Single(), "verbs", first.XmlPath, "../defName", "x"));
+        Assert.Equal(before, doc.Export());
+        Assert.False(doc.IsDirty);
+
+        var duplicate = DefDocument.Parse("<Defs><ThingDef><defName>MP_X</defName>" +
+            "<verbs><li><range>1</range></li></verbs>" +
+            "<verbs><li><range>2</range></li></verbs></ThingDef></Defs>");
+        Assert.Throws<InvalidOperationException>(() => NativeListEditor.Items(
+            duplicate, duplicate.Definitions().Single(), "verbs"));
+        Assert.False(duplicate.IsDirty);
+    }
+
+
 }
