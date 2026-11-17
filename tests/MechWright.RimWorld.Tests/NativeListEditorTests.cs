@@ -154,8 +154,8 @@ public sealed class NativeListEditorTests
             .Element("li")!.Element("parts")!.Elements("li").ToArray();
         Assert.Equal("0.2", children[0].Element("coverage")!.Value);
         Assert.Equal("0.5", children[1].Element("coverage")!.Value);
-        Assert.Contains("keep=\\"yes\\"", exported);
-        Assert.Contains("ParentName=\\"BaseMechanoidWalker\\"", exported);
+        Assert.Contains("""keep="yes" """.Trim(), exported);
+        Assert.Contains("""ParentName="BaseMechanoidWalker" """.Trim(), exported);
         Assert.True(doc.Undo());
         Assert.Equal(source, doc.Export());
         Assert.True(doc.Redo());
