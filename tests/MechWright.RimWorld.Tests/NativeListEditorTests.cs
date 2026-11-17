@@ -96,7 +96,7 @@ public sealed class NativeListEditorTests
         Assert.Contains("<!-- preserve -->", doc.Export());
         Assert.Contains("Inherit=\\\"False\\\"", doc.Export());
         var loaded = DefDocument.Parse(doc.Export());
-        Assert.Equal("MP_NewBullet", loaded.Definitions().Single().Element
+        Assert.Equal("MP_NewBullet", loaded.Xml.Root!.Element("ThingDef")!
             .Element("verbs")!.Elements("li").First().Element("defaultProjectile")!.Value);
         Assert.True(doc.Undo());
         Assert.Equal(Source, doc.Export());
@@ -150,7 +150,7 @@ public sealed class NativeListEditorTests
             item.XmlPath, "parts/li[2]/coverage", "0.5");
         var exported = doc.Export();
         var loaded = DefDocument.Parse(exported);
-        var children = loaded.Definitions().Single().Element.Element("tools")!
+        var children = loaded.Xml.Root!.Element("ThingDef")!.Element("tools")!
             .Element("li")!.Element("parts")!.Elements("li").ToArray();
         Assert.Equal("0.2", children[0].Element("coverage")!.Value);
         Assert.Equal("0.5", children[1].Element("coverage")!.Value);
