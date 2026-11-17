@@ -98,13 +98,29 @@ public static class NativeListEditor
         var node = item;
         foreach (var segment in relativePath.Split('/'))
         {
-            if (!System.Text.RegularExpressions.Regex.IsMatch(segment,
-                @"^[A-Za-z_][A-Za-z0-9_]*$", System.Text.RegularExpressions.RegexOptions.CultureInvariant))
-                throw new ArgumentException("Use a simple relative XML element path.", nameof(relativePath));
-            var matches = node.Elements(segment).Take(2).ToArray();
-            if (matches.Length != 1)
-                throw new InvalidOperationException("The list field is missing or ambiguous; select an existing unique leaf.");
-            node = matches[0];
+            // Repeated children require an explicit, one-based ordinal: parts/li[2]/coverage.
+            // An unindexed segment must resolve to exactly one child.
+            var match = System.Text.RegularExpressions.Regex.Match(segment,
+                @"^(?<name>[A-Za-z_][A-Za-z0-9_]*)(?:\[(?<index>[1-9][0-9]*)\])?$",
+                System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+            if (!match.Success)
+                throw new ArgumentException("Use relative XML names with optional one-based [index].", nameof(relativePath));
+            var name = match.Groups["name"].Value;
+            var indexGroup = match.Groups["index"];
+            if (indexGroup.Success)
+            {
+                if (!int.TryParse(indexGroup.Value, out var ordinal))
+                    throw new ArgumentException("List child index is out of range.", nameof(relativePath));
+                node = node.Elements(name).Skip(ordinal - 1).FirstOrDefault() ??
+                    throw new InvalidOperationException("The indexed list child does not exist.");
+            }
+            else
+            {
+                var matches = node.Elements(name).Take(2).ToArray();
+                if (matches.Length != 1)
+                    throw new InvalidOperationException("The list field is missing or ambiguous; specify an existing child index.");
+                node = matches[0];
+            }
         }
         if (node.HasElements || node.Nodes().Any(n => n is not XText and not XCData))
             throw new InvalidOperationException("Only existing text-only leaves can be edited.");
