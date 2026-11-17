@@ -126,4 +126,40 @@ public sealed class NativeListEditorTests
     }
 
 
+    [Fact]
+    public void IndexedNestedListLeafTargetsOnlyChosenSiblingAndRoundTrips()
+    {
+        const string source = """
+            <Defs><ThingDef ParentName="BaseMechanoidWalker"><defName>MP_Indexed</defName>
+              <tools><li Class="Tool"><parts><li><coverage>0.2</coverage></li>
+                <li><coverage>0.8</coverage></li></parts><unknown keep="yes">untouched</unknown></li></tools>
+            </ThingDef></Defs>
+            """;
+        var doc = DefDocument.Parse(source);
+        var item = NativeListEditor.Items(doc, doc.Definitions().Single(), "tools").Single();
+        Assert.Throws<InvalidOperationException>(() => NativeListEditor.SetItemField(
+            doc, doc.Definitions().Single(), "tools", item.XmlPath, "parts/li/coverage", "0.5"));
+        Assert.Throws<InvalidOperationException>(() => NativeListEditor.SetItemField(
+            doc, doc.Definitions().Single(), "tools", item.XmlPath, "parts/li[3]/coverage", "0.5"));
+        Assert.Throws<ArgumentException>(() => NativeListEditor.SetItemField(
+            doc, doc.Definitions().Single(), "tools", item.XmlPath, "parts/li[0]/coverage", "0.5"));
+        Assert.Equal(source, doc.Export());
+        Assert.False(doc.IsDirty);
+
+        NativeListEditor.SetItemField(doc, doc.Definitions().Single(), "tools",
+            item.XmlPath, "parts/li[2]/coverage", "0.5");
+        var exported = doc.Export();
+        var loaded = DefDocument.Parse(exported);
+        var children = loaded.Definitions().Single().Element.Element("tools")!
+            .Element("li")!.Element("parts")!.Elements("li").ToArray();
+        Assert.Equal("0.2", children[0].Element("coverage")!.Value);
+        Assert.Equal("0.5", children[1].Element("coverage")!.Value);
+        Assert.Contains("keep=\\"yes\\"", exported);
+        Assert.Contains("ParentName=\\"BaseMechanoidWalker\\"", exported);
+        Assert.True(doc.Undo());
+        Assert.Equal(source, doc.Export());
+        Assert.True(doc.Redo());
+        Assert.Equal(exported, doc.Export());
+    }
+
 }
