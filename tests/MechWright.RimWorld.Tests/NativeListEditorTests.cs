@@ -33,7 +33,7 @@ public sealed class NativeListEditorTests
         Assert.Equal(4, NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").Count);
         Assert.Contains("Class=\"Custom.Verb\"", doc.Export());
         Assert.Contains("<!-- preserve -->", doc.Export());
-        Assert.Contains("Inherit=\"False\"", doc.Export());
+        Assert.Contains("""Inherit="False" """.Trim(), doc.Export());
         NativeListEditor.Remove(doc, doc.Definitions().Single(), "verbs", moved);
         Assert.Equal(3, NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").Count);
         Assert.True(doc.Undo());
