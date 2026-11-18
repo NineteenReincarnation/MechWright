@@ -66,3 +66,10 @@
 - 新增合成 XML 回归用例：选择第二个重复子节点、导出重载、保留 ParentName / Class / 未知属性及节点、撤销重做；真实 RimWorld 1.7 游戏加载验证尚未完成。
 - **现阶段仅完成底层精确定位能力**，未声称已接入直列式 UI；下一步应在实际使用的 DocumentWorksheetView 中提供嵌套列表节点的直观选择和输入控件。
 - 本轮没有 Core/全 DLC 的完整 XML 与程序集扫描结果；字段覆盖率仍未知，证据等级属于编辑器合成测试而非游戏字段合法性确认。
+
+## 2026-11-18 增量：现有嵌套字段的直列式 UI
+
+- DocumentWorksheetView 的复杂结构区域新增现有 XML 节点的逐行可视化编辑，使用 DocumentNodes / DocumentNodeRow 的已有类型控件（文本、数值、布尔、枚举）和逐项保存按钮；通过 SaveDocumentNode → DocumentWorksheetEditor.UpdateValue → FreeformDefinitionEditor.SetValue 复用原有可撤销编辑链路。
+- 列表内部已存在的叶节点可直接按可见标签填写，不要求用户输入 XML 路径或原始 li 片段。分组只显示结构提示，不作为普通标量写入；未修改的行不触发保存。
+- 本次没有新增字段合法性判定或自动创建列表元素的能力。尚需验证 Avalonia UI 运行行为、重复列表项路径、含 Class 的子节点以及真实 Core/全 DLC 数据；不将 UI 接线视为游戏 XML 字段已确认支持。
+- 下一步：在现有列表 UI 中提供明确的 li 成员选择、添加/删除/排序与字段证据标识；增加 UI 自动化及真实游戏样本往返测试。
