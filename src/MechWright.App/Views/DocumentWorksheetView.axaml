@@ -146,6 +146,44 @@
                   BorderThickness="1" CornerRadius="7" Padding="17"
                   IsVisible="{Binding DocumentHasDefinition}">
             <StackPanel Spacing="11">
+              <!-- Existing nested XML leaves are edited in place; no XML names need typing. -->
+              <TextBlock Text="现有结构逐项编辑" FontWeight="SemiBold" FontSize="13"/>
+              <TextBlock Text="选择现有列表成员的字段并修改；保存后可撤销。未知字段保留原样。"
+                         FontSize="11" Foreground="#9BB1B7" TextWrapping="Wrap"/>
+              <ItemsControl ItemsSource="{Binding DocumentNodes}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:DocumentNodeRow">
+                    <Border BorderBrush="#35404A" BorderThickness="0,0,0,1"
+                            Padding="0,5" Margin="{Binding RowIndent}">
+                      <Grid ColumnDefinitions="175,*,Auto" ColumnSpacing="9" MinHeight="36">
+                        <TextBlock Grid.Column="0" Text="{Binding Title}"
+                                   VerticalAlignment="Center" TextWrapping="Wrap"
+                                   ToolTip.Tip="{Binding Path}"/>
+                        <Grid Grid.Column="1" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding StructureHint}"
+                                     IsVisible="{Binding IsGroup}"
+                                     Foreground="#91A6B0" FontSize="11"/>
+                          <TextBox Text="{Binding Text,Mode=TwoWay}"
+                                   IsVisible="{Binding IsText}" MinHeight="33"/>
+                          <NumericUpDown Value="{Binding Number,Mode=TwoWay}"
+                                         IsVisible="{Binding IsNumber}"
+                                         Minimum="-999999999" Maximum="999999999"
+                                         FormatString="0.########" MinHeight="33"/>
+                          <CheckBox IsChecked="{Binding Boolean,Mode=TwoWay}"
+                                    IsVisible="{Binding IsBoolean}" Content="启用"/>
+                          <ComboBox ItemsSource="{Binding Choices}"
+                                    SelectedItem="{Binding Choice,Mode=TwoWay}"
+                                    IsVisible="{Binding IsChoice}"/>
+                        </Grid>
+                        <Button Grid.Column="2" Content="保存"
+                                IsVisible="{Binding CanEdit}"
+                                IsEnabled="{Binding IsEdited}"
+                                Click="SaveExistingNode_Click"/>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
               <TextBlock Text="列表项与复杂嵌套结构" FontSize="14"
                          FontWeight="SemiBold"/>
               <TextBlock Text="只有身体部件、武器列表、组件等需要复杂结构时才用这里。"
