@@ -124,6 +124,13 @@ public sealed partial class DocumentWorksheetView : UserControl
         if (DataContext is MainWindowViewModel vm) vm.AddDocumentField();
     }
 
+    private void SaveExistingNode_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm &&
+            sender is Control { DataContext: DocumentNodeRow row })
+            vm.SaveDocumentNode(row);
+    }
+
     private void RemoveSelectedNode_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm &&
