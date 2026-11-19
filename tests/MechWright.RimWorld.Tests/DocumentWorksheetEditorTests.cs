@@ -98,6 +98,47 @@ public sealed class DocumentWorksheetEditorTests
         Assert.Equal("机体测试", document.Xml.Root!.Element("ThingDef")!.Element("label")?.Value);
     }
 
+    [Theory]
+    [InlineData("<race Class=\"CustomRace\"><baseBodySize>1</baseBodySize></race>", "race/newField")]
+    [InlineData("<race><baseBodySize>1</baseBodySize></race><race><baseBodySize>2</baseBodySize></race>", "race/newField")]
+    [InlineData("<race><stats Class=\"CustomStats\" /></race>", "race/stats/newField")]
+    public void QuickAddRejectsAmbiguousOrPolymorphicParentsWithoutMutation(
+        string fragment, string path)
+    {
+        var document = DefDocument.Parse(
+            "<Defs><ThingDef><defName>MP_Test</defName>" + fragment + "</ThingDef></Defs>");
+        var before = document.Export();
+        var revision = document.Revision;
+        Assert.Throws<InvalidOperationException>(() =>
+            DocumentWorksheetEditor.AppendFieldPath(
+                document, document.Definitions().Single(), path, "5"));
+        Assert.Equal(before, document.Export());
+        Assert.Equal(revision, document.Revision);
+        Assert.False(document.IsDirty);
+    }
+
+    [Fact]
+    public void QuickAddIntoUnambiguousOrdinaryGroupIsReversible()
+    {
+        var document = DefDocument.Parse("""
+            <Defs><ThingDef ParentName="BaseMechanoidWalker"><defName>MP_Test</defName>
+            <!-- retained --><race><baseBodySize>1</baseBodySize></race>
+            <unknown Flag="keep">value</unknown></ThingDef></Defs>
+            """);
+        DocumentWorksheetEditor.AppendFieldPath(document,
+            document.Definitions().Single(), "race/baseHealthScale", "1.4");
+        Assert.Equal("1.4", document.Xml.Root!.Element("ThingDef")!
+            .Element("race")!.Element("baseHealthScale")!.Value);
+        Assert.Contains("Flag=\"keep\"", document.Export());
+        Assert.Contains("retained", document.Export());
+        Assert.True(document.Undo());
+        Assert.Null(document.Xml.Root!.Element("ThingDef")!
+            .Element("race")!.Element("baseHealthScale"));
+        Assert.True(document.Redo());
+        Assert.Equal("1.4", document.Xml.Root!.Element("ThingDef")!
+            .Element("race")!.Element("baseHealthScale")!.Value);
+    }
+
     [Fact]
     public void InvalidIdentityCannotMutateXml()
     {
