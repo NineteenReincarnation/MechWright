@@ -72,7 +72,14 @@ public static class DocumentWorksheetEditor
             var parent = definition.Element;
             foreach (var segment in segments[..^1])
             {
-                var next = parent.Element(segment);
+                // A quick-add path has no list index or polymorphic type
+                // selector. Never guess which existing container to use.
+                if (parent.Attribute("Class") != null)
+                    throw new InvalidOperationException("多态结构请使用对应的列表或高级编辑器。");
+                var matches = parent.Elements(segment).Take(2).ToArray();
+                if (matches.Length > 1)
+                    throw new InvalidOperationException("存在多个同名分组，请明确选择列表成员。");
+                var next = matches.FirstOrDefault();
                 if (next == null)
                 {
                     next = new XElement(segment);
@@ -82,6 +89,8 @@ public static class DocumentWorksheetEditor
                     throw new InvalidOperationException("不能在已有文字内容的字段中添加子项。");
                 parent = next;
             }
+            if (parent.Attribute("Class") != null)
+                throw new InvalidOperationException("多态结构请使用对应的列表或高级编辑器。");
             if (parent.Element(segments[^1]) != null)
                 throw new InvalidOperationException("当前配置已存在，请直接修改列表里的值。");
             parent.Add(new XElement(segments[^1], value.Trim()));
