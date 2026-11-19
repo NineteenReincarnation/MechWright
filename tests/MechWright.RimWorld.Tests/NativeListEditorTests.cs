@@ -94,7 +94,7 @@ public sealed class NativeListEditorTests
             first.XmlPath, "defaultProjectile", "MP_NewBullet");
         Assert.Contains("<defaultProjectile>MP_NewBullet</defaultProjectile>", doc.Export());
         Assert.Contains("<!-- preserve -->", doc.Export());
-        Assert.Contains("Inherit=\\\"False\\\"", doc.Export());
+        Assert.Contains("""Inherit="False" """.Trim(), doc.Export());
         var loaded = DefDocument.Parse(doc.Export());
         Assert.Equal("MP_NewBullet", loaded.Xml.Root!.Element("ThingDef")!
             .Element("verbs")!.Elements("li").First().Element("defaultProjectile")!.Value);
