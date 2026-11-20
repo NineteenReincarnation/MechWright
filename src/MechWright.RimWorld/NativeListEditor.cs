@@ -122,9 +122,19 @@ public static class NativeListEditor
                 node = matches[0];
             }
         }
-        if (node.HasElements || node.Nodes().Any(n => n is not XText and not XCData))
+        if (node.HasElements || node.Nodes().Any(n => n is not XText))
             throw new InvalidOperationException("Only existing text-only leaves can be edited.");
-        document.Transform(_ => node.Value = value);
+        // A leaf may contain CDATA. XElement.Value would replace its node and
+        // silently change the XML representation; preserve the existing node.
+        var textNodes = node.Nodes().OfType<XText>().ToArray();
+        if (textNodes.Length > 1)
+            throw new InvalidOperationException("Mixed text nodes require the advanced XML editor.");
+        if (node.Value == value) return;
+        document.Transform(_ =>
+        {
+            if (textNodes.Length == 1) textNodes[0].Value = value;
+            else node.Value = value;
+        });
     }
 
     public static string Duplicate(
