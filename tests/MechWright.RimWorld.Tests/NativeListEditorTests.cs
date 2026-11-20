@@ -162,4 +162,49 @@ public sealed class NativeListEditorTests
         Assert.Equal(exported, doc.Export());
     }
 
+    [Fact]
+    public void CDataLeafEditPreservesRepresentationAndNoOpDoesNotDirtyDocument()
+    {
+        const string source = """
+            <Defs><ThingDef><defName>MP_CData</defName>
+              <verbs><li><custom><![CDATA[old & value]]></custom>
+                <empty></empty><unknown keep="yes">untouched</unknown></li></verbs>
+            </ThingDef></Defs>
+            """;
+        var doc = DefDocument.Parse(source);
+        var item = NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").Single();
+        NativeListEditor.SetItemField(doc, doc.Definitions().Single(), "verbs",
+            item.XmlPath, "custom", "old & value");
+        Assert.Equal(source, doc.Export());
+        Assert.False(doc.IsDirty);
+
+        NativeListEditor.SetItemField(doc, doc.Definitions().Single(), "verbs",
+            item.XmlPath, "custom", "new < value");
+        Assert.Contains("<![CDATA[new < value]]>", doc.Export());
+        Assert.Contains("""keep="yes" """.Trim(), doc.Export());
+        Assert.Equal("new < value", DefDocument.Parse(doc.Export()).Xml.Root!
+            .Element("ThingDef")!.Element("verbs")!.Element("li")!
+            .Element("custom")!.Value);
+        Assert.True(doc.Undo());
+        Assert.Equal(source, doc.Export());
+        Assert.True(doc.Redo());
+        Assert.Contains("<![CDATA[new < value]]>", doc.Export());
+    }
+
+    [Fact]
+    public void MultipleTextNodesRequireAdvancedEditorWithoutMutation()
+    {
+        const string source = """
+            <Defs><ThingDef><defName>MP_Mixed</defName>
+              <verbs><li><custom>before<![CDATA[after]]></custom></li></verbs>
+            </ThingDef></Defs>
+            """;
+        var doc = DefDocument.Parse(source);
+        var item = NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").Single();
+        Assert.Throws<InvalidOperationException>(() => NativeListEditor.SetItemField(
+            doc, doc.Definitions().Single(), "verbs", item.XmlPath, "custom", "changed"));
+        Assert.Equal(source, doc.Export());
+        Assert.False(doc.IsDirty);
+    }
+
 }
