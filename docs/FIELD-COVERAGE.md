@@ -90,3 +90,10 @@
 - 新增合成 XML 回归测试，覆盖 CDATA 往返、撤销重做、未知属性保留、无操作不变脏以及混合文本拒绝修改。
 - 证据等级：编辑器 XML 无损性合成测试；**未新增原版或 DLC 字段合法性证据**。实际游戏字段扫描与游戏加载验证仍未完成。
 - 下一步仍应优先推进直列式 UI 的列表成员选择、新增/删除/重排与 Core + 全 DLC 字段覆盖矩阵，避免将此类 XML 安全改进误计入字段覆盖率。
+
+## 2026-11-21 增量：逐行保存与批量保存使用相同的字段校验
+
+- DocumentWorksheetViewModel.SaveDocumentNode 现在先调用 StandardFieldRules.Validate，再执行 DocumentWorksheetEditor.UpdateValue；之前 CommitDocumentInputs 有此校验，逐行“保存”入口却没有，导致两条编辑路径行为不一致。
+- 对于值未变化的行仍不执行写入；不合法输入抛出明确错误并沿用现有 DocumentMessage/ReportError 反馈，不进入 XML 修改链路。已有批量保存校验逻辑不变。
+- 证据等级：**应用层校验一致性代码改进**。本轮没有获得原版/DLC XML 或 DLL，也没有新增已确认可写入 XML 的字段。该改动需要 CI 编译与 Windows UI 交互回归；不能视为全字段覆盖进度。
+- 后续仍优先完成 li 列表项的零 XML 新增、删除、排序控件及游戏安装扫描生成的按 DLC 字段证据矩阵。建议为逐行保存与批量提交增加相同非法输入的 UI/ViewModel 回归测试，验证失败时 XML、revision、dirty 状态均不变。
