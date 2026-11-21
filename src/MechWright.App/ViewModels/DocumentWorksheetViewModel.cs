@@ -373,6 +373,9 @@ public sealed partial class MainWindowViewModel
         {
             var value = row.GetValue();
             if (value == row.SavedValue) return;
+            var validationError = StandardFieldRules.Validate(row.Name, value);
+            if (validationError != null)
+                throw new ArgumentException(validationError);
             var path = row.Path;
             var index = SelectedDefinition.Entry.Index;
             DocumentWorksheetEditor.UpdateValue(_document, SelectedDefinition.Entry, path, value);
