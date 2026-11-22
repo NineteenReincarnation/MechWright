@@ -20,6 +20,7 @@ public sealed partial class MainWindowViewModel
             if (ReferenceEquals(_selectedListGroup, value)) return;
             _selectedListGroup = value;
             Notify();
+            Notify(nameof(HasListGroup));
             RefreshNativeListItems();
         }
     }
@@ -32,11 +33,16 @@ public sealed partial class MainWindowViewModel
             _selectedListEntry = value;
             Notify();
             Notify(nameof(HasSelectedListEntry));
+            Notify(nameof(CanMoveNativeListEntryUp));
+            Notify(nameof(CanMoveNativeListEntryDown));
             ListXml = value?.Item.Source ?? "<li>\n</li>";
         }
     }
 
     public bool HasSelectedListEntry => SelectedListEntry != null;
+    public bool CanMoveNativeListEntryUp => SelectedListEntry is { Item.Index: > 0 };
+    public bool CanMoveNativeListEntryDown => SelectedListEntry is { } row &&
+        row.Item.Index + 1 < NativeListEntries.Count;
     public bool HasListGroup => SelectedListGroup != null;
 
     public string ListXml
@@ -107,6 +113,9 @@ public sealed partial class MainWindowViewModel
         SelectedListGroup = NativeListGroups.FirstOrDefault(x => x.Group.Container == group);
         RefreshNativeListItems(itemPath);
     }
+
+    public void AddBlankNativeListEntry() => PerformListEdit(
+        (doc, def, group, path) => NativeListEditor.Add(doc, def, group, "<li />"));
 
     public void AddNativeListEntry() => PerformListEdit(
         (doc, def, group, path) => NativeListEditor.Add(doc, def, group, ListXml));
