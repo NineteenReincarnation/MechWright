@@ -131,6 +131,31 @@ public sealed partial class DocumentWorksheetView : UserControl
             vm.SaveDocumentNode(row);
     }
 
+    private void AddBlankListEntry_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.AddBlankNativeListEntry();
+    }
+
+    private void DuplicateListEntry_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.DuplicateNativeListEntry();
+    }
+
+    private void MoveListEntryUp_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.MoveNativeListEntry(-1);
+    }
+
+    private void MoveListEntryDown_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.MoveNativeListEntry(1);
+    }
+
+    private void RemoveListEntry_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.RemoveNativeListEntry();
+    }
+
     private void RemoveSelectedNode_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm &&
