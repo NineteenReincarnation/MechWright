@@ -135,3 +135,12 @@
 - `DefCatalog.CatalogScan` 现在从用户本机安装 XML 的 `Name` 属性建立只读 `ParentTemplates` 索引；`TemplateInheritanceDiagnostics` 检查当前工程同类型模板重名（`MW031`）、本地可证明的 `ParentName` 循环（`MW032`），以及在本机扫描结果和工程中都未找到、又没有直接 `MayRequire` 条件的模板名（`MW030`）。均为**非阻断警告**，不模拟模组加载顺序或声称第三方模板不存在。
 - 新增 `TemplateInheritanceDiagnosticsTests` 及必要 UI Smoke 验证。此轮修改的是可审计的静态检查和 UI 操作，没有获得原版/DLC 的真实加载结果，不改变全量字段覆盖率未知的结论。
 - **后续**：继续验证继承/条件依赖/加载顺序，完整支持对所有引用源类型的检查；在真实游戏中核对 XML、Patch 和父模板解析行为。
+
+
+## 2026-11-22 第五批：引用链扩展与 DLC 条件语义（MW-03）
+
+- `DefinitionReferences` 仅扩展**显式、可确定类型的原生引用位置**：`ThingDef` 的 `race/body`、`projectile/damageDef`、`verbs/li/defaultProjectile`、`tools/li/linkedBodyPartsGroup` / `capacities/li`、制作配方/研究/配方使用者、`thingCategories/li` 和 `costList`；`RecipeDef` 的产品、研究、工作台、材料过滤器；`FactionDef` 的兵种/组类型；`DamageDef` 的 Hediff / 音效；`ResearchProjectDef` 的前置研究等。仅把列表的 `li` 文本或键名式资源列表识别为引用，不将 `weaponTags`、`tradeTags`、`Class` 等普通标记误判为 DefName。所列路径是实现中的保守白名单，**不代表全 DLC 的所有引用字段已经完成扫描验证**。
+- 对引用节点及祖先上的 `MayRequire`、`MayRequireAnyOf` 保留条件包 ID，并在现有引用视图显示。只有非条件引用才产生 `MW021`（扫描目录未解析）与 `MW022`（同名异类型）警告，减少合法可选内容的误报。
+- 新增 `MW041`：工程内**仅有条件性定义**的目标，被其他未带条件的节点引用时给出风险警告。该检查不猜测原版与第三方实际加载顺序；同名原版目标已被扫描时不直接视为断链。
+- 新增 `DlcConditionDiagnostics`，根据本机扫描时各 DLC 的 Def 目录存在性输出 `MW040` *信息*：某文件包含该 DLC 的 `MayRequire` 或完全未在本机找到可满足的已知 `MayRequireAnyOf` 分支。对含第三方候选的 `AnyOf` 不推断必然缺失；**文件存在不证明 DLC 已启用**，这类信息不阻断导出。
+- 增加针对武器→弹丸→伤害、研究/材料/产品、派系兵种、非 Def 标签、嵌套 MayRequire、条件目标与 DLC 目录信号的合成 XML 测试。**Windows CI 的编译/回归结论以对应运行记录为准**；尚未取得真实 RimWorld 1.7 加载、官方全 DLC 引用字段全覆盖或 DLC 加载顺序验证结果。
