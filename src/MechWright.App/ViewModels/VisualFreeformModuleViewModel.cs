@@ -45,6 +45,8 @@ public sealed partial class MainWindowViewModel
             _selectedFreeformModule=value;
             Notify();
             Notify(nameof(HasFreeformModule));
+            Notify(nameof(CanMoveFreeformModuleUp));
+            Notify(nameof(CanMoveFreeformModuleDown));
             RefreshFreeformNodes();
         }
     }
@@ -61,6 +63,9 @@ public sealed partial class MainWindowViewModel
         }
     }
     public bool HasFreeformModule=>SelectedFreeformModule!=null;
+    public bool CanMoveFreeformModuleUp=>SelectedFreeformModule is { Index: > 1 };
+    public bool CanMoveFreeformModuleDown=>SelectedFreeformModule is { } row &&
+        row.Index<FreeformModules.Count;
     public bool HasFreeformNode=>SelectedFreeformNode!=null;
     public bool CanRemoveFreeformNode=>SelectedFreeformNode is { Node.IsRoot:false };
     public string FreeformName {get=>_freeformName;set{_freeformName=value??"";Notify();}}
@@ -111,6 +116,8 @@ public sealed partial class MainWindowViewModel
         }
         SelectedFreeformModule=FreeformModules.FirstOrDefault(x=>x.Path==old)
             ?? FreeformModules.FirstOrDefault();
+        Notify(nameof(CanMoveFreeformModuleUp));
+        Notify(nameof(CanMoveFreeformModuleDown));
     }
 
     private void RefreshFreeformNodes(string? preferred=null)
@@ -143,15 +150,47 @@ public sealed partial class MainWindowViewModel
         catch(Exception ex){FreeformStatus=ex.Message;ReportError(ex);}
     }
 
+    public void DuplicateFreeformModule()
+    {
+        var link=FreeformDocument();
+        if(link==null || SelectedFreeformModule==null)return;
+        try
+        {
+            var path=NativeListEditor.Duplicate(link.Value.Doc,link.Value.Def,
+                FreeformContainer,SelectedFreeformModule.Path);
+            AfterFreeformEdit("已复制选中配置项，包含所有子字段及属性；可以撤销。",path);
+        }
+        catch(Exception ex){FreeformStatus=ex.Message;ReportError(ex);}
+    }
+
+    public void MoveFreeformModule(int direction)
+    {
+        if(direction is not (-1 or 1))return;
+        var link=FreeformDocument();
+        if(link==null || SelectedFreeformModule==null)return;
+        if(direction<0 && !CanMoveFreeformModuleUp ||
+            direction>0 && !CanMoveFreeformModuleDown)return;
+        try
+        {
+            var path=NativeListEditor.Move(link.Value.Doc,link.Value.Def,
+                FreeformContainer,SelectedFreeformModule.Path,direction);
+            AfterFreeformEdit("已调整配置项顺序；内部字段和属性未改变，可撤销。",path);
+        }
+        catch(Exception ex){FreeformStatus=ex.Message;ReportError(ex);}
+    }
+
     public void RemoveFreeformModule()
     {
         var link=FreeformDocument();
         if(link==null || SelectedFreeformModule==null)return;
         try
         {
+            var previousIndex=SelectedFreeformModule.Index-1;
             NativeListEditor.Remove(link.Value.Doc,link.Value.Def,FreeformContainer,
                 SelectedFreeformModule.Path);
             AfterFreeformEdit("已移除整个配置项，可撤销。");
+            SelectedFreeformModule=FreeformModules.ElementAtOrDefault(
+                Math.Min(previousIndex,FreeformModules.Count-1));
         }
         catch(Exception ex){FreeformStatus=ex.Message;ReportError(ex);}
     }
