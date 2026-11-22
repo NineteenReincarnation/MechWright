@@ -117,13 +117,18 @@ public sealed record GameVerificationChecklist(
     bool GameLoaded, bool Spawned, bool GraphicsChecked,
     bool CombatChecked, bool GestationChecked, bool ReimportChecked);
 
+public sealed record GameLogDefinitionLocation(
+    int LineNumber, string DefName, string DefType, string RelativePath);
+
 public static class GameVerificationReport
 {
     public static string Generate(
         GameVerificationChecklist checklist,
         GameLoadEvidence.Result? log,
         string currentProjectSha256,
-        int definitionCount)
+        int definitionCount,
+        GameExportAudit.Result? exportAudit = null,
+        IReadOnlyCollection<GameLogDefinitionLocation>? located = null)
     {
         static string Safe(string value, int length = 600)
         {
@@ -189,6 +194,47 @@ public static class GameVerificationReport
             lines.Add("");
             lines.Add("原始日志、错误原文与本机文件路径没有收录；请在本地日志中按行号人工复核。" +
                 " 其他 Mod、跨行堆栈或不同格式的错误可能无法关联。");
+        }
+        if (located is { Count: > 0 })
+        {
+            lines.Add("");
+            lines.Add("## 已关联的工程定义（仅确定的唯一匹配）");
+            lines.Add("");
+            lines.Add("| Player.log 行号 | DefName | 类型 | 工程相对路径 |");
+            lines.Add("| --- | --- | --- | --- |");
+            foreach (var item in located.Take(300))
+                lines.Add($"| {item.LineNumber} | {Safe(item.DefName, 120)} | " +
+                    $"{Safe(item.DefType, 120)} | {Safe(item.RelativePath, 300)} |");
+            lines.Add("");
+            lines.Add("此映射基于导入日志时的编辑器工程定义；" +
+                "同名或已经更名的定义可能无法唯一定位。");
+        }
+
+        lines.Add("");
+        lines.Add("## 导出目录 XML 重导入核对");
+        lines.Add("");
+        if (exportAudit == null)
+            lines.Add("未核对导出的 Mod 目录。");
+        else
+        {
+            lines.Add($"- 核对时编辑器 XML 快照 SHA-256：`{exportAudit.SourceXmlSha256}`");
+            lines.Add($"- 重导入目录 XML SHA-256：`{exportAudit.ImportedXmlSha256}`");
+            lines.Add($"- 编辑器文件数 / 重导入文件数：" +
+                $" {exportAudit.SourceFileCount} / {exportAudit.ImportedFileCount}");
+            lines.Add($"- XML 文本逐字一致：{exportAudit.ExactMatches} 个文件");
+            lines.Add($"- XML 差异：{exportAudit.TotalDifferences} 处");
+            lines.Add("- 当前工程与核对时快照：" +
+                (exportAudit.SourceXmlSha256 == currentProjectSha256 ?
+                    "一致" : "不一致；编辑器 XML 已改变，应重新核对"));
+            lines.Add("");
+            lines.Add("| 工程相对路径 | 差异类型 |");
+            lines.Add("| --- | --- |");
+            foreach (var diff in exportAudit.Differences)
+                lines.Add($"| {Safe(diff.RelativePath, 300)} | {Safe(diff.Category, 100)} |");
+            if (exportAudit.Differences.Count == 0) lines.Add("| — | 没有发现 XML 文本差异 |");
+            lines.Add("");
+            lines.Add("仅核对导出目录下的可编辑 XML 文本；" +
+                "不代表实际游戏版本、贴图、About.xml、Mod 依赖或补丁加载顺序已经通过验收。");
         }
         lines.Add("");
         lines.Add("## 补充观察");
