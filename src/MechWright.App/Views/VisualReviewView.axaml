@@ -1,7 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MechWright.App.ViewModels"
-             xmlns:rw="using:MechWright.RimWorld"
              x:Class="MechWright.App.Views.VisualReviewView"
              x:DataType="vm:MainWindowViewModel">
   <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15" Margin="18">
@@ -51,16 +50,16 @@
             <StackPanel Grid.Column="0" Spacing="4">
               <TextBlock Text="实际游戏版本" FontSize="11"/>
               <TextBox Text="{Binding GameVersion,Mode=TwoWay}"
-                       Watermark="例如 1.7.x（实际运行版本）"/>
+                       PlaceholderText="例如 1.7.x（实际运行版本）"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="4">
               <TextBlock Text="启用的 DLC / Mod" FontSize="11"/>
               <TextBox Text="{Binding GameEnabledDlc,Mode=TwoWay}"
-                       Watermark="实际启用的依赖，可留空"/>
+                       PlaceholderText="实际启用的依赖，可留空"/>
             </StackPanel>
           </Grid>
           <TextBox Text="{Binding GameTester,Mode=TwoWay}"
-                   Watermark="测试人 / 测试环境标识（可选）"/>
+                   PlaceholderText="测试人 / 测试环境标识（可选）"/>
           <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
                 ColumnSpacing="12" RowSpacing="6">
             <CheckBox Grid.Row="0" Grid.Column="0"
@@ -84,14 +83,14 @@
           </Grid>
           <TextBox Text="{Binding GameNotes,Mode=TwoWay}"
                    AcceptsReturn="True" TextWrapping="Wrap" Height="75"
-                   Watermark="记录游戏内观察、未验证事项和可复现问题（可选）"/>
+                   PlaceholderText="记录游戏内观察、未验证事项和可复现问题（可选）"/>
           <Button Content="读取本地 Player.log 并关联 DefName"
                   Click="ImportGameLog_Click" HorizontalAlignment="Left"/>
           <TextBlock Text="{Binding GameLogSummary}" FontSize="11"
                      Foreground="#B8C8C6" TextWrapping="Wrap"/>
           <ItemsControl ItemsSource="{Binding GameLogIssues}">
             <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="rw:GameLoadEvidence.LogIssue">
+              <DataTemplate x:DataType="vm:GameLogIssueRow">
                 <TextBlock Text="{Binding Display}" FontSize="11"
                            Foreground="#D5BBB2" Margin="0,2"
                            TextWrapping="Wrap"/>
