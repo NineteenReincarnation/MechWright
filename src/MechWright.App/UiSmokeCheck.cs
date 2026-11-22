@@ -417,6 +417,31 @@ internal static class UiSmokeCheck
                     vm.InlineAdvancedOpen && vm.IsDocumentMode,
                     "The review diagnostic must navigate to the actual editable source node.");
 
+                var logIssue = new GameLogIssueRow(
+                    new GameLoadEvidence.LogIssue(28, "可能的 XML / Def 问题",
+                        ["MP_First"]),
+                    "MP_First", "ThingDef", "1.7/Defs/First.xml", false);
+                vm.GameLogIssues.Add(logIssue);
+                vm.SelectedGameLogIssue = logIssue;
+                Require(vm.CanNavigateGameLogIssue, 
+                    "A uniquely located log Def must enable navigation.");
+                vm.JumpToGameLogIssue();
+                Require(vm.SourceName == "1.7/Defs/First.xml" &&
+                    vm.SelectedDefinition?.Entry.DefName == "MP_First" &&
+                    vm.IsDocumentMode,
+                    "Log Def navigation must open the actual project file and XML definition.");
+                vm.SelectedGameLogIssue = new GameLogIssueRow(
+                    logIssue.Evidence, "MP_First", "", "", true);
+                Require(!vm.CanNavigateGameLogIssue,
+                    "Ambiguous log names must not navigate to an arbitrary Def.");
+                var reimported = new MechWorkspace("Reimport", "");
+                reimported.AddXml("1.7/Defs/First.xml",
+                    issueProject.Files[0].Document.Export(), fromDisk: true);
+                reimported.AddXml("1.7/Defs/Body.xml",
+                    issueProject.Files[1].Document.Export(), fromDisk: true);
+                Require(GameExportAudit.Compare(issueProject, reimported).XmlMatches,
+                    "Export XML roundtrip must not rewrite or discard project XML.");
+
                 _ = new MechanoidWizardWindow();
                 _ = new VanillaLibraryWindow { DataContext = vm };
             }
