@@ -144,11 +144,36 @@ public sealed class MechWorkspace
                 g => g.Select(x => x.Kind).Distinct(StringComparer.Ordinal).ToArray(),
                 StringComparer.Ordinal);
 
+        // If a local target exists only behind a MayRequire gate, an
+        // unguarded reference to it may become dangling when that DLC/mod is
+        // inactive. Do not mark conditional references as broken: they may
+        // disappear with their own gated source definition.
+        var onlyConditionalTargets = _files
+            .SelectMany(file => file.Document.Definitions())
+            .Where(def => def.DefName != "(unnamed)")
+            .GroupBy(def => (def.Type, def.DefName))
+            .Where(group => group.All(def =>
+                def.Element.Attribute("MayRequire") != null ||
+                def.Element.Attribute("MayRequireAnyOf") != null))
+            .Select(group => group.Key).ToHashSet();
+
         foreach (var file in _files)
         {
             foreach (var reference in DefinitionReferences.Collect(file.Document))
             {
+                if (reference.IsConditional) continue;
                 var key = (reference.TargetType, reference.TargetDefName);
+                if (onlyConditionalTargets.Contains(key) &&
+                    vanillaTargets?.Contains(key) != true)
+                {
+                    result.Add(new WorkspaceDiagnostic(file.RelativePath,
+                        new Diagnostic("MW041", Severity.Warning,
+                            $"Unconditional reference to {reference.TargetType}/" +
+                            $"{reference.TargetDefName} has only conditional definitions " +
+                            "in the project. If its MayRequire gate is inactive, " +
+                            "the target may be absent at game load.",
+                            reference.FieldPath)));
+                }
                 if (_index.ContainsKey(key) || vanillaTargets?.Contains(key) == true)
                     continue;
 
