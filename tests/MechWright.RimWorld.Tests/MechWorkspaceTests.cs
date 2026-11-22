@@ -143,4 +143,53 @@ public class MechWorkspaceTests
         var file = project.AddXml("Defs/Custom.xml", xml);
         Assert.Equal(xml, file.Document.Export());
     }
+    [Fact]
+    public void ReferenceValidationUsesLiveProjectAndConnectedGameEvidence()
+    {
+        var project = Create();
+        CatalogEntry[] scannedGame =
+        [
+            new(new DefinitionIdentity("BodyPartDef", "MechanicalThorax", "Core.xml"),
+                "Thorax", "Core.xml", "Core")
+        ];
+        Assert.DoesNotContain(project.Validate(scannedGame), x =>
+            x.Issue.Code is "MW021" or "MW022");
+
+        var thing = project.Files[0].Document;
+        var def = thing.Definitions().Single();
+        var bodyField = thing.Fields(def).Single(x => x.Name == "body");
+        thing.SetField(bodyField, "MP_MissingBody");
+        var missing = Assert.Single(project.Validate(scannedGame)
+            .Where(x => x.Issue.Code == "MW021"));
+        Assert.Equal(Severity.Warning, missing.Issue.Severity);
+        Assert.Equal(project.Files[0].RelativePath, missing.FilePath);
+        Assert.Contains("MP_MissingBody", missing.Issue.Message);
+        // Unknown dependencies are not guaranteed broken: they can come from a Mod.
+        Assert.DoesNotContain(project.Validate(), x => x.Issue.Code == "MW021");
+
+        Assert.True(thing.Undo());
+        Assert.DoesNotContain(project.Validate(scannedGame), x => x.Issue.Code == "MW021");
+        Assert.True(thing.Redo());
+        Assert.Contains(project.Validate(scannedGame), x => x.Issue.Code == "MW021");
+    }
+
+    [Fact]
+    public void WrongTypeWithMatchingNameIsWarnedWithoutClaimingGameLoadFailure()
+    {
+        var project = new MechWorkspace("Check", "");
+        project.AddXml("Defs/Unit.xml",
+            "<Defs><ThingDef><defName>MP_Unit</defName>" +
+            "<race><body>MP_ExpectedBody</body></race></ThingDef>" +
+            "<ThingDef><defName>MP_ExpectedBody</defName></ThingDef></Defs>");
+        var mismatch = Assert.Single(project.Validate().Where(x => x.Issue.Code == "MW022"));
+        Assert.Equal(Severity.Warning, mismatch.Issue.Severity);
+        Assert.Contains("BodyDef/MP_ExpectedBody", mismatch.Issue.Message);
+        CatalogEntry[] externalBody =
+        [
+            new(new DefinitionIdentity("BodyDef", "MP_ExpectedBody", "external.xml"),
+                "Body", "external.xml", "ExternalMod")
+        ];
+        Assert.DoesNotContain(project.Validate(externalBody), x => x.Issue.Code == "MW022");
+    }
+
 }
