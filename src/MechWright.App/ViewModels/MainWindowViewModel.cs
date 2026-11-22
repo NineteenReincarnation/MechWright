@@ -306,7 +306,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         {
             var availableGameDefs = HasFieldEvidenceReport ? _catalog : null;
             foreach (var item in _workspace.Validate(availableGameDefs,
-                         HasFieldEvidenceReport ? _fieldEvidenceScan?.ParentTemplates : null))
+                         HasFieldEvidenceReport ? _fieldEvidenceScan?.ParentTemplates : null,
+                         HasFieldEvidenceReport ? _fieldEvidenceScan?.Packages : null))
                 Diagnostics.Add(new DiagnosticRow(item.Issue, item.FilePath));
         }
         else if (_document != null)
