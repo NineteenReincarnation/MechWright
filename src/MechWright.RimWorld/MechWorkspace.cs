@@ -103,7 +103,8 @@ public sealed class MechWorkspace
             ? matches.AsReadOnly() : Array.Empty<WorkspaceDefinition>();
     }
 
-    public IReadOnlyList<WorkspaceDiagnostic> Validate()
+    public IReadOnlyList<WorkspaceDiagnostic> Validate(
+        IReadOnlyCollection<CatalogEntry>? gameCatalog = null)
     {
         Reindex();
         var result = new List<WorkspaceDiagnostic>();
@@ -125,6 +126,51 @@ public sealed class MechWorkspace
                     new Diagnostic("MW020", Severity.Error,
                         $"Duplicate definition across project: {pair.Key.Kind}/{pair.Key.Name}.",
                         match.Path)));
+        }
+        // Cross-file references are re-evaluated against the live project index,
+        // not cached per-file: a rename in a different XML must change diagnostics.
+        // Only a connected game catalog authorizes a "not found in catalog"
+        // warning. An unknown target may still be supplied by another Mod.
+        HashSet<(string Kind, string Name)>? vanillaTargets = gameCatalog == null
+            ? null
+            : gameCatalog.Select(x => (x.Identity.Type, x.Identity.DefName)).ToHashSet();
+
+        var otherTypes = _index.Keys
+            .Where(x => x.Name.Length > 0)
+            .GroupBy(x => x.Name, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key,
+                g => g.Select(x => x.Kind).Distinct(StringComparer.Ordinal).ToArray(),
+                StringComparer.Ordinal);
+
+        foreach (var file in _files)
+        {
+            foreach (var reference in DefinitionReferences.Collect(file.Document))
+            {
+                var key = (reference.TargetType, reference.TargetDefName);
+                if (_index.ContainsKey(key) || vanillaTargets?.Contains(key) == true)
+                    continue;
+
+                if (otherTypes.TryGetValue(reference.TargetDefName, out var types) &&
+                    types.Any(x => x != reference.TargetType))
+                {
+                    result.Add(new WorkspaceDiagnostic(file.RelativePath,
+                        new Diagnostic("MW022", Severity.Warning,
+                            $"Reference {reference.TargetType}/{reference.TargetDefName} " +
+                            $"is not defined in the project under that type. " +
+                            $"The same name exists as {string.Join(", ", types)}; " +
+                            "an external Mod might still supply the expected type.",
+                            reference.FieldPath)));
+                }
+                else if (vanillaTargets != null)
+                {
+                    result.Add(new WorkspaceDiagnostic(file.RelativePath,
+                        new Diagnostic("MW021", Severity.Warning,
+                            $"Unresolved {reference.TargetType}/{reference.TargetDefName} " +
+                            "in project and scanned game definitions. " +
+                            "It may be defined by an unloaded Mod; game-load verification is required.",
+                            reference.FieldPath)));
+                }
+            }
         }
         return result;
     }
