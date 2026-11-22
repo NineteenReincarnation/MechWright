@@ -300,18 +300,20 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
 
     private void RefreshDiagnosticRows()
     {
+        var previous = SelectedDiagnostic;
         Diagnostics.Clear();
         if (_workspace != null)
         {
             var availableGameDefs = HasFieldEvidenceReport ? _catalog : null;
             foreach (var item in _workspace.Validate(availableGameDefs))
-                Diagnostics.Add(new DiagnosticRow(new Diagnostic(item.Issue.Code,
-                    item.Issue.Severity,
-                    $"[{item.FilePath}] {item.Issue.Message}", item.Issue.Location)));
+                Diagnostics.Add(new DiagnosticRow(item.Issue, item.FilePath));
         }
         else if (_document != null)
             foreach (var issue in _document.Validate())
                 Diagnostics.Add(new DiagnosticRow(issue));
+        SelectedDiagnostic = Diagnostics.FirstOrDefault(x => previous != null &&
+            x.FilePath == previous.FilePath && x.Issue.Code == previous.Issue.Code &&
+            x.Issue.Location == previous.Issue.Location) ?? Diagnostics.FirstOrDefault();
         Notify(nameof(DiagnosticCount));
     }
 
@@ -538,9 +540,20 @@ public sealed class BodyRow(BodyPartEntry part)
     public string Layers => $"{Part.Height} / {Part.DepthLayer}";
 }
 
-public sealed class DiagnosticRow(Diagnostic diagnostic)
+public sealed class DiagnosticRow(Diagnostic diagnostic, string filePath = "")
 {
-    public string Display => diagnostic.ToString();
+    public Diagnostic Issue { get; } = diagnostic;
+    public string FilePath { get; } = filePath;
+    public string SeverityLabel => Issue.Severity switch
+    {
+        Severity.Error => "错误",
+        Severity.Warning => "警告",
+        _ => "提示"
+    };
+    public string Title => $"{SeverityLabel} · {Issue.Code} · {Issue.Message}";
+    public string Location => (FilePath.Length == 0 ? "当前 XML" : FilePath) +
+        " · " + Issue.Location;
+    public string Display => Issue.ToString();
 }
 
 public sealed class CatalogRow(CatalogEntry entry)
