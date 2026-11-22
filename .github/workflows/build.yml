@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: mechwright-build-main
+  group: mechwright-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
