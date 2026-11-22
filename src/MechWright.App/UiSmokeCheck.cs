@@ -144,6 +144,13 @@ internal static class UiSmokeCheck
                     vm.SelectedListEntry?.Item.Index == 0 &&
                     !vm.CanMoveNativeListEntryUp,
                     "Document list must create and select a blank li without an XML fragment.");
+                vm.ListClassName = "MP.CustomTool";
+                vm.SaveNativeListClass();
+                Require(vm.SelectedListEntry?.Item.ClassName == "MP.CustomTool" &&
+                    vm.XmlPreview.Contains("Class=\"MP.CustomTool\"",StringComparison.Ordinal),
+                    "Class editing must write to only the selected XML list item.");
+                Require(vm.DocumentFieldChoices.Any(x => x.Name == "linkedBodyPartsGroup"),
+                    "The normal worksheet must suggest tool fields for a selected tool li.");
                 vm.DuplicateNativeListEntry();
                 Require(vm.NativeListEntries.Count == 2 &&
                     vm.SelectedListEntry?.Item.Index == 1 &&
@@ -183,6 +190,26 @@ internal static class UiSmokeCheck
                 vm.RemoveNativeListEntry();
                 Require(vm.NativeListEntries.Count == 1,
                     "Delete should only remove the selected li member.");
+
+                vm.ListClassName = "";
+                vm.SaveNativeListClass();
+                Require(vm.SelectedListEntry?.Item.ClassName == "" &&
+                    !vm.XmlPreview.Contains("Class=\"MP.CustomTool\"",StringComparison.Ordinal),
+                    "Clearing Class should remove the selected attribute without raw XML.");
+                // Some native lists contain scalar Def names instead of nested
+                // objects. A blank li must remain editable as a text leaf.
+                vm.SelectedListGroup=vm.NativeListGroups.Single(x =>
+                    x.Group.Container=="abilities");
+                vm.AddBlankNativeListEntry();
+                var abilityPath=vm.SelectedListEntry!.Item.XmlPath;
+                var abilityRow=vm.DocumentNodes.Single(x=>x.Path==abilityPath);
+                Require(abilityRow.CanEdit,
+                    "An empty li must be writable as a scalar ability reference.");
+                abilityRow.Text="MP_SmokeAbility";
+                vm.SaveDocumentNode(abilityRow);
+                Require(vm.XmlPreview.Contains("<li>MP_SmokeAbility</li>",
+                    StringComparison.Ordinal),
+                    "A scalar li must save through the normal row editor.");
 
                 vm.CreateQuickDefinition("BodyPartDef");
                 var second = vm.SelectedDefinition!;
