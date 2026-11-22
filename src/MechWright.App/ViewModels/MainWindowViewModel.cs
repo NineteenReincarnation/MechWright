@@ -283,18 +283,9 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
 
         InvalidateVanillaComparison();
         XmlPreview = _document?.Export() ?? "";
-        Diagnostics.Clear();
-        if (_workspace != null)
-        {
-            foreach (var item in _workspace.Validate())
-                Diagnostics.Add(new DiagnosticRow(new Diagnostic(item.Issue.Code,
-                    item.Issue.Severity, $"[{item.FilePath}] {item.Issue.Message}", item.Issue.Location)));
-        }
-        else if (_document != null)
-            foreach (var d in _document.Validate()) Diagnostics.Add(new DiagnosticRow(d));
+        RefreshDiagnosticRows();
         RefreshWorkspaceIndicators();
         RefreshReferences();
-        Notify(nameof(DiagnosticCount));
         Notify(nameof(DirtyFlag));
         Notify(nameof(IsDirty));
         Notify(nameof(CanUndo));
@@ -305,6 +296,23 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     
         }
         finally { _isRefreshingDocument = false; }
+    }
+
+    private void RefreshDiagnosticRows()
+    {
+        Diagnostics.Clear();
+        if (_workspace != null)
+        {
+            var availableGameDefs = HasFieldEvidenceReport ? _catalog : null;
+            foreach (var item in _workspace.Validate(availableGameDefs))
+                Diagnostics.Add(new DiagnosticRow(new Diagnostic(item.Issue.Code,
+                    item.Issue.Severity,
+                    $"[{item.FilePath}] {item.Issue.Message}", item.Issue.Location)));
+        }
+        else if (_document != null)
+            foreach (var issue in _document.Validate())
+                Diagnostics.Add(new DiagnosticRow(issue));
+        Notify(nameof(DiagnosticCount));
     }
 
     private void RefreshFields(string? preferredPath = null, string? bodyPath = null)
@@ -465,6 +473,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             _catalog = scan.Entries;
             FilterCatalog();
             RefreshReferences();
+            RefreshDiagnosticRows();
             RefreshVanillaCatalog(scan);
             UseNativeFieldCatalog(scan);
             RefreshContentCatalog(scan);
