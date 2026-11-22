@@ -98,6 +98,10 @@ public sealed partial class MainWindowViewModel
         _gameExportAudit = null;
         GameExportDifferences.Clear();
         Notify(nameof(GameExportAuditSummary));
+        GameVersion = "";
+        GameEnabledDlc = "";
+        GameTester = "";
+        GameNotes = "";
         GameLoaded = false;
         GameSpawned = false;
         GameGraphicsChecked = false;
