@@ -16,6 +16,7 @@ public static class DefCatalog
     public static IReadOnlyList<string> SupportedPackages => Packages;
 
     public sealed record PackageScan(string Name, bool Present, int DefinitionCount);
+    public sealed record ParentTemplate(string DefType, string Name, string SourcePackage);
     public sealed record CatalogScan(
         IReadOnlyList<CatalogEntry> Entries,
         IReadOnlyList<PackageScan> Packages,
@@ -29,6 +30,7 @@ public static class DefCatalog
         public NativeListTemplateCatalog ListTemplates { get; init; } =
             NativeListTemplateCatalog.Empty;
         public IReadOnlyList<string> GestationRecipeParents { get; init; } = [];
+        public IReadOnlyList<ParentTemplate> ParentTemplates { get; init; } = [];
     }
 
     public static async Task<IReadOnlyList<CatalogEntry>> ScanAsync(
@@ -143,7 +145,12 @@ public static class DefCatalog
             ListTemplates = isGameInstallation
                 ? NativeListTemplateCatalog.Build(sources) : NativeListTemplateCatalog.Empty,
             GestationRecipeParents = isGameInstallation
-                ? VisualGestationEditor.DiscoverRecipeParents(sources) : []
+                ? VisualGestationEditor.DiscoverRecipeParents(sources) : [],
+            ParentTemplates = isGameInstallation
+                ? sources.Where(s => !string.IsNullOrWhiteSpace(s.TemplateName))
+                    .Select(s => new ParentTemplate(s.Type, s.TemplateName!, s.Package))
+                    .Distinct().ToArray()
+                : []
         };
     }
 
