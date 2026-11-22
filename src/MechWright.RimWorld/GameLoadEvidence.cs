@@ -58,9 +58,9 @@ public static class GameLoadEvidence
                      StringComparer.OrdinalIgnoreCase))
         {
             sha.AppendData(Encoding.UTF8.GetBytes(path));
-            sha.AppendData([0]);
+            sha.AppendData(new byte[] { 0 });
             sha.AppendData(Encoding.UTF8.GetBytes(xml));
-            sha.AppendData([0]);
+            sha.AppendData(new byte[] { 0 });
         }
         return Convert.ToHexString(sha.GetHashAndReset());
     }
@@ -152,6 +152,8 @@ public static class GameVerificationReport
             "",
             "## 手动验收步骤",
             "",
+            "| 检查项 | 人工确认状态 |",
+            "| --- | --- |",
             $"| 游戏启动与加载此 Mod | {Checked(checklist.GameLoaded)} |",
             $"| 生成 / 调试生成机械体 | {Checked(checklist.Spawned)} |",
             $"| N/S/E/W 贴图及身体部件观察 | {Checked(checklist.GraphicsChecked)} |",
@@ -169,6 +171,7 @@ public static class GameVerificationReport
         else
         {
             lines.Add($"- 解码后日志文本 SHA-256：`{log.LogSha256}`");
+            lines.Add($"- 日志导入时工程 XML 快照 SHA-256：`{log.ProjectSha256}`");
             lines.Add($"- 日志总行数：{log.LineCount}");
             lines.Add($"- 疑似错误标记的日志行：{log.PossibleErrorLines}");
             lines.Add($"- 同行提及工程 DefName 的疑似错误行：{log.RelevantErrorLines}");
