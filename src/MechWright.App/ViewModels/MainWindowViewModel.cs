@@ -461,6 +461,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         try
         {
             var scan = await DefCatalog.ScanFullAsync(folder);
+            UseFieldEvidenceScan(scan);
             _catalog = scan.Entries;
             FilterCatalog();
             RefreshReferences();
