@@ -121,8 +121,11 @@ public sealed partial class MainWindowViewModel
         if (info.Length == 0)
             throw new InvalidDataException("日志文件为空。");
 
-        // Capture the original editor state before async disk access.
-        var snapshot = GameLoadEvidence.ProjectFingerprint(_workspace, _document);
+        // Capture project identity before asynchronous disk access. A late
+        // Player.log read must never attach evidence to another workspace.
+        var originProject = _workspace;
+        var originDocument = _document;
+        var snapshot = GameLoadEvidence.ProjectFingerprint(originProject, originDocument);
         var names = (_workspace == null
             ? _document.Definitions()
             : _workspace.Files.SelectMany(x => x.Document.Definitions()))
@@ -131,6 +134,10 @@ public sealed partial class MainWindowViewModel
         var log = await File.ReadAllTextAsync(path);
         var report = await Task.Run(() =>
             GameLoadEvidence.Analyze(log, names, snapshot));
+        if (!ReferenceEquals(_workspace, originProject) ||
+            (originProject == null && !ReferenceEquals(_document, originDocument)))
+            throw new InvalidOperationException(
+                "读取日志期间已切换工程；旧日志结果已丢弃，请重新导入。");
         // Resolve all source definitions once, without assuming a DefName is
         // globally unique across different Def types or project files.
         var entries = _workspace == null
