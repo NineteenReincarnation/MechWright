@@ -125,6 +125,8 @@
             <Button Content="＋ 新增工程文件" Click="AddProjectXml_Click"
                     IsVisible="{Binding HasWorkspace}"/>
             <Button Content="连接本机游戏字段" Click="ConnectGameSchema_Click"/>
+            <Button Content="导出字段证据清单…" Click="ExportFieldEvidence_Click"
+                    IsEnabled="{Binding HasFieldEvidenceReport}"/>
             <TextBlock Text="{Binding DocumentSchemaStatus}" FontSize="10"
                        Foreground="#91A7B0" TextWrapping="Wrap"/>
             <Button Content="原版机械体图鉴" Click="OpenVanillaLibrary_Click"/>
