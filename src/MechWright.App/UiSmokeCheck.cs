@@ -26,6 +26,28 @@ internal static class UiSmokeCheck
                 var vm = window.DataContext as MainWindowViewModel ??
                     throw new InvalidOperationException("MainWindow has no editor ViewModel.");
                 Require(vm.ShowStartPage, "New project page should be the initial view.");
+                Require(!vm.HasFieldEvidenceReport,
+                    "A field inventory cannot be exported before a game scan.");
+                var syntheticSource=new VanillaMechanoidLibrary.SourceDef(
+                    "ThingDef","MP_Evidence",null,null,"Core","synthetic-test.xml",
+                    System.Xml.Linq.XElement.Parse(
+                        "<ThingDef><defName>MP_Evidence</defName>" +
+                        "<statBases><MoveSpeed>4.8</MoveSpeed></statBases>" +
+                        "<comps><li Class='CompProperties'><compClass>MP_Example</compClass>" +
+                        "</li></comps></ThingDef>"));
+                var syntheticNative=NativeFieldCatalog.Build([syntheticSource]);
+                var syntheticScan=new DefCatalog.CatalogScan(
+                    [],[new DefCatalog.PackageScan("Core",true,1),
+                        new DefCatalog.PackageScan("Biotech",false,0)],
+                    VanillaMechanoidLibrary.Empty,syntheticNative,true,[]);
+                var evidence=FieldCoverageReport.Generate(syntheticScan);
+                Require(evidence.Contains("statBases/MoveSpeed",StringComparison.Ordinal) &&
+                    evidence.Contains("comps/li/compClass",StringComparison.Ordinal) &&
+                    evidence.Contains("禁止直接标量插入",StringComparison.Ordinal) &&
+                    evidence.Contains("未安装或未找到",StringComparison.Ordinal) &&
+                    evidence.Contains("不计算未经证明",StringComparison.Ordinal),
+                    "Local evidence report must distinguish observed paths, unsafe lists and missing DLC.");
+
 
                 // No creation wizard, field picker, or mandatory presets.
                 // One XML immediately opens a continuous list of empty inputs.
