@@ -109,6 +109,11 @@ public sealed partial class DocumentWorksheetView : UserControl
                 DispatcherPriority.Background);
     }
 
+    private void JumpDiagnostic_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm) vm.JumpToDiagnostic();
+    }
+
     private void ToggleAdvanced_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainWindowViewModel vm) vm.ToggleInlineAdvanced();
