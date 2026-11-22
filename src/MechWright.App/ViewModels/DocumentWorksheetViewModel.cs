@@ -189,6 +189,35 @@ public sealed partial class MainWindowViewModel
         new("li", "新增列表项", true),
         new("", "自定义字段或分组…", false)
     ];
+    // These are convenience suggestions only; the user's installed game
+    // schema and chosen Class still determine whether the XML is loadable.
+    private static readonly DocumentFieldChoice[] ToolItemSuggestions =
+    [
+        new("label", "攻击名称", false),
+        new("power", "基础伤害", false),
+        new("cooldownTime", "近战冷却", false),
+        new("armorPenetration", "护甲穿透", false),
+        new("linkedBodyPartsGroup", "攻击部件组引用", false),
+        new("capacities", "攻击能力列表", true),
+        new("", "自定义字段或分组…", false)
+    ];
+    private static readonly DocumentFieldChoice[] VerbItemSuggestions =
+    [
+        new("verbClass", "Verb 类名", false),
+        new("range", "射程", false),
+        new("warmupTime", "预热时间", false),
+        new("burstShotCount", "连射数量", false),
+        new("ticksBetweenBurstShots", "连射间隔（tick）", false),
+        new("defaultProjectile", "弹丸 ThingDef 引用", false),
+        new("soundCast", "射击音效引用", false),
+        new("", "自定义字段或分组…", false)
+    ];
+    private static readonly DocumentFieldChoice[] CompItemSuggestions =
+    [
+        new("compClass", "组件 CLR 类名（如果该组件需要）", false),
+        new("", "自定义字段或分组…", false)
+    ];
+
     private static readonly DocumentFieldChoice[] GenericSuggestions =
     [
         new("def", "定义引用", false),
@@ -208,8 +237,15 @@ public sealed partial class MainWindowViewModel
         var parent = current != null && DocumentWorksheetEditor.CanContainFields(current.Node)
             ? current?.Name : DocumentNodes.FirstOrDefault(x =>
                 x.Path == DocumentWorksheetEditor.ParentPath(current?.Path ?? ""))?.Name;
+        var selectedItemPath = SelectedListEntry?.Item.XmlPath;
+        var directListMember = selectedItemPath != null && current != null &&
+            (current.Path == selectedItemPath ||
+             DocumentWorksheetEditor.ParentPath(current.Path) == selectedItemPath);
         var suggestions = parent switch
         {
+            "li" when directListMember && SelectedListGroup?.Group.Container == "tools" => ToolItemSuggestions,
+            "li" when directListMember && SelectedListGroup?.Group.Container == "verbs" => VerbItemSuggestions,
+            "li" when directListMember && SelectedListGroup?.Group.Container == "comps" => CompItemSuggestions,
             "statBases" => StatSuggestions,
             "race" => RaceSuggestions,
             "tools" or "verbs" or "comps" or "modExtensions" or "parts" => ListSuggestions,
@@ -457,7 +493,7 @@ public sealed class DocumentNodeRow : INotifyPropertyChanged
     public bool IsGroup => Node.IsGroup ||
         (string.IsNullOrEmpty(Node.Value) && Node.Name is
             ("statBases" or "race" or "graphicData" or "tools" or "verbs" or
-             "comps" or "parts" or "li"));
+             "comps" or "parts")); // Empty li may be a scalar Def reference.
     public bool CanEdit => !Node.IsRoot && !IsGroup && !Node.IsIdentity;
     public bool CanDelete => !Node.IsRoot && !Node.IsIdentity && Node.Name != "label";
     public string Title => _metadata?.Label ?? (Node.Name switch
