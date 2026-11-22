@@ -89,7 +89,8 @@ public sealed partial class MainWindowViewModel
             .Select(x => x.DefName)
             .Where(x => x != "(unnamed)").Distinct().ToArray();
         var log = await File.ReadAllTextAsync(path);
-        var report = GameLoadEvidence.Analyze(log, names, snapshot);
+        var report = await Task.Run(() =>
+            GameLoadEvidence.Analyze(log, names, snapshot));
         _gameLogEvidence = report;
         GameLogIssues.Clear();
         foreach (var issue in report.Issues) GameLogIssues.Add(new GameLogIssueRow(issue));
