@@ -315,6 +315,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             x.FilePath == previous.FilePath && x.Issue.Code == previous.Issue.Code &&
             x.Issue.Location == previous.Issue.Location) ?? Diagnostics.FirstOrDefault();
         Notify(nameof(DiagnosticCount));
+        Notify(nameof(HasDiagnostics));
     }
 
     private void RefreshFields(string? preferredPath = null, string? bodyPath = null)
