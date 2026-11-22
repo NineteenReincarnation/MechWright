@@ -41,6 +41,22 @@ public sealed partial class MainWindowViewModel
     }
 
     public ObservableCollection<DocumentNodeRow> DocumentNodes { get; } = new();
+
+    // Preserve the complete XML tree as the source of truth, but show just the
+    // selected li subtree while managing a repeated list. Switching back to
+    // no selection restores the full structured field list.
+    public IReadOnlyList<DocumentNodeRow> DocumentActiveStructureNodes
+    {
+        get
+        {
+            var path = SelectedListEntry?.Item.XmlPath;
+            return path == null ? DocumentNodes.ToArray() :
+                DocumentNodes.Where(row =>
+                    row.Path == path ||
+                    row.Path.StartsWith(path + "/", StringComparison.Ordinal)).ToArray();
+        }
+    }
+
     public ObservableCollection<DocumentFieldChoice> DocumentFieldChoices { get; } = new();
     public IReadOnlyList<DocumentDefTypeChoice> DocumentDefinitionTypes { get; } =
         FreeformDefinitionEditor.CommonTypes
@@ -240,6 +256,7 @@ public sealed partial class MainWindowViewModel
         Notify(nameof(DocumentHasDefinition));
         Notify(nameof(DocumentHasNodes));
         Notify(nameof(DocumentNodeCount));
+        Notify(nameof(DocumentActiveStructureNodes));
         Notify(nameof(DocumentDefinitionTitle));
         Notify(nameof(DocumentFileTitle));
         Notify(nameof(DocumentInsertLocation));
