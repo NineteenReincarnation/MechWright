@@ -340,6 +340,32 @@ public sealed partial class MainWindow : Window
         catch (Exception ex) { _vm.ReportError(ex); }
     }
 
+    private async void ExportFieldEvidence_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var report = _vm.GenerateFieldEvidenceReport();
+            var destination = await StorageProvider.SaveFilePickerAsync(
+                new FilePickerSaveOptions
+                {
+                    Title = "导出本机 RimWorld 字段证据清单（不含游戏原始资源）",
+                    SuggestedFileName = "MechWright-Field-Evidence.md",
+                    FileTypeChoices =
+                    [
+                        new FilePickerFileType("Markdown") { Patterns = ["*.md"] }
+                    ],
+                    DefaultExtension = "md",
+                    ShowOverwritePrompt = true
+                });
+            var path = destination?.TryGetLocalPath();
+            if (path == null) return;
+            await AtomicFileWriter.WriteAsync(path, report);
+            _vm.StatusMessage("已导出本机字段证据清单 · " + path +
+                " · 观察字段和 CLR 候选不等于游戏加载验证");
+        }
+        catch (Exception ex) { _vm.ReportError(ex); }
+    }
+
     private async void ScanCatalog_Click(object? sender, RoutedEventArgs e)
     {
         try
