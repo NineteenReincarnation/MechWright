@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Xml.Linq;
+using System.Xml.XPath;
 using MechWright.Core;
 
 namespace MechWright.RimWorld;
@@ -13,7 +14,31 @@ public static class DefValidation
         if (root?.Name.LocalName == "LanguageData")
             return diagnostics; // Native RimWorld translation XML.
         if (root?.Name.LocalName == "Patch")
-            return diagnostics; // Root-level RimWorld Patch XML is a valid project resource.
+        {
+            // PatchOperation matching depends on game load order, other Mods,
+            // and conditional operations. Validate only standard XPath syntax;
+            // never interpret absence of a match as a broken game patch.
+            foreach (var xpath in root.Descendants("xpath"))
+            {
+                var expression = xpath.Value.Trim();
+                if (expression.Length == 0)
+                {
+                    diagnostics.Add(new Diagnostic("MW024", Severity.Warning,
+                        "Patch XPath is empty; check this operation before game load.",
+                        DefDocument.GetPath(xpath)));
+                    continue;
+                }
+                try { _ = XPathExpression.Compile(expression); }
+                catch (XPathException)
+                {
+                    diagnostics.Add(new Diagnostic("MW024", Severity.Warning,
+                        "Patch XPath cannot be parsed as standard XPath; " +
+                        "custom runtime behavior is not evaluated.",
+                        DefDocument.GetPath(xpath)));
+                }
+            }
+            return diagnostics;
+        }
         if (root?.Name.LocalName != "Defs")
         {
             diagnostics.Add(new Diagnostic("MW001", Severity.Warning,
