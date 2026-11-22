@@ -40,6 +40,30 @@ public sealed partial class VisualReviewView : UserControl
         catch (Exception ex) { vm.ReportError(ex); }
     }
 
+    private void JumpGameLogIssue_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm)
+            vm.JumpToGameLogIssue();
+    }
+
+    private async void AuditExportedMod_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm ||
+            TopLevel.GetTopLevel(this) is not { } window) return;
+        try
+        {
+            var folders = await window.StorageProvider.OpenFolderPickerAsync(
+                new FolderPickerOpenOptions
+                {
+                    Title = "选择导出的 RimWorld Mod 根目录用于 XML 复核",
+                    AllowMultiple = false
+                });
+            var path = folders.FirstOrDefault()?.TryGetLocalPath();
+            if (path != null) await vm.AuditExportedModAsync(path);
+        }
+        catch (Exception ex) { vm.ReportError(ex); }
+    }
+
     private async void ExportGameVerification_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm ||
