@@ -65,6 +65,7 @@ public sealed partial class MainWindowViewModel
     public void OpenWorkspace(MechWorkspace workspace)
     {
         ArgumentNullException.ThrowIfNull(workspace);
+        ClearGameLogEvidence();
         _workspace = workspace;
         ProjectFiles.Clear();
         foreach (var file in workspace.Files) ProjectFiles.Add(new ProjectFileRow(file));
