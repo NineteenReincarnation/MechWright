@@ -1,6 +1,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using MechWright.App.ViewModels;
+using MechWright.App.Views;
 using MechWright.RimWorld;
 
 namespace MechWright.App;
@@ -381,6 +382,16 @@ internal static class UiSmokeCheck
                 Require(vm.VisualReviewChecks.Count == 6 &&
                     vm.VisualReviewChecks.Any(x=>x.Title=="机械培育" && x.Ready),
                     "Novice review did not display and recognize gestation.");
+                _ = new VisualReviewView { DataContext = vm };
+                Require(vm.GameLogSummary.Contains("尚未导入 Player.log",StringComparison.Ordinal),
+                    "Game validation must default to unverified rather than CI-passed.");
+                vm.GameVersion="1.7";
+                vm.GameLoaded=true;
+                var receipt=vm.GenerateGameVerificationReport();
+                Require(receipt.Contains("用户已勾选",StringComparison.Ordinal) &&
+                    receipt.Contains("未导入 Player.log",StringComparison.Ordinal) &&
+                    receipt.Contains("待人工确认",StringComparison.Ordinal),
+                    "Game validation receipt must distinguish user checks from game proof.");
                 vm.WorkflowStep = 5;
                 Require(vm.IsAdvancedStage, "Advanced editing remains inaccessible.");
 
