@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MechWright.App.ViewModels"
+             xmlns:rw="using:MechWright.RimWorld"
              x:Class="MechWright.App.Views.VisualReviewView"
              x:DataType="vm:MainWindowViewModel">
   <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15" Margin="18">
@@ -41,6 +42,69 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+      <Border Classes="feature-card" Padding="15">
+        <StackPanel Spacing="11">
+          <TextBlock Text="游戏实测记录 · MW-04" FontSize="15" FontWeight="SemiBold"/>
+          <TextBlock Text="先导出 Mod 并在 RimWorld 1.7 中测试。勾选项只表示人工确认，日志分析不能证明游戏加载通过。"
+                     Foreground="#A5B9BA" TextWrapping="Wrap" FontSize="11"/>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <StackPanel Grid.Column="0" Spacing="4">
+              <TextBlock Text="实际游戏版本" FontSize="11"/>
+              <TextBox Text="{Binding GameVersion,Mode=TwoWay}"
+                       Watermark="例如 1.7.x（实际运行版本）"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="4">
+              <TextBlock Text="启用的 DLC / Mod" FontSize="11"/>
+              <TextBox Text="{Binding GameEnabledDlc,Mode=TwoWay}"
+                       Watermark="实际启用的依赖，可留空"/>
+            </StackPanel>
+          </Grid>
+          <TextBox Text="{Binding GameTester,Mode=TwoWay}"
+                   Watermark="测试人 / 测试环境标识（可选）"/>
+          <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
+                ColumnSpacing="12" RowSpacing="6">
+            <CheckBox Grid.Row="0" Grid.Column="0"
+                      IsChecked="{Binding GameLoaded,Mode=TwoWay}"
+                      Content="游戏已加载此 Mod"/>
+            <CheckBox Grid.Row="0" Grid.Column="1"
+                      IsChecked="{Binding GameSpawned,Mode=TwoWay}"
+                      Content="已在游戏内生成机械体"/>
+            <CheckBox Grid.Row="1" Grid.Column="0"
+                      IsChecked="{Binding GameGraphicsChecked,Mode=TwoWay}"
+                      Content="已查看贴图和部件"/>
+            <CheckBox Grid.Row="1" Grid.Column="1"
+                      IsChecked="{Binding GameCombatChecked,Mode=TwoWay}"
+                      Content="已测试攻击与技能"/>
+            <CheckBox Grid.Row="2" Grid.Column="0"
+                      IsChecked="{Binding GameGestationChecked,Mode=TwoWay}"
+                      Content="已测试机械培育（如适用）"/>
+            <CheckBox Grid.Row="2" Grid.Column="1"
+                      IsChecked="{Binding GameReimportChecked,Mode=TwoWay}"
+                      Content="已导出并重新导入检查"/>
+          </Grid>
+          <TextBox Text="{Binding GameNotes,Mode=TwoWay}"
+                   AcceptsReturn="True" TextWrapping="Wrap" Height="75"
+                   Watermark="记录游戏内观察、未验证事项和可复现问题（可选）"/>
+          <Button Content="读取本地 Player.log 并关联 DefName"
+                  Click="ImportGameLog_Click" HorizontalAlignment="Left"/>
+          <TextBlock Text="{Binding GameLogSummary}" FontSize="11"
+                     Foreground="#B8C8C6" TextWrapping="Wrap"/>
+          <ItemsControl ItemsSource="{Binding GameLogIssues}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="rw:GameLoadEvidence.LogIssue">
+                <TextBlock Text="{Binding Display}" FontSize="11"
+                           Foreground="#D5BBB2" Margin="0,2"
+                           TextWrapping="Wrap"/>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Button Content="导出实机验收记录（Markdown）"
+                  Click="ExportGameVerification_Click"
+                  HorizontalAlignment="Left"/>
+          <TextBlock Text="导出只包含项目和日志 SHA-256、行号、关联 DefName 及人工记录；不会包含原始日志文本和机器路径。"
+                     Foreground="#96ADB1" FontSize="10" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
       <Border Classes="feature-card" Padding="13">
         <StackPanel Spacing="10">
           <Grid ColumnDefinitions="*,Auto">
