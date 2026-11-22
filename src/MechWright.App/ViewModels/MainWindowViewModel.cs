@@ -243,6 +243,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
     {
         // Opening one standalone XML exits project mode only after the
         // caller's unsaved-changes confirmation.
+        ClearGameLogEvidence();
         _workspace = null;
         ProjectFiles.Clear();
         _selectedProjectFile = null;
