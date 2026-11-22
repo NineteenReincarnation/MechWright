@@ -127,6 +127,17 @@ internal static class UiSmokeCheck
                     vm.SelectedListEntry?.Item.Index == 1 &&
                     vm.CanMoveNativeListEntryUp && !vm.CanMoveNativeListEntryDown,
                     "Copy should select the new li and update movement controls.");
+                var duplicatedItem=vm.SelectedListEntry;
+                var duplicatedPath=duplicatedItem!.Item.XmlPath;
+                Require(vm.DocumentActiveStructureNodes.Count>0 &&
+                    vm.DocumentActiveStructureNodes.All(x=>
+                        x.Path==duplicatedPath ||
+                        x.Path.StartsWith(duplicatedPath+"/",StringComparison.Ordinal)),
+                    "Selecting a list entry should show only its structured fields.");
+                vm.SelectedListEntry=null;
+                Require(vm.DocumentActiveStructureNodes.Count==vm.DocumentNodes.Count,
+                    "Deselecting the entry should restore the full definition.");
+                vm.SelectedListEntry=duplicatedItem;
                 vm.MoveNativeListEntry(-1);
                 Require(vm.SelectedListEntry?.Item.Index == 0 &&
                     vm.CanMoveNativeListEntryDown,
