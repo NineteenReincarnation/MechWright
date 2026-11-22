@@ -55,7 +55,7 @@ public static class DefValidation
 
         foreach (var entry in entries)
         {
-            var location = $"/Defs/{entry.Type}[{entry.Index + 1}]";
+            var location = DefDocument.GetPath(entry.Element);
             if (entry.DefName == "(unnamed)" && !entry.Abstract &&
                 entry.Element.Attribute("Name") == null)
                 diagnostics.Add(new Diagnostic("MW003", Severity.Warning,
