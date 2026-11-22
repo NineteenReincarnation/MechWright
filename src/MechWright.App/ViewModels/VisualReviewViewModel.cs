@@ -67,15 +67,22 @@ public sealed partial class MainWindowViewModel
             recipePresent ? "已配置机械培育配方，导出时会包含其材料与科技要求。"
                 : "尚未配置机械培育（可选；普通机械体可以不培育）。",
             recipePresent,Optional:true));
-        var errors = _workspace.Validate().Count(x => x.Issue.Severity == Severity.Error);
+        var validation = _workspace.Validate(
+            HasFieldEvidenceReport ? _catalog : null,
+            HasFieldEvidenceReport ? _fieldEvidenceScan?.ParentTemplates : null);
+        var errors = validation.Count(x => x.Issue.Severity == Severity.Error);
+        var warnings = validation.Count(x => x.Issue.Severity == Severity.Warning);
         VisualReviewChecks.Add(new VisualReviewRow("XML 结构检查",
-            errors == 0 ? "本地 XML 检查没有发现阻断错误。"
-                : $"发现 {errors} 处 XML 结构错误，请先处理。", errors == 0));
+            errors > 0 ? $"发现 {errors} 处阻断错误，请先处理。"
+                : warnings > 0 ? $"没有阻断错误；另有 {warnings} 条引用、模板或 XML 警告，请在下方核查。"
+                : "本地 XML 检查没有发现阻断错误或警告。", errors == 0));
 
         var done = VisualReviewChecks.Count(x => x.Ready && !x.Optional);
         var required = VisualReviewChecks.Count(x => !x.Optional);
         VisualReviewSummary = $"{done} / {required} 项必要配置已完成 · " +
-            (errors == 0 ? "可以导出并在 RimWorld 中测试" : "存在需要处理的 XML 错误");
+            (errors > 0 ? "存在需要修正的 XML 错误"
+                : warnings > 0 ? $"有 {warnings} 条非阻断警告，导出前建议检查"
+                : "可以导出并在 RimWorld 中测试");
     }
 }
 public sealed record VisualReviewRow(string Title, string Description,
