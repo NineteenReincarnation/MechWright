@@ -105,7 +105,8 @@ public sealed class MechWorkspace
 
     public IReadOnlyList<WorkspaceDiagnostic> Validate(
         IReadOnlyCollection<CatalogEntry>? gameCatalog = null,
-        IReadOnlyCollection<DefCatalog.ParentTemplate>? gameTemplates = null)
+        IReadOnlyCollection<DefCatalog.ParentTemplate>? gameTemplates = null,
+        IReadOnlyCollection<DefCatalog.PackageScan>? gamePackages = null)
     {
         Reindex();
         var result = new List<WorkspaceDiagnostic>();
@@ -129,6 +130,7 @@ public sealed class MechWorkspace
                         match.Path)));
         }
         result.AddRange(TemplateInheritanceDiagnostics.Inspect(_files, gameTemplates));
+        result.AddRange(DlcConditionDiagnostics.Inspect(_files, gamePackages));
         // Cross-file references are re-evaluated against the live project index,
         // not cached per-file: a rename in a different XML must change diagnostics.
         // Only a connected game catalog authorizes a "not found in catalog"
