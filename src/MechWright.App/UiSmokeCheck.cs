@@ -384,6 +384,28 @@ internal static class UiSmokeCheck
                 vm.WorkflowStep = 5;
                 Require(vm.IsAdvancedStage, "Advanced editing remains inaccessible.");
 
+                // An actual diagnostics list must locate the source file
+                // and the correct Def even when different Def types are mixed.
+                var issueProject = new MechWorkspace("Diagnostics", "");
+                issueProject.AddXml("1.7/Defs/First.xml",
+                    "<Defs><ThingDef><defName>MP_First</defName></ThingDef></Defs>");
+                issueProject.AddXml("1.7/Defs/Body.xml",
+                    "<Defs><ThingDef><defName>MP_Other</defName></ThingDef>" +
+                    "<BodyDef><defName>MP_InvalidBody</defName></BodyDef></Defs>");
+                vm.OpenWorkspace(issueProject);
+                var bodyIssue=vm.Diagnostics.First(x =>
+                    x.FilePath=="1.7/Defs/Body.xml" && x.Issue.Code=="MW004");
+                Require(bodyIssue.Issue.Location=="/Defs[1]/BodyDef[1]" &&
+                    bodyIssue.SeverityLabel=="错误",
+                    "Diagnostics must carry exact indexed paths and file provenance.");
+                vm.SelectedDiagnostic=bodyIssue;
+                vm.JumpToDiagnostic();
+                Require(vm.SourceName=="1.7/Defs/Body.xml" &&
+                    vm.SelectedDefinition?.Entry.DefName=="MP_InvalidBody" &&
+                    vm.DocumentSelectedNode?.Path==bodyIssue.Issue.Location &&
+                    vm.InlineAdvancedOpen && vm.IsDocumentMode,
+                    "The review diagnostic must navigate to the actual editable source node.");
+
                 _ = new MechanoidWizardWindow();
                 _ = new VanillaLibraryWindow { DataContext = vm };
             }
