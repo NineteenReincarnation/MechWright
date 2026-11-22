@@ -125,3 +125,13 @@
 - 根节点为 `Patch` 的 XML 现在检查标准 `xpath` 字段是否为空或语法无法解析，给出 `MW024` **非阻断警告**；不运行补丁、不假设游戏载入顺序，也不把 XPath 在当前文件里未命中视为错误。
 - 补充 `NativeListEditorTests`、`MechWorkspaceTests`、`PatchValidationTests` 和 UI Smoke 场景，针对 Class 无损往返、原文不变、跨文件改名/撤销、未安装原版时的未知引用、XPath 语法、空 `li` 文本编辑进行回归。**最终编译/测试状态以当次 GitHub Actions 结果为准**。
 - 后续仍需完整的多态对象字段类型来源与类型合法性检查、实际 RimWorld 1.7 原版 DLC 数据扫描、通过真实 Mod 加载的 Patch XPath 生效检查和更全面的引用路径覆盖。**本增量没有新增游戏实测覆盖率。**
+
+
+## 2026-11-22 第四批：可定位诊断和 ParentName 继承检查（MW-03）
+
+- 重构诊断行的数据绑定：`DiagnosticRow` 直接保留诊断的 `Code`、`Severity`、XML `Location` 与所属工程 `FilePath`，不再把文件路径拼入不可解析的提示文本。
+- 现有“设计检查”页增加可选中的文件与引用诊断列表；普通 XML 配置页增设只在有诊断时出现的折叠列表。点击“定位”能切换到对应文件、Def 和已有的最近 XML 节点，并展开原有高级结构编辑，不新增独立向导。对缺失或 Patch XPath 等不能定位为普通 Def 字段的情况，明确保留源文件路径和无法精确定位的信息。
+- `DefValidation` 的 Def 诊断位置改用 `DefDocument.GetPath`，使混排多个 Def 类型时不再误用全局定义索引形成错误的同类型序号。UI Smoke 覆盖多文件、混排类型和实际诊断定位操作。
+- `DefCatalog.CatalogScan` 现在从用户本机安装 XML 的 `Name` 属性建立只读 `ParentTemplates` 索引；`TemplateInheritanceDiagnostics` 检查当前工程同类型模板重名（`MW031`）、本地可证明的 `ParentName` 循环（`MW032`），以及在本机扫描结果和工程中都未找到、又没有直接 `MayRequire` 条件的模板名（`MW030`）。均为**非阻断警告**，不模拟模组加载顺序或声称第三方模板不存在。
+- 新增 `TemplateInheritanceDiagnosticsTests` 及必要 UI Smoke 验证。此轮修改的是可审计的静态检查和 UI 操作，没有获得原版/DLC 的真实加载结果，不改变全量字段覆盖率未知的结论。
+- **后续**：继续验证继承/条件依赖/加载顺序，完整支持对所有引用源类型的检查；在真实游戏中核对 XML、Patch 和父模板解析行为。
