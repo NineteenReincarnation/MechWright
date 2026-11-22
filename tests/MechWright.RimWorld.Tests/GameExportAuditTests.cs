@@ -106,4 +106,30 @@ public sealed class GameExportAuditTests
         Assert.Contains("Player.log 行号", report);
         Assert.Contains("待人工确认", report);
     }
+    [Fact]
+    public void LargeAuditCountsAllDifferencesButLimitsDisplayedPaths()
+    {
+        var editor = new MechWorkspace("Editor", "");
+        var exported = new MechWorkspace("Export", "");
+        for (var i = 0; i < GameExportAudit.MaxShownDifferences + 7; i++)
+        {
+            var path = $"Defs/Unit{i:D3}.xml";
+            editor.AddXml(path,
+                $"<Defs><ThingDef><defName>MP_Unit{i:D3}</defName></ThingDef></Defs>", true);
+        }
+
+        var fingerprint = GameLoadEvidence.ProjectFingerprint(editor);
+        var result = GameExportAudit.Compare(editor, exported);
+
+        Assert.False(result.XmlMatches);
+        Assert.Equal(GameExportAudit.MaxShownDifferences + 7, result.TotalDifferences);
+        Assert.Equal(GameExportAudit.MaxShownDifferences, result.Differences.Count);
+        Assert.Equal(0, result.ExactMatches);
+        Assert.Contains("只显示前", result.Summary);
+        Assert.Equal("Defs/Unit000.xml", result.Differences[0].RelativePath);
+        Assert.Equal(fingerprint, GameLoadEvidence.ProjectFingerprint(editor));
+        Assert.False(editor.IsDirty);
+        Assert.False(exported.IsDirty);
+    }
+
 }
