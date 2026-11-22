@@ -69,7 +69,8 @@ public sealed partial class MainWindowViewModel
             recipePresent,Optional:true));
         var validation = _workspace.Validate(
             HasFieldEvidenceReport ? _catalog : null,
-            HasFieldEvidenceReport ? _fieldEvidenceScan?.ParentTemplates : null);
+            HasFieldEvidenceReport ? _fieldEvidenceScan?.ParentTemplates : null,
+            HasFieldEvidenceReport ? _fieldEvidenceScan?.Packages : null);
         var errors = validation.Count(x => x.Issue.Severity == Severity.Error);
         var warnings = validation.Count(x => x.Issue.Severity == Severity.Warning);
         VisualReviewChecks.Add(new VisualReviewRow("XML 结构检查",
