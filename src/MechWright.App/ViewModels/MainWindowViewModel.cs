@@ -487,6 +487,7 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
             RefreshBodyPresetOptions();
             RefreshVisualRangedPresets();
             RefreshVisualPartPresets();
+            RefreshVisualReview();
             if (scan.IsGameInstallation)
             {
                 RecentGamePath.Remember(folder);
