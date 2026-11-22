@@ -111,6 +111,29 @@
                      Foreground="#8098A2" FontSize="11" Margin="0,5,0,0"/>
         </StackPanel>
 
+        <!-- Diagnostic details are visible directly in the normal worksheet.
+             No separate wizard is needed to open the faulty file and node. -->
+        <Expander Header="{Binding DiagnosticCount}" IsVisible="{Binding HasDiagnostics}">
+          <StackPanel Spacing="9" Margin="4,8,4,9">
+            <ListBox ItemsSource="{Binding Diagnostics}"
+                     SelectedItem="{Binding SelectedDiagnostic,Mode=TwoWay}"
+                     MinHeight="46" MaxHeight="175">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:DiagnosticRow">
+                  <StackPanel Margin="5,5" Spacing="2">
+                    <TextBlock Text="{Binding Title}" FontSize="12" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Location}" FontSize="10"
+                               Foreground="#98AAB4" TextWrapping="Wrap"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <Button Content="定位选中问题" Click="JumpDiagnostic_Click"
+                    IsEnabled="{Binding HasSelectedDiagnostic}"
+                    HorizontalAlignment="Left"/>
+          </StackPanel>
+        </Expander>
+
         <!-- Complex structures and extra Def types are accessible, but never
              obstruct the normal top-to-bottom typing workflow. -->
         <Border Height="1" Background="#35404A" Margin="0,14,0,0"/>
