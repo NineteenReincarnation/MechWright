@@ -50,8 +50,10 @@ public static class DefValidation
         var entries = document.Definitions().Where(e => e.Type != "Patch").ToList();
         foreach (var group in entries.Where(x => x.DefName != "(unnamed)")
                      .GroupBy(x => (x.Type, x.DefName)).Where(x => x.Count() > 1))
-            diagnostics.Add(new Diagnostic("MW002", Severity.Error,
-                $"Duplicate {group.Key.Type}: {group.Key.DefName}.", "/Defs"));
+            foreach (var duplicate in group)
+                diagnostics.Add(new Diagnostic("MW002", Severity.Error,
+                    $"Duplicate {group.Key.Type}: {group.Key.DefName}.",
+                    DefDocument.GetPath(duplicate.Element)));
 
         foreach (var entry in entries)
         {
@@ -76,7 +78,7 @@ public static class DefValidation
                     "BodyDef requires a corePart.", location));
                 continue;
             }
-            InspectParts(core, location + "/corePart", diagnostics);
+            InspectParts(core, DefDocument.GetPath(core), diagnostics);
         }
 
         return diagnostics;
@@ -88,7 +90,7 @@ public static class DefValidation
         double sum = 0;
         foreach (var (child, i) in children.Select((e, i) => (e, i)))
         {
-            var childPath = path + $"/parts/li[{i + 1}]";
+            var childPath = DefDocument.GetPath(child);
             var coverage = child.Element("coverage");
             if (coverage != null)
             {
@@ -96,7 +98,7 @@ public static class DefValidation
                     CultureInfo.InvariantCulture, out var value) ||
                     !double.IsFinite(value) || value < 0 || value > 1)
                     errors.Add(new Diagnostic("MW005", Severity.Error,
-                        "coverage must be a finite number between 0 and 1.", childPath + "/coverage"));
+                        "coverage must be a finite number between 0 and 1.", DefDocument.GetPath(coverage)));
                 else sum += value;
             }
             else sum += 1; // RimWorld defaults to full relative coverage if the value is omitted.
@@ -108,6 +110,6 @@ public static class DefValidation
         if (sum > 1.000001)
             errors.Add(new Diagnostic("MW007", Severity.Warning,
                 $"Child coverage weights total {sum:0.###}; check the intended hit distribution.",
-                path + "/parts"));
+                DefDocument.GetPath(parent.Element("parts")!)));
     }
 }
