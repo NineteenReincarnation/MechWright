@@ -35,6 +35,7 @@ public sealed partial class MainWindowViewModel
             Notify(nameof(HasSelectedListEntry));
             Notify(nameof(CanMoveNativeListEntryUp));
             Notify(nameof(CanMoveNativeListEntryDown));
+            Notify(nameof(DocumentActiveStructureNodes));
             ListXml = value?.Item.Source ?? "<li>\n</li>";
         }
     }
