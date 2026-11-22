@@ -570,13 +570,13 @@ public sealed class ReferenceRow(DefinitionReference reference)
 {
     public DefinitionReference Reference { get; } = reference;
     public string Display => $"{Reference.FromDefName}  →  {Reference.TargetType}/{Reference.TargetDefName}";
-    public string Location => Reference.Location switch
+    public string Location => (Reference.Location switch
     {
         ReferenceLocation.CurrentDocument => "当前文件 ✓",
         ReferenceLocation.GameCatalog => $"本地目录 · {Reference.OriginPackage}",
         ReferenceLocation.ProjectFile => $"工程文件 · {Reference.OriginPackage}",
         _ => "待解析 / 外部 Mod"
-    };
+    }) + (Reference.IsConditional ? " · 条件依赖：" + Reference.ConditionalPackages : "");
     public string Path => Reference.FieldPath;
 }
 
