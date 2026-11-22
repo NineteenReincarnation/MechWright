@@ -10,6 +10,7 @@ public sealed partial class MainWindowViewModel
     private NativeListGroupRow? _selectedListGroup;
     private NativeListItemRow? _selectedListEntry;
     private string _listXml = "<li>\n</li>";
+    private string _listClassName = "";
     private string _listHelp = "选择列表。示例列表项不会自动写入 XML。";
 
     public NativeListGroupRow? SelectedListGroup
@@ -37,6 +38,12 @@ public sealed partial class MainWindowViewModel
             Notify(nameof(CanMoveNativeListEntryDown));
             Notify(nameof(DocumentActiveStructureNodes));
             ListXml = value?.Item.Source ?? "<li>\n</li>";
+            ListClassName = value?.Item.ClassName ?? "";
+            if (value != null)
+            {
+                var node = DocumentNodes.FirstOrDefault(x => x.Path == value.Item.XmlPath);
+                if (node != null) DocumentSelectedNode = node;
+            }
         }
     }
 
@@ -45,6 +52,12 @@ public sealed partial class MainWindowViewModel
     public bool CanMoveNativeListEntryDown => SelectedListEntry is { } row &&
         row.Item.Index + 1 < NativeListEntries.Count;
     public bool HasListGroup => SelectedListGroup != null;
+
+    public string ListClassName
+    {
+        get => _listClassName;
+        set { if (_listClassName == value) return; _listClassName = value ?? ""; Notify(); }
+    }
 
     public string ListXml
     {
@@ -114,6 +127,13 @@ public sealed partial class MainWindowViewModel
         SelectedListGroup = NativeListGroups.FirstOrDefault(x => x.Group.Container == group);
         RefreshNativeListItems(itemPath);
     }
+
+    public void SaveNativeListClass() => PerformListEdit((doc, def, group, path) =>
+    {
+        if (path == null) throw new InvalidOperationException("请先选择一个列表成员。");
+        NativeListEditor.SetItemClass(doc, def, group, path, ListClassName);
+        return path;
+    });
 
     public void AddBlankNativeListEntry() => PerformListEdit(
         (doc, def, group, path) => NativeListEditor.Add(doc, def, group, "<li />"));
