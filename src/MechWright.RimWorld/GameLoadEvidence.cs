@@ -125,11 +125,13 @@ public static class GameVerificationReport
         string currentProjectSha256,
         int definitionCount)
     {
-        static string Safe(string value, int length = 600) =>
-            string.IsNullOrWhiteSpace(value) ? "未记录" :
-                value.Trim().Replace("\r", " ").Replace("\n", " ")
-                    .Replace("|", "／")[..Math.Min(value.Trim()
-                        .Replace("\r", " ").Replace("\n", " ").Replace("|", "／").Length, length)];
+        static string Safe(string value, int length = 600)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return "未记录";
+            var cleaned = value.Trim().Replace("\r", " ").Replace("\n", " ")
+                .Replace("|", "／");
+            return cleaned.Length > length ? cleaned[..length] : cleaned;
+        }
         static string Checked(bool value) => value ? "用户已勾选" : "未确认";
         var same = log != null && log.ProjectSha256 == currentProjectSha256;
         var lines = new List<string>
@@ -146,7 +148,7 @@ public static class GameVerificationReport
             $"| 启用 DLC / Mod | {Safe(checklist.EnabledDlc, 300)} |",
             $"| 验收执行者 | {Safe(checklist.Tester, 100)} |",
             $"| 当前工程定义数 | {definitionCount} |",
-            $"| 当前编辑器 XML 快照 SHA-256 | \`{currentProjectSha256}\` |",
+            $"| 当前编辑器 XML 快照 SHA-256 | `{currentProjectSha256}` |",
             "",
             "## 手动验收步骤",
             "",
@@ -166,7 +168,7 @@ public static class GameVerificationReport
         }
         else
         {
-            lines.Add($"- 日志文件内容 SHA-256：\`{log.LogSha256}\`");
+            lines.Add($"- 解码后日志文本 SHA-256：`{log.LogSha256}`");
             lines.Add($"- 日志总行数：{log.LineCount}");
             lines.Add($"- 疑似错误标记的日志行：{log.PossibleErrorLines}");
             lines.Add($"- 同行提及工程 DefName 的疑似错误行：{log.RelevantErrorLines}");
