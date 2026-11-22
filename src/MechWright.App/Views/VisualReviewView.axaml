@@ -88,12 +88,35 @@
                   Click="ImportGameLog_Click" HorizontalAlignment="Left"/>
           <TextBlock Text="{Binding GameLogSummary}" FontSize="11"
                      Foreground="#B8C8C6" TextWrapping="Wrap"/>
-          <ItemsControl ItemsSource="{Binding GameLogIssues}">
-            <ItemsControl.ItemTemplate>
+          <ListBox ItemsSource="{Binding GameLogIssues}"
+                   SelectedItem="{Binding SelectedGameLogIssue,Mode=TwoWay}"
+                   MinHeight="42" MaxHeight="170">
+            <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:GameLogIssueRow">
                 <TextBlock Text="{Binding Display}" FontSize="11"
-                           Foreground="#D5BBB2" Margin="0,2"
+                           Foreground="#D5BBB2" Margin="3,5"
                            TextWrapping="Wrap"/>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Button Content="定位日志关联的工程 Def"
+                  Click="JumpGameLogIssue_Click"
+                  IsEnabled="{Binding CanNavigateGameLogIssue}"
+                  HorizontalAlignment="Left"/>
+          <Border Height="1" Background="#35404A" Margin="0,3"/>
+          <TextBlock Text="导出目录 XML 复核" FontSize="13" FontWeight="SemiBold"/>
+          <TextBlock Text="选择刚才导出的 Mod 根目录；仅对比工作站 XML 与重新导入的文件，避免替换当前工作站数据。"
+                     FontSize="11" Foreground="#A5B9BA" TextWrapping="Wrap"/>
+          <Button Content="选择导出的 Mod 文件夹并核对 XML"
+                  Click="AuditExportedMod_Click" IsEnabled="{Binding HasWorkspace}"
+                  HorizontalAlignment="Left"/>
+          <TextBlock Text="{Binding GameExportAuditSummary}" FontSize="11"
+                     Foreground="#B8C8C6" TextWrapping="Wrap"/>
+          <ItemsControl ItemsSource="{Binding GameExportDifferences}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:GameExportDifferenceRow">
+                <TextBlock Text="{Binding Display}" FontSize="11"
+                           Foreground="#D5BBB2" Margin="0,2" TextWrapping="Wrap"/>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
