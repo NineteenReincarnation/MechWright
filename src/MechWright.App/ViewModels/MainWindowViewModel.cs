@@ -287,6 +287,8 @@ public sealed partial class MainWindowViewModel : INotifyPropertyChanged
         RefreshDiagnosticRows();
         RefreshWorkspaceIndicators();
         RefreshReferences();
+        Notify(nameof(GameLogSummary));
+        Notify(nameof(GameExportAuditSummary));
         Notify(nameof(DirtyFlag));
         Notify(nameof(IsDirty));
         Notify(nameof(CanUndo));
