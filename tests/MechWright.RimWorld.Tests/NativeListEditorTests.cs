@@ -207,4 +207,48 @@ public sealed class NativeListEditorTests
         Assert.False(doc.IsDirty);
     }
 
+    [Fact]
+    public void SelectedItemClassCanBeUpdatedRemovedAndUndoneWithoutTouchingSiblings()
+    {
+        var doc = DefDocument.Parse(Source);
+        var first = NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").First();
+        Assert.Equal("VerbProperties", first.ClassName);
+        NativeListEditor.SetItemClass(doc, doc.Definitions().Single(), "verbs",
+            first.XmlPath, "VerbProperties");
+        Assert.False(doc.IsDirty);
+
+        NativeListEditor.SetItemClass(doc, doc.Definitions().Single(), "verbs",
+            first.XmlPath, "Custom.VerbProperties");
+        var modified = doc.Export();
+        Assert.Contains("Class=\"Custom.VerbProperties\"", modified);
+        Assert.Contains("<!-- preserve -->", modified);
+        Assert.Contains("Inherit=\"False\"", modified);
+        Assert.Equal("", NativeListEditor.Items(doc, doc.Definitions().Single(),
+            "verbs")[1].ClassName);
+        Assert.True(doc.Undo());
+        Assert.Equal(Source, doc.Export());
+        Assert.True(doc.Redo());
+        Assert.Equal(modified, doc.Export());
+
+        NativeListEditor.SetItemClass(doc, doc.Definitions().Single(), "verbs",
+            first.XmlPath, "");
+        Assert.DoesNotContain("Class=\"Custom.VerbProperties\"", doc.Export());
+        Assert.True(doc.Undo());
+        Assert.Equal(modified, doc.Export());
+    }
+
+    [Fact]
+    public void InvalidClassNameDoesNotChangeDocumentRevisionOrHistory()
+    {
+        var doc = DefDocument.Parse(Source);
+        var first = NativeListEditor.Items(doc, doc.Definitions().Single(), "verbs").First();
+        var revision = doc.Revision;
+        Assert.Throws<ArgumentException>(() => NativeListEditor.SetItemClass(
+            doc, doc.Definitions().Single(), "verbs", first.XmlPath, "bad\u0001name"));
+        Assert.Equal(revision, doc.Revision);
+        Assert.Equal(Source, doc.Export());
+        Assert.False(doc.IsDirty);
+        Assert.False(doc.CanUndo);
+    }
+
 }
