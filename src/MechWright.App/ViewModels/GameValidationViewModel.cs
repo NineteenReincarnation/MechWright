@@ -10,7 +10,7 @@ namespace MechWright.App.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
-    public ObservableCollection<GameLoadEvidence.LogIssue> GameLogIssues { get; } = new();
+    public ObservableCollection<GameLogIssueRow> GameLogIssues { get; } = new();
     private GameLoadEvidence.Result? _gameLogEvidence;
     private string _gameVersion = "";
     private string _gameEnabledDlc = "";
@@ -92,7 +92,7 @@ public sealed partial class MainWindowViewModel
         var report = GameLoadEvidence.Analyze(log, names, snapshot);
         _gameLogEvidence = report;
         GameLogIssues.Clear();
-        foreach (var issue in report.Issues) GameLogIssues.Add(issue);
+        foreach (var issue in report.Issues) GameLogIssues.Add(new GameLogIssueRow(issue));
         Notify(nameof(GameLogSummary));
         Status = "已扫描本地日志；没有保存原始日志。请在验收区核对游戏版本和实际操作。";
     }
@@ -109,4 +109,9 @@ public sealed partial class MainWindowViewModel
         return GameVerificationReport.Generate(checklist, _gameLogEvidence,
             GameLoadEvidence.ProjectFingerprint(_workspace, _document), number);
     }
+}
+
+public sealed record GameLogIssueRow(GameLoadEvidence.LogIssue Evidence)
+{
+    public string Display => Evidence.Display;
 }
