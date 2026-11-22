@@ -114,6 +114,31 @@ internal static class UiSmokeCheck
                 Require(vm.XmlPreview.Contains("<MoveSpeed>5.2</MoveSpeed>"),
                     "Inspector group collapse must never mutate XML.");
 
+                // Zero-XML repeated li management in the primary document view.
+                vm.SelectedListGroup = vm.NativeListGroups.Single(x =>
+                    x.Group.Container == "tools");
+                vm.AddBlankNativeListEntry();
+                Require(vm.NativeListEntries.Count == 1 &&
+                    vm.SelectedListEntry?.Item.Index == 0 &&
+                    !vm.CanMoveNativeListEntryUp,
+                    "Document list must create and select a blank li without an XML fragment.");
+                vm.DuplicateNativeListEntry();
+                Require(vm.NativeListEntries.Count == 2 &&
+                    vm.SelectedListEntry?.Item.Index == 1 &&
+                    vm.CanMoveNativeListEntryUp && !vm.CanMoveNativeListEntryDown,
+                    "Copy should select the new li and update movement controls.");
+                vm.MoveNativeListEntry(-1);
+                Require(vm.SelectedListEntry?.Item.Index == 0 &&
+                    vm.CanMoveNativeListEntryDown,
+                    "Moving a repeated li must keep the moved element selected.");
+                vm.Undo();
+                Require(vm.NativeListEntries.Count == 2,
+                    "Undo of list reorder should preserve both members.");
+                vm.Redo();
+                vm.RemoveNativeListEntry();
+                Require(vm.NativeListEntries.Count == 1,
+                    "Delete should only remove the selected li member.");
+
                 vm.CreateQuickDefinition("BodyPartDef");
                 var second = vm.SelectedDefinition!;
                 vm.SelectedDefinition = vm.Definitions.Single(x =>
@@ -237,6 +262,25 @@ internal static class UiSmokeCheck
                 Require(project.FindDefinitionFile("ThingDef","MP_UiSmoke")!
                     .Document.Export().Contains("<power>19</power>"),
                     "Freeform native field was not added.");
+                var modulesBeforeCopy=vm.FreeformModules.Count;
+                var originalModuleIndex=vm.SelectedFreeformModule!.Index;
+                vm.DuplicateFreeformModule();
+                Require(vm.FreeformModules.Count==modulesBeforeCopy+1 &&
+                    vm.SelectedFreeformModule?.Index==originalModuleIndex+1 &&
+                    vm.CanMoveFreeformModuleUp &&
+                    project.FindDefinitionFile("ThingDef","MP_UiSmoke")!
+                        .Document.Export().Split("<power>19</power>").Length>=3,
+                    "Copying a freeform li must preserve all nested fields.");
+                vm.MoveFreeformModule(-1);
+                Require(vm.SelectedFreeformModule?.Index==originalModuleIndex,
+                    "Combat item reorder did not keep the selected member.");
+                vm.MoveFreeformModule(1);
+                Require(vm.SelectedFreeformModule?.Index==originalModuleIndex+1,
+                    "Combat item could not move back to its prior position.");
+                vm.RemoveFreeformModule();
+                Require(vm.FreeformModules.Count==modulesBeforeCopy &&
+                    vm.SelectedFreeformModule!=null,
+                    "Removing a copied combat item must preserve another valid selection.");
                 vm.FreeformDefType="BodyPartDef";
                 vm.FreeformNewDefName="MP_SmokeWing";
                 vm.FreeformNewDefLabel="Smoke wing";
