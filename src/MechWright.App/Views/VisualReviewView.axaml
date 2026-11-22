@@ -12,6 +12,7 @@
                  FontSize="11" Foreground="#8FA5AC" TextWrapping="Wrap"/>
     </StackPanel>
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="15">
       <ItemsControl ItemsSource="{Binding VisualReviewChecks}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" ItemWidth="325" ItemHeight="137"/></ItemsPanelTemplate>
@@ -40,6 +41,35 @@
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+      <Border Classes="feature-card" Padding="13">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="文件与引用诊断" FontSize="15" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="1" Text="{Binding DiagnosticCount}"
+                       Foreground="#99B8BB" FontSize="11" VerticalAlignment="Center"/>
+          </Grid>
+          <TextBlock Text="错误需要修正；外部 Mod、继承与 Patch 的未解析结果仅提示进一步验证。选择一项后可定位来源。"
+                     FontSize="11" Foreground="#92A8AD" TextWrapping="Wrap"/>
+          <ListBox ItemsSource="{Binding Diagnostics}"
+                   SelectedItem="{Binding SelectedDiagnostic,Mode=TwoWay}"
+                   MaxHeight="295" MinHeight="70">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:DiagnosticRow">
+                <StackPanel Spacing="3" Margin="5,6">
+                  <TextBlock Text="{Binding Title}" TextWrapping="Wrap"
+                             FontSize="12" FontWeight="Medium"/>
+                  <TextBlock Text="{Binding Location}" TextWrapping="Wrap"
+                             FontSize="10" Foreground="#9AB0B6"/>
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Button Content="定位选中问题的文件与字段"
+                  Click="JumpDiagnostic_Click" HorizontalAlignment="Left"
+                  IsEnabled="{Binding HasSelectedDiagnostic}"/>
+        </StackPanel>
+      </Border>
+      </StackPanel>
     </ScrollViewer>
     <Border Grid.Row="2" Background="#172D2D" CornerRadius="7" Padding="13">
       <StackPanel Spacing="5">
