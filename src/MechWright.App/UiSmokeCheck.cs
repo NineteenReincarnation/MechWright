@@ -160,6 +160,18 @@ internal static class UiSmokeCheck
                 Require(vm.DocumentActiveStructureNodes.Count==vm.DocumentNodes.Count,
                     "Deselecting the entry should restore the full definition.");
                 vm.SelectedListEntry=duplicatedItem;
+                // Use the normal structured-field UI to make the copied li
+                // distinct; moving identical XML nodes is a serialization
+                // no-op and correctly creates no undo entry.
+                vm.DocumentSelectedNode=vm.DocumentNodes.Single(x=>
+                    x.Path==duplicatedPath);
+                vm.DocumentSelectedField=vm.DocumentFieldChoices.Single(x=>x.Name=="power");
+                vm.DocumentNewValue="12";
+                vm.AddDocumentField();
+                Require(vm.XmlPreview.Contains("<power>12</power>",StringComparison.Ordinal),
+                    "The selected repeated member must accept a field without raw XML.");
+                vm.SelectedListGroup=vm.NativeListGroups.Single(x=>x.Group.Container=="tools");
+                vm.SelectedListEntry=vm.NativeListEntries.Last();
                 vm.MoveNativeListEntry(-1);
                 Require(vm.SelectedListEntry?.Item.Index == 0 &&
                     vm.CanMoveNativeListEntryDown,
