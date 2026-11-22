@@ -146,6 +146,50 @@
                   BorderThickness="1" CornerRadius="7" Padding="17"
                   IsVisible="{Binding DocumentHasDefinition}">
             <StackPanel Spacing="11">
+              <!-- Repeatable li items are managed without writing XML fragments. -->
+              <TextBlock Text="列表成员管理" FontSize="14" FontWeight="SemiBold"/>
+              <TextBlock Text="选择列表后直接新增、复制或排序。下方可逐行编辑现有子字段。"
+                         FontSize="11" Foreground="#9BB1B7" TextWrapping="Wrap"/>
+              <Grid ColumnDefinitions="220,*" ColumnSpacing="10">
+                <StackPanel Grid.Column="0" Spacing="5">
+                  <TextBlock Text="列表" FontSize="11" Foreground="#A8BABC"/>
+                  <ComboBox ItemsSource="{Binding NativeListGroups}"
+                            SelectedItem="{Binding SelectedListGroup,Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:NativeListGroupRow">
+                        <TextBlock Text="{Binding Display}"/>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="5">
+                  <TextBlock Text="已有成员" FontSize="11" Foreground="#A8BABC"/>
+                  <ListBox ItemsSource="{Binding NativeListEntries}"
+                           SelectedItem="{Binding SelectedListEntry,Mode=TwoWay}"
+                           MinHeight="54" MaxHeight="140">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:NativeListItemRow">
+                        <TextBlock Text="{Binding Display}" TextWrapping="Wrap"/>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </StackPanel>
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="新增空白项" Click="AddBlankListEntry_Click"
+                        IsEnabled="{Binding HasListGroup}"/>
+                <Button Content="复制" Click="DuplicateListEntry_Click"
+                        IsEnabled="{Binding HasSelectedListEntry}"/>
+                <Button Content="上移" Click="MoveListEntryUp_Click"
+                        IsEnabled="{Binding CanMoveNativeListEntryUp}"/>
+                <Button Content="下移" Click="MoveListEntryDown_Click"
+                        IsEnabled="{Binding CanMoveNativeListEntryDown}"/>
+                <Button Content="删除" Click="RemoveListEntry_Click"
+                        IsEnabled="{Binding HasSelectedListEntry}"/>
+              </StackPanel>
+              <TextBlock Text="{Binding ListHelp}" FontSize="11" Foreground="#9BB1B7"
+                         TextWrapping="Wrap"/>
+              <Border Height="1" Background="#35404A" Margin="0,3"/>
               <!-- Existing nested XML leaves are edited in place; no XML names need typing. -->
               <TextBlock Text="现有结构逐项编辑" FontWeight="SemiBold" FontSize="13"/>
               <TextBlock Text="选择现有列表成员的字段并修改；保存后可撤销。未知字段保留原样。"
