@@ -192,9 +192,9 @@
               <Border Height="1" Background="#35404A" Margin="0,3"/>
               <!-- Existing nested XML leaves are edited in place; no XML names need typing. -->
               <TextBlock Text="现有结构逐项编辑" FontWeight="SemiBold" FontSize="13"/>
-              <TextBlock Text="选择现有列表成员的字段并修改；保存后可撤销。未知字段保留原样。"
+              <TextBlock Text="选中列表成员后，下方只显示该成员及子字段；取消选中则显示完整定义。修改后可撤销，未知字段原样保留。"
                          FontSize="11" Foreground="#9BB1B7" TextWrapping="Wrap"/>
-              <ItemsControl ItemsSource="{Binding DocumentNodes}">
+              <ItemsControl ItemsSource="{Binding DocumentActiveStructureNodes}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="vm:DocumentNodeRow">
                     <Border BorderBrush="#35404A" BorderThickness="0,0,0,1"
