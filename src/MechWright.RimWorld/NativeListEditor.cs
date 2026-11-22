@@ -24,6 +24,7 @@ public static class NativeListEditor
 
     public sealed record ItemInfo(string XmlPath, int Index, string Summary, string Source)
     {
+        public string ClassName { get; init; } = "";
         public string Display => $"{Index + 1:00}  {Summary}";
     }
 
@@ -49,7 +50,10 @@ public static class NativeListEditor
         var parent = Container(document, def, container);
         return parent?.Elements("li").Select((item, index) =>
             new ItemInfo(DefDocument.GetPath(item), index,
-                Summary(item), item.ToString(SaveOptions.DisableFormatting))).ToArray()
+                Summary(item), item.ToString(SaveOptions.DisableFormatting))
+            {
+                ClassName = item.Attribute("Class")?.Value ?? ""
+            }).ToArray()
             ?? [];
     }
 
@@ -135,6 +139,24 @@ public static class NativeListEditor
             if (textNodes.Length == 1) textNodes[0].Value = value;
             else node.Value = value;
         });
+    }
+
+    /// <summary>
+    /// Explicitly edits the runtime Class attribute of one selected li.
+    /// Class names are user input and must still be checked against the
+    /// selected RimWorld/DLC assembly at game load time.
+    /// </summary>
+    public static void SetItemClass(
+        DefDocument document, DefEntry def, string container,
+        string itemPath, string? className)
+    {
+        var item = ResolveItem(document, def, container, itemPath);
+        var value = (className ?? "").Trim();
+        if (value.Length > 512 || value.Any(char.IsControl))
+            throw new ArgumentException("Class 名称过长或包含无效控制字符。", nameof(className));
+        if (string.Equals(item.Attribute("Class")?.Value ?? "", value,
+                StringComparison.Ordinal)) return;
+        document.Transform(_ => item.SetAttributeValue("Class", value.Length == 0 ? null : value));
     }
 
     public static string Duplicate(
