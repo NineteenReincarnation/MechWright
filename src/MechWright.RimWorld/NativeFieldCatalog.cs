@@ -22,6 +22,9 @@ public sealed class NativeFieldCatalog
             (CanInsert ? "可在当前 Def 显式插入" : "复杂列表字段，需要专用编辑器或源码编辑");
     }
 
+    public sealed record Evidence(string DefType, string Path, string Package,
+        string ClassContext, int Observations);
+
     private sealed class Counter
     {
         public string First = "";
@@ -74,9 +77,12 @@ public sealed class NativeFieldCatalog
     private readonly IReadOnlyList<Field> _fields;
     private readonly IReadOnlyDictionary<string, IReadOnlyList<Field>> _byType;
 
-    private NativeFieldCatalog(IReadOnlyList<Field> fields)
+    public IReadOnlyList<Evidence> EvidenceRows { get; }
+
+    private NativeFieldCatalog(IReadOnlyList<Field> fields, IReadOnlyList<Evidence>? evidence = null)
     {
         _fields = fields;
+        EvidenceRows = evidence ?? [];
         _byType = fields.GroupBy(x => x.DefType, StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => (IReadOnlyList<Field>)g.ToArray(),
                 StringComparer.Ordinal);
@@ -92,6 +98,7 @@ public sealed class NativeFieldCatalog
         CancellationToken token = default)
     {
         var data = new Dictionary<(string Type, string Path), Counter>();
+        var evidence = new Dictionary<(string Type, string Path, string Package, string Context), int>();
         foreach (var source in sources)
         {
             token.ThrowIfCancellationRequested();
@@ -107,6 +114,13 @@ public sealed class NativeFieldCatalog
                     .Reverse().Select(e => e.Name.LocalName).ToArray();
                 if (segments.Length == 0) continue;
                 var path = string.Join('/', segments);
+                var context = string.Join(" / ", element.AncestorsAndSelf().Reverse()
+                    .Select((e, depth) => (Element: e, Depth: depth))
+                    .Where(x => x.Element.Attribute("Class") != null)
+                    .Select(x => x.Depth.ToString(CultureInfo.InvariantCulture) + ":" +
+                        x.Element.Attribute("Class")!.Value));
+                var evidenceKey = (source.Type, path, source.Package, context);
+                evidence[evidenceKey] = evidence.GetValueOrDefault(evidenceKey) + 1;
                 var key = (source.Type, path);
                 if (!data.TryGetValue(key, out var counter))
                     data[key] = counter = new Counter();
@@ -118,7 +132,13 @@ public sealed class NativeFieldCatalog
         }
         return new NativeFieldCatalog(data.Select(x => x.Value.ToField(x.Key.Type, x.Key.Path))
             .OrderBy(x => x.DefType, StringComparer.Ordinal)
-            .ThenBy(x => x.Path, StringComparer.Ordinal).ToArray());
+            .ThenBy(x => x.Path, StringComparer.Ordinal).ToArray(),
+            evidence.Select(x => new Evidence(x.Key.Type, x.Key.Path, x.Key.Package,
+                    x.Key.Context, x.Value))
+                .OrderBy(x => x.DefType, StringComparer.Ordinal)
+                .ThenBy(x => x.Path, StringComparer.Ordinal)
+                .ThenBy(x => x.Package, StringComparer.Ordinal)
+                .ThenBy(x => x.ClassContext, StringComparer.Ordinal).ToArray());
     }
 
     public static void Apply(
